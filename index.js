@@ -63,8 +63,8 @@ var nowPlaying;
 
 var sortQueue = function() {
     queue.sort(function(a, b) {
-        return (Object.keys(a.upVotes).length - Object.keys(a.downVotes).length) -
-               (Object.keys(b.upVotes).length - Object.keys(b.downVotes).length);
+        return ((Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
+               (Object.keys(a.upVotes).length - Object.keys(a.downVotes).length));
     });
 };
 
@@ -122,9 +122,11 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
         res.status(404).send('song not found');
     }
 
-    voteSong(queuedSong, song.vote, userID);
+    voteSong(queuedSong, vote, userID);
 
-    console.log('got vote ' + song.vote + ' for song: ' + queuedSong.id);
+    console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
+
+    res.status(404).send('success');
 });
 
 // get entire queue
@@ -155,7 +157,7 @@ app.post('/queue', bodyParser.json(), function(req, res) {
     voteSong(queuedSong, +1, userID);
 
     console.log('added song to queue: ' + queuedSong.id);
-    res.status(404).send('song added');
+    res.status(404).send('success');
 });
 
 // search for song with given search terms
