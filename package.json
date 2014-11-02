@@ -9,6 +9,8 @@
   "author": "FruitieX",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.9.2",
+    "express": "^4.10.1",
     "playmusic": "^0.2.0"
   }
 }
