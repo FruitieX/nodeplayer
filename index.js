@@ -28,6 +28,7 @@ var playNext = function() {
 
     // play song
     nowPlaying = queue.shift();
+    cleanupSong(nowPlaying);
     console.log('playing song: ' + nowPlaying.id);
 
     pm.getStreamUrl(nowPlaying.id, function(streamUrl) {
@@ -78,9 +79,29 @@ var searchQueue = function(songID) {
     return null;
 };
 
+var cleanupSong = function(song) {
+    for(var i = 0; i < queue.length; i++) {
+        if(queue[i].id === song.id)
+            queue.splice(i, 1);
+    }
+
+    clearInterval(song.badSongCheck);
+};
+
 var createSong = function(song) {
     song.upVotes = {};
     song.downVotes = {};
+
+    // periodic check for downvotes
+    song.badSongCheck = setInterval(function() {
+        var numDownVotes = Object.keys(song.downVotes).length;
+        var numUpVotes = Object.keys(song.upVotes).length;
+        if(numDownVotes > numUpVotes) {
+            console.log('song ' + song.id + ' removed due to downvotes');
+            cleanupSong(song);
+        }
+    }, 60 * 1000);
+
     queue.push(song);
     playNext();
     return song;
@@ -131,7 +152,21 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
 
 // get entire queue
 app.get('/queue', function(req, res) {
-    res.send(JSON.stringify(queue));
+    var response = [];
+    for(var i = 0; i < queue.length; i++) {
+        var numDownVotes = Object.keys(queue[i].downVotes).length;
+        var numUpVotes = Object.keys(queue[i].upVotes).length;
+
+        response.push({
+            artist: queue[i].artist,
+            title: queue[i].title,
+            duration: queue[i].duration,
+            id: queue[i].id,
+            numDownVotes: numDownVotes,
+            numUpVotes: numUpVotes
+        });
+    }
+    res.send(JSON.stringify(response));
 });
 
 // queue song
