@@ -19,6 +19,14 @@ var fetchAudio = function(streamUrl, player, nowPlaying) {
             if(res.statusCode === 200)
                 player.stdin.end();
             console.log('DEBUG: ' + res.statusCode);
+            console.log(res);
+
+            initPm(function() {
+                console.log('error while fetching! status: ' + res.statusCode + ', now reconnected to gmusic');
+                pm.getStreamUrl(nowPlaying.id, function(streamUrl) {
+                    fetchAudio(streamUrl, player, nowPlaying);
+                });
+            });
         });
     });
     req.on('error', function(e) {
