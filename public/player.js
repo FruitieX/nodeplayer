@@ -1,12 +1,17 @@
 var socket = io();
 socket.on('playback', function(data) {
-    $("#audio").append('<source src="/song/' + data.songID + '">');
-    if(data.position) {
-        var audio = document.getElementById('audio');
+    $("#audio").attr('src', '/song/' + data.songID);
+    var audio = document.getElementById('audio');
 
-        audio.addEventListener('canplaythrough', function() {
+    var setPos = function() {
+        if(data.position) {
             audio.currentTime = data.position / 1000;
-        }, false);
+        } else {
+            audio.currentTime = 0;
+        }
+        audio.removeEventListener('canplaythrough', setPos, false);
     }
+    audio.addEventListener('canplaythrough', setPos, false);
+
     console.log(data);
 });
