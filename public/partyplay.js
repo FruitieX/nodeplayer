@@ -1,3 +1,8 @@
+var socket = io();
+socket.on('queue', function(queue) {
+    updateQueue(queue);
+});
+
 var searchResults = [];
 
 var search = function() {
@@ -55,8 +60,7 @@ var vote = function(id, vote) {
             vote: vote,
             userID: $.cookie('userID')
         }),
-        contentType: 'application/json',
-        success: updateQueue
+        contentType: 'application/json'
     });
 };
 
@@ -68,8 +72,7 @@ var appendQueue = function(searchID) {
             song: searchResults[searchID],
             userID: $.cookie('userID')
         }),
-        contentType: 'application/json',
-        success: updateQueue
+        contentType: 'application/json'
     });
 
     $("#search-results").empty();
@@ -86,53 +89,49 @@ var pad = function(number, length) {
     return str;
 }
 
-var updateQueue = function() {
-    console.log('updating');
-    $.ajax('/queue').done(function(data) {
-        var newQueue = JSON.parse(data);
-        $("#queue").empty();
+var updateQueue = function(queue) {
+    $("#queue").empty();
 
-        // now playing
-        if(newQueue.length)
-            $.tmpl( "nowPlayingTemplate", newQueue[0]).appendTo("#queue");
+    // now playing
+    if(queue[0])
+        $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
 
-        // rest of queue
-        for(var i = 1; i < newQueue.length; i++) {
-            $.tmpl( "queueTemplate", newQueue[i]).appendTo("#queue");
-            var numUpVotes = Object.keys(newQueue[i].upVotes).length;
-            var numDownVotes = Object.keys(newQueue[i].downVotes).length;
-            var totalVotes = numUpVotes + numDownVotes;
+    // rest of queue
+    for(var i = 1; i < queue[1].length; i++) {
+        $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
+        var numUpVotes = Object.keys(queue[1][i].upVotes).length;
+        var numDownVotes = Object.keys(queue[1][i].downVotes).length;
+        var totalVotes = numUpVotes + numDownVotes;
 
-            var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
-            var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
+        var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
+        var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
 
-            var r = 'f0', g = 'f0', b = 'f0';
+        var r = 'f0', g = 'f0', b = 'f0';
 
-            if(totalVotes) {
-                if(numUpVotes > numDownVotes) {
-                    r = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
-                    b = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
-                } else if(numUpVotes < numDownVotes) {
-                    g = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
-                    b = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
-                }
-            }
-
-            var color = "#" + r + g + b;
-
-            $("#" + newQueue[i].id).css('background-color', color);
-        }
-
-        var userID = $.cookie('userID');
-        // update votes
-        for(var i = 0; i < newQueue.length; i++) {
-            if(newQueue[i].upVotes[userID]) {
-                $("#uparrow" + newQueue[i].id).addClass("active");
-            } else if(newQueue[i].downVotes[userID]) {
-                $("#downarrow" + newQueue[i].id).addClass("active");
+        if(totalVotes) {
+            if(numUpVotes > numDownVotes) {
+                r = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
+                b = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
+            } else if(numUpVotes < numDownVotes) {
+                g = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
+                b = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
             }
         }
-    });
+
+        var color = "#" + r + g + b;
+
+        $("#" + queue[1][i].id).css('background-color', color);
+    }
+
+    var userID = $.cookie('userID');
+    // update votes
+    for(var i = 0; i < queue[1].length; i++) {
+        if(queue[1][i].upVotes[userID]) {
+            $("#uparrow" + queue[1][i].id).addClass("active");
+        } else if(queue[1][i].downVotes[userID]) {
+            $("#downarrow" + queue[1][i].id).addClass("active");
+        }
+    }
 };
 
 $(document).ready(function() {
@@ -184,7 +183,4 @@ $(document).ready(function() {
         if(e.keyCode === 13)
             search();
     });
-
-    updateQueue();
-    setInterval(updateQueue, 5000);
 });

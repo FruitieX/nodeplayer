@@ -126,6 +126,7 @@ var queueCheck = function() {
                 setTimeout(function() {
                     nowPlaying = null;
                     queueCheck();
+                    io.emit('queue', [nowPlaying, queue]);
                 }, (probeData.format.duration + 1) * 1000);
             });
         }
@@ -225,6 +226,7 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
 
     voteSong(queuedSong, vote, userID);
     queueCheck();
+    io.emit('queue', [nowPlaying, queue]);
 
     console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
 
@@ -281,6 +283,7 @@ app.post('/queue', bodyParser.json(), function(req, res) {
 
     voteSong(queuedSong, +1, userID);
     queueCheck();
+    io.emit('queue', [nowPlaying, queue]);
 
     console.log('added song to queue: ' + queuedSong.id);
     res.send('success');
@@ -330,6 +333,7 @@ io.on('connection', function(socket) {
             position: new Date() - nowPlaying.playbackStart
         });
     }
+    socket.emit('queue', [nowPlaying, queue]);
 });
 
 var pm = new PlayMusic();
