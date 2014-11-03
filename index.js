@@ -17,10 +17,11 @@ var probe = require('node-ffprobe');
 
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     var doDownload = function(streamUrl) {
+        console.log('downloading song ' + songID);
+        var filePath = songCachePath + '/' + songID;
+        var songFd = fs.openSync(filePath, 'w');
+
         var req = https.request(streamUrl, function(res) {
-            console.log('downloading song ' + songID);
-            var filePath = songCachePath + '/' + songID;
-            var songFd = fs.openSync(filePath, 'w');
 
             res.on('data', function(chunk) {
                 fs.writeSync(songFd, chunk, 0, chunk.length, null);
@@ -61,10 +62,13 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
         req.end();
     };
 
-    if(startUrl)
+    if(startUrl) {
         doDownload(startUrl);
-    else
-        pm.getStreamUrl(songID, doDownload);
+    } else {
+        pm.getStreamUrl(songID, function(streamUrl) {
+            doDownload(streamUrl);
+        });
+    }
 };
 
 var getAudio = function(songID, callback, errCallback) {
@@ -72,7 +76,6 @@ var getAudio = function(songID, callback, errCallback) {
 
     if(fs.existsSync(filePath)) {
         // song was found from cache
-        //console.log('fetched song from cache ' + songID);
         if(callback)
             callback(songID);
         return;
@@ -113,8 +116,6 @@ var queueCheck = function() {
     }
 
     getAudio(nowPlaying.id, function(songID) {
-        //console.log(songID + ' success cb called');
-
         if(startedPlayingNext) {
             var filePath = songCachePath + '/' + songID;
             probe(filePath, function(err, probeData) {
@@ -123,7 +124,6 @@ var queueCheck = function() {
                 nowPlaying.playbackStart = new Date();
 
                 setTimeout(function() {
-                    console.log('DEBUG: playback stopped');
                     nowPlaying = null;
                     queueCheck();
                 }, (probeData.format.duration + 1) * 1000);
@@ -133,7 +133,7 @@ var queueCheck = function() {
         // pre-cache next song in queue
         if(queue.length) {
             getAudio(queue[0].id, function(songID) {
-                //console.log('successfully pre-cached ' + songID);
+                console.log('successfully pre-cached ' + songID);
             }, function(songID) {
                 console.log('error while pre-caching ' + songID);
                 cleanupSong(songID);
@@ -184,7 +184,6 @@ var createSong = function(song) {
     song.playbackStart = null;
 
     queue.push(song);
-    queueCheck();
     return song;
 };
 
@@ -209,7 +208,6 @@ var voteSong = function(song, vote, userID) {
     }
 
     sortQueue();
-    queueCheck();
 };
 
 app.post('/vote/:id', bodyParser.json(), function(req, res) {
@@ -226,6 +224,7 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
     }
 
     voteSong(queuedSong, vote, userID);
+    queueCheck();
 
     console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
 
@@ -281,6 +280,7 @@ app.post('/queue', bodyParser.json(), function(req, res) {
         queuedSong = createSong(song);
 
     voteSong(queuedSong, +1, userID);
+    queueCheck();
 
     console.log('added song to queue: ' + queuedSong.id);
     res.send('success');
