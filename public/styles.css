@@ -39,3 +39,7 @@
 .searchResult:hover {
     background: #ddd;
 }
+
+.now-playing {
+    background: #ffd;
+}

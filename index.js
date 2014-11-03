@@ -27,6 +27,10 @@ var playNext = function() {
     cleanupSong(nowPlaying);
     console.log('playing song: ' + nowPlaying.id);
 
+    for (var i = 0; i < queue.length; i++) {
+        queue[i].oldness++;
+    }
+
     pm.getStreamUrl(nowPlaying.id, function(streamUrl) {
         player = spawn('mpg123', [ '-' ]);
         player.on('exit', function() {
@@ -60,8 +64,8 @@ var nowPlaying;
 
 var sortQueue = function() {
     queue.sort(function(a, b) {
-        return ((Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
-               (Object.keys(a.upVotes).length - Object.keys(a.downVotes).length));
+        return ((b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
+               (a.oldness + Object.keys(a.upVotes).length - Object.keys(a.downVotes).length));
     });
 };
 
@@ -71,6 +75,9 @@ var searchQueue = function(songID) {
         if(queue[i].id === songID)
             return queue[i];
     }
+
+    if(nowPlaying && nowPlaying.id === songID)
+        return nowPlaying;
 
     return null;
 };
@@ -87,6 +94,7 @@ var cleanupSong = function(song) {
 var createSong = function(song) {
     song.upVotes = {};
     song.downVotes = {};
+    song.oldness = 0; // favor old songs
 
     // periodic check for downvotes
     song.badSongCheck = setInterval(function() {
@@ -149,6 +157,15 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
 // get entire queue
 app.get('/queue', function(req, res) {
     var response = [];
+    response.push({
+        artist: nowPlaying.artist,
+        title: nowPlaying.title,
+        duration: nowPlaying.duration,
+        id: nowPlaying.id,
+        downVotes: nowPlaying.downVotes,
+        upVotes: nowPlaying.upVotes,
+        oldness: nowPlaying.oldness
+    });
     for(var i = 0; i < queue.length; i++) {
         response.push({
             artist: queue[i].artist,
@@ -157,6 +174,7 @@ app.get('/queue', function(req, res) {
             id: queue[i].id,
             downVotes: queue[i].downVotes,
             upVotes: queue[i].upVotes,
+            oldness: queue[i].oldness
         });
     }
     res.send(JSON.stringify(response));

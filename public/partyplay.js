@@ -24,7 +24,8 @@ var updateQueue = function() {
         var newQueue = JSON.parse(data);
         $("#queue").empty();
 
-        for (var i = 0; i < newQueue.length; i++) {
+        $.tmpl( "nowPlayingTemplate", newQueue[0]).appendTo("#queue");
+        for (var i = 1; i < newQueue.length; i++) {
             $.tmpl( "queueTemplate", newQueue[i]).appendTo("#queue");
         }
     });
@@ -42,6 +43,21 @@ $(document).ready(function() {
                 s4() + '-' + s4() + s4() + s4();
         $.cookie('userID', guid);
     }
+
+    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
+        + '<div class="arrows">'
+        + '<div class="uparrow">'
+        + '<span class="glyphicon glyphicon-thumbs-up" onclick="vote(\'${id}\', 1);"></span>'
+        + '</div>'
+        + '<div class="downarrow">'
+        + '<span class="glyphicon glyphicon-thumbs-down" onclick="vote(\'${id}\', -1);"></span>'
+        + '</div>'
+        + '</div>'
+        + '<div class="title">${title}</div>'
+        + '<div class="artist">${artist}</div>'
+        + '</li>';
+
+    $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
     var queueMarkup = '<li class="list-group-item" id="${id}">'
         + '<div class="arrows">'
