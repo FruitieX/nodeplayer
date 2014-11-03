@@ -19,7 +19,7 @@ var fetchAudio = function(streamUrl, player, nowPlaying) {
             if(res.statusCode === 302) { // redirect
                 initPm(function() {
                     console.log('error while fetching! status: ' + res.statusCode + ', now reconnected to gmusic');
-                    fetchAudio(res._headers.host + res.path, player, nowPlaying);
+                    fetchAudio(res.headers.host + res.path, player, nowPlaying);
                 });
             } else {
                 player.stdin.end();
