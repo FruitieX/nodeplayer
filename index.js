@@ -35,17 +35,16 @@ var playNext = function() {
         player = spawn('mpg123', [ '-' ]);
         player.on('exit', function() {
             console.log('playback stopped');
+            nowPlaying = null;
             player = null;
             playNext();
         });
-        /*
         player.stdout.on('data', function(data) {
             console.log('player stdout: ' + data);
         });
         player.stderr.on('data', function(data) {
             console.log('player stderr: ' + data);
         });
-        */
 
         var req = https.request(streamUrl, function(res) {
             res.on('data', function(chunk) {
@@ -151,21 +150,23 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
 
     console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
 
-    res.status(404).send('success');
+    res.send('success');
 });
 
 // get entire queue
 app.get('/queue', function(req, res) {
     var response = [];
-    response.push({
-        artist: nowPlaying.artist,
-        title: nowPlaying.title,
-        duration: nowPlaying.duration,
-        id: nowPlaying.id,
-        downVotes: nowPlaying.downVotes,
-        upVotes: nowPlaying.upVotes,
-        oldness: nowPlaying.oldness
-    });
+    if(nowPlaying) {
+        response.push({
+            artist: nowPlaying.artist,
+            title: nowPlaying.title,
+            duration: nowPlaying.duration,
+            id: nowPlaying.id,
+            downVotes: nowPlaying.downVotes,
+            upVotes: nowPlaying.upVotes,
+            oldness: nowPlaying.oldness
+        });
+    }
     for(var i = 0; i < queue.length; i++) {
         response.push({
             artist: queue[i].artist,
@@ -203,7 +204,7 @@ app.post('/queue', bodyParser.json(), function(req, res) {
     voteSong(queuedSong, +1, userID);
 
     console.log('added song to queue: ' + queuedSong.id);
-    res.status(404).send('success');
+    res.send('success');
 });
 
 // search for song with given search terms

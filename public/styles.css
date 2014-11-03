@@ -26,14 +26,11 @@
 .uparrow:hover {
     color: #8f8;
 }
-.uparrow:active {
-    color: #4f4;
-}
 .downarrow:hover {
     color: #f88;
 }
-.downarrow:active {
-    color: #f44;
+.active {
+    color: #000;
 }
 
 .searchResult:hover {
