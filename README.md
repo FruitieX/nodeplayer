@@ -18,12 +18,13 @@ features
 setup
 -----
 
-1. install `mpg123`
+1. install `ffmpeg`
 2. create an [app password](https://security.google.com/settings/security/apppasswords)
 3. `cp googlePlayCreds.json.example ~/.googlePlayCreds.json`
 4. edit `~/.googlePlayCreds.json`
 5. run `npm install`
-6. run `node index.js`, point web browser to `localhost:8080`
+6. run `PORT=8080 node index.js`, point web browser to `localhost:8080/server.html`
+7. point client web browsers to `localhost:8080`
 
 api
 ---
