@@ -25,11 +25,13 @@
                     <div class="input-group">
                         <input type="text" class="form-control" id="search-terms">
                         <span class="input-group-btn">
-                            <button class="btn btn-default" type="button" onclick="search();">Search!</button>
+                            <button class="btn btn-default" type="button" id="search-button" onclick="search();">Search!</button>
                         </span>
                     </div>
                 </div>
             </div>
+
+            <h2 class="hidden" id="search-results-text">Search results:</h2>
 
             <div class="row">
                 <div class="col-lg-6">
@@ -37,6 +39,8 @@
                     </ul>
                 </div>
             </div>
+
+            <h2>Queue:</h2>
 
             <div class="row">
                 <div class="col-lg-6">

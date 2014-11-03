@@ -8,12 +8,20 @@
     font-size: 15px;
 }
 
+.nowplayingicon {
+    color: #000;
+    font-size:40px;
+    width:60px;
+    float:left;
+    height:100%;
+}
 .arrows {
     color: #ccc;
     font-size:20px;
-    width:32px;
+    width:60px;
     float:left;
     height:100%;
+    padding-left:10px;
 }
 
 .uparrow {
@@ -33,10 +41,14 @@
     color: #000;
 }
 
+.searchResult {
+    background: #fff;
+}
+
 .searchResult:hover {
-    background: #ddd;
+    background: #eff;
 }
 
 .now-playing {
-    background: #ddd;
+    background: #fff;
 }

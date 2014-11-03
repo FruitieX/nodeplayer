@@ -2,10 +2,13 @@ var searchResults = [];
 
 var search = function() {
     var searchTerms = $("#search-terms").val();
+    $("#search-button").prop('disabled', true);
 
     $.ajax('/search/' + searchTerms).done(function(data) {
         searchResults = JSON.parse(data);
         $("#search-results").empty();
+        $("#search-results-text").removeClass('hidden');
+        $("#search-button").prop('disabled', false);
 
         for (var i = 0; i < searchResults.length; i++) {
             $.tmpl( "searchTemplate", {
@@ -51,7 +54,7 @@ var vote = function(id, vote) {
             userID: $.cookie('userID')
         }),
         contentType: 'application/json',
-        dataType: 'json'
+        success: updateQueue
     });
 };
 
@@ -68,6 +71,7 @@ var appendQueue = function(searchID) {
     });
 
     $("#search-results").empty();
+    $("#search-results-text").addClass('hidden');
 };
 
 var pad = function(number, length) {
@@ -97,20 +101,20 @@ var updateQueue = function() {
             var numDownVotes = Object.keys(newQueue[i].downVotes).length;
             var totalVotes = numUpVotes + numDownVotes;
 
-            var weightedUp = (numUpVotes - totalVotes / 2) / (totalVotes / 2);
-            var weightedDown = (numDownVotes - totalVotes / 2) / (totalVotes / 2);
-
-            console.log(weightedUp);
-            console.log(weightedDown);
+            console.log('DEBUG: ' + numUpVotes + '/' + numDownVotes + ': ' + totalVotes);
+            var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
+            var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
 
             var r = 'ff', g = 'ff', b = 'ff';
 
-            if(numUpVotes > numDownVotes) {
-                r = pad(Number(255 - 40 * weightedUp).toString(16), 2);
-                b = pad(Number(255 - 40 * weightedUp).toString(16), 2);
-            } else if(numUpVotes < numDownVotes) {
-                g = pad(Number(255 - 40 * weightedDown).toString(16), 2);
-                b = pad(Number(255 - 40 * weightedDown).toString(16), 2);
+            if(totalVotes) {
+                if(numUpVotes > numDownVotes) {
+                    r = pad(Number(255 - Math.round(30 * weightedUp)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(30 * weightedUp)).toString(16), 2);
+                } else if(numUpVotes < numDownVotes) {
+                    g = pad(Number(255 - Math.round(30 * weightedDown)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(30 * weightedDown)).toString(16), 2);
+                }
             }
 
             var color = "#" + r + g + b;
@@ -145,13 +149,8 @@ $(document).ready(function() {
     }
 
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
-        + '<div class="arrows">'
-        + '<div class="uparrow">'
-        + '<span class="glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></span>'
-        + '</div>'
-        + '<div class="downarrow">'
-        + '<span class="glyphicon glyphicon-thumbs-down" id="downarrow${id}" onclick="vote(\'${id}\', -1);"></span>'
-        + '</div>'
+        + '<div class="nowplayingicon">'
+        + '<span class="glyphicon glyphicon-play"></span>'
         + '</div>'
         + '<div class="title">${title}</div>'
         + '<div class="artist">${artist}</div>'
