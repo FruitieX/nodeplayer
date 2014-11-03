@@ -2,6 +2,7 @@ var PlayMusic = require('playmusic');
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
 
 var https = require('https');
+var http = require('http');
 
 var songCachePath = __dirname + '/songCache';
 var fs = require('fs');
@@ -118,13 +119,14 @@ var queueCheck = function() {
             var filePath = songCachePath + '/' + songID;
             probe(filePath, function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
+                io.emit('playback', {songID: nowPlaying.id});
                 nowPlaying.playbackStart = new Date();
 
                 setTimeout(function() {
                     console.log('DEBUG: playback stopped');
                     nowPlaying = null;
                     queueCheck();
-                }, probeData.format.duration * 1000);
+                }, (probeData.format.duration + 1) * 1000);
             });
         }
 
@@ -317,8 +319,18 @@ app.get('/search/:terms', function(req, res) {
 app.use('/song', express.static(songCachePath));
 app.use(express.static(__dirname + '/public'));
 
-app.listen(process.env.PORT || 8080);
+var server = app.listen(process.env.PORT || 8080);
 console.log('listening on port ' + (process.env.PORT || 8080));
+
+var io = require('socket.io')(server);
+io.on('connection', function(socket) {
+    if(nowPlaying) {
+        socket.emit('playback', {
+            songID: nowPlaying.id,
+            position: new Date() - nowPlaying.playbackStart
+        });
+    }
+});
 
 var pm = new PlayMusic();
 var initPm = function(callback) {

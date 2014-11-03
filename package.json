@@ -12,6 +12,7 @@
     "body-parser": "^1.9.2",
     "express": "^4.10.1",
     "node-ffprobe": "^1.2.2",
-    "playmusic": "^0.2.0"
+    "playmusic": "^0.2.0",
+    "socket.io": "^1.2.0"
   }
 }
