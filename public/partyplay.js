@@ -103,7 +103,6 @@ var updateQueue = function() {
             var numDownVotes = Object.keys(newQueue[i].downVotes).length;
             var totalVotes = numUpVotes + numDownVotes;
 
-            console.log('DEBUG: ' + numUpVotes + '/' + numDownVotes + ': ' + totalVotes);
             var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
             var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
 
@@ -120,7 +119,6 @@ var updateQueue = function() {
             }
 
             var color = "#" + r + g + b;
-            console.log(color);
 
             $("#" + newQueue[i].id).css('background-color', color);
         }
