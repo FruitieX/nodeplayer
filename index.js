@@ -17,28 +17,24 @@ var fetchAudio = function(streamUrl, player, nowPlaying) {
         });
         res.on('end', function() {
             if(res.statusCode === 302) { // redirect
-                initPm(function() {
-                    console.log('error while fetching! status: ' + res.statusCode + ', now reconnected to gmusic');
-                    fetchAudio(res.headers.host + res.path, player, nowPlaying);
-                });
+                console.log('redirected. retrying with new URL');
+                fetchAudio(res.headers.host + res.path, player, nowPlaying);
             } else {
                 player.stdin.end();
             }
             console.log('DEBUG end: ' + res.statusCode);
-            //console.log(res);
-
         });
     });
     req.on('error', function(e) {
-        /*
-        initPm(function() {
-            console.log('error while fetching! status: ' + res.statusCode + ', now reconnected to gmusic');
-            pm.getStreamUrl(nowPlaying.id, function(streamUrl) {
-                fetchAudio(streamUrl, player, nowPlaying);
+        console.log('error ' + e + ' while fetching! retrying in 5s...');
+        setTimeout(function() {
+            initPm(function() {
+                console.log('error while fetching! now reconnected to gmusic');
+                pm.getStreamUrl(nowPlaying.id, function(streamUrl) {
+                    fetchAudio(streamUrl, player, nowPlaying);
+                });
             });
-        });
-        */
-        console.log('error ' + e + ' while fetching! status: ' + res.statusCode + ', now reconnected to gmusic');
+        }, 5000);
     });
     req.end();
 };

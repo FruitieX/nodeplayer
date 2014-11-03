@@ -70,6 +70,16 @@ var appendQueue = function(searchID) {
     $("#search-results").empty();
 };
 
+var pad = function(number, length) {
+    var str = '' + number;
+
+    while (str.length < length) {
+        str = '0' + str;
+    }
+
+    return str;
+}
+
 var updateQueue = function() {
     console.log('updating');
     $.ajax('/queue').done(function(data) {
@@ -83,6 +93,30 @@ var updateQueue = function() {
         // rest of queue
         for(var i = 1; i < newQueue.length; i++) {
             $.tmpl( "queueTemplate", newQueue[i]).appendTo("#queue");
+            var numUpVotes = Object.keys(newQueue[i].upVotes).length;
+            var numDownVotes = Object.keys(newQueue[i].downVotes).length;
+            var totalVotes = numUpVotes + numDownVotes;
+
+            var weightedUp = (numUpVotes - totalVotes / 2) / (totalVotes / 2);
+            var weightedDown = (numDownVotes - totalVotes / 2) / (totalVotes / 2);
+
+            console.log(weightedUp);
+            console.log(weightedDown);
+
+            var r = 'ff', g = 'ff', b = 'ff';
+
+            if(numUpVotes > numDownVotes) {
+                r = pad(Number(255 - 40 * weightedUp).toString(16), 2);
+                b = pad(Number(255 - 40 * weightedUp).toString(16), 2);
+            } else if(numUpVotes < numDownVotes) {
+                g = pad(Number(255 - 40 * weightedDown).toString(16), 2);
+                b = pad(Number(255 - 40 * weightedDown).toString(16), 2);
+            }
+
+            var color = "#" + r + g + b;
+            console.log(color);
+
+            $("#" + newQueue[i].id).css('background-color', color);
         }
 
         var userID = $.cookie('userID');
