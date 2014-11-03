@@ -111,11 +111,11 @@ var updateQueue = function() {
 
             if(totalVotes) {
                 if(numUpVotes > numDownVotes) {
-                    r = pad(Number(255 - Math.round(50 * weightedUp)).toString(16), 2);
-                    b = pad(Number(255 - Math.round(50 * weightedUp)).toString(16), 2);
+                    r = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
                 } else if(numUpVotes < numDownVotes) {
-                    g = pad(Number(255 - Math.round(50 * weightedDown)).toString(16), 2);
-                    b = pad(Number(255 - Math.round(50 * weightedDown)).toString(16), 2);
+                    g = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
                 }
             }
 
