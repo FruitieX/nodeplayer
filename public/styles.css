@@ -1,0 +1,41 @@
+.title {
+    color: #444;
+    font-size: 20px;
+}
+
+.artist {
+    color: #888;
+    font-size: 15px;
+}
+
+.arrows {
+    color: #ccc;
+    font-size:20px;
+    width:32px;
+    float:left;
+    height:100%;
+}
+
+.uparrow {
+    height:50%;
+}
+.downarrow {
+    height:50%;
+}
+
+.uparrow:hover {
+    color: #8f8;
+}
+.uparrow:active {
+    color: #4f4;
+}
+.downarrow:hover {
+    color: #f88;
+}
+.downarrow:active {
+    color: #f44;
+}
+
+.searchResult:hover {
+    background: #ddd;
+}

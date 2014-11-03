@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>partyplay</title>
+
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="/styles.css">
+        <script src="/js/jquery-1.11.1.min.js"></script>
+        <script src="/js/jquery.cookie.js"></script>
+        <script src="/js/jquery.tmpl.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <script src="/partyplay.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>partyplay</h1>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search-terms">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="search();">Search!</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <ul class="list-group" id="search-results">
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <!-- List group -->
+                    <ul class="list-group" id="queue">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
