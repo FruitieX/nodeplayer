@@ -10,6 +10,28 @@ var app = express();
 
 var player = null;
 
+var fetchAudio = function(streamUrl, player, nowPlaying) {
+    var req = https.request(streamUrl, function(res) {
+        res.on('data', function(chunk) {
+            player.stdin.write(chunk);
+        });
+        res.on('end', function() {
+            if(res.statusCode === 200)
+                player.stdin.end();
+            console.log('DEBUG: ' + res.statusCode);
+        });
+    });
+    req.on('error', function(e) {
+        initPm(function() {
+            console.log('error while fetching! status: ' + res.statusCode + ', now reconnected to gmusic');
+            pm.getStreamUrl(nowPlaying.id, function(streamUrl) {
+                fetchAudio(streamUrl, player, nowPlaying);
+            });
+        });
+    });
+    req.end();
+};
+
 var playNext = function() {
     if(!queue.length) {
         console.log('end of queue, waiting for more songs');
@@ -39,22 +61,15 @@ var playNext = function() {
             player = null;
             playNext();
         });
+        /*
         player.stdout.on('data', function(data) {
             console.log('player stdout: ' + data);
         });
         player.stderr.on('data', function(data) {
             console.log('player stderr: ' + data);
         });
-
-        var req = https.request(streamUrl, function(res) {
-            res.on('data', function(chunk) {
-                player.stdin.write(chunk);
-            });
-            res.on('end', function() {
-                player.stdin.end();
-            });
-        });
-        req.end();
+        */
+        fetchAudio(streamUrl, player, nowPlaying);
     });
 };
 
@@ -243,6 +258,9 @@ app.listen(process.env.PORT || 8080);
 console.log('listening on port ' + (process.env.PORT || 8080));
 
 var pm = new PlayMusic();
-pm.init(creds, function() {
+var initPm = function(callback) {
+    pm.init(creds, callback);
+};
+initPm(function() {
     console.log('google play music initialized');
 });
