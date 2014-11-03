@@ -8,10 +8,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 
-app.get('/', function(req, res) {
-    res.send('hello');
-});
-
 var player = null;
 
 var playNext = function() {
@@ -154,16 +150,13 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
 app.get('/queue', function(req, res) {
     var response = [];
     for(var i = 0; i < queue.length; i++) {
-        var numDownVotes = Object.keys(queue[i].downVotes).length;
-        var numUpVotes = Object.keys(queue[i].upVotes).length;
-
         response.push({
             artist: queue[i].artist,
             title: queue[i].title,
             duration: queue[i].duration,
             id: queue[i].id,
-            numDownVotes: numDownVotes,
-            numUpVotes: numUpVotes
+            downVotes: queue[i].downVotes,
+            upVotes: queue[i].upVotes,
         });
     }
     res.send(JSON.stringify(response));
@@ -224,6 +217,8 @@ app.get('/search/:terms', function(req, res) {
         res.status(404).send(err);
     });
 });
+
+app.use(express.static(__dirname + '/public'));
 
 app.listen(process.env.PORT || 8080);
 console.log('listening on port ' + (process.env.PORT || 8080));
