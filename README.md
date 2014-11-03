@@ -15,6 +15,16 @@ features
     * queue is sorted according to votes
     * songs where majority of votes are downvotes will be removed
 
+setup
+-----
+
+1. install `mpg123`
+2. create an [app password](https://security.google.com/settings/security/apppasswords)
+3. `cp googlePlayCreds.json.example ~/.googlePlayCreds.json`
+4. edit `~/.googlePlayCreds.json`
+5. run `npm install`
+6. run `node index.js`, point web browser to `localhost:8080`
+
 api
 ---
 
