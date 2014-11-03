@@ -18,7 +18,7 @@ var fetchAudio = function(streamUrl, player, nowPlaying) {
         res.on('end', function() {
             if(res.statusCode === 302) { // redirect
                 console.log('redirected. retrying with new URL');
-                fetchAudio(res.headers.host + res.path, player, nowPlaying);
+                fetchAudio(res.headers.location, player, nowPlaying);
             } else {
                 player.stdin.end();
             }
@@ -26,7 +26,7 @@ var fetchAudio = function(streamUrl, player, nowPlaying) {
         });
     });
     req.on('error', function(e) {
-        console.log('error ' + e + ' while fetching! retrying in 5s...');
+        console.log('error ' + e + ' while fetching! reconnecting in 5s...');
         setTimeout(function() {
             initPm(function() {
                 console.log('error while fetching! now reconnected to gmusic');

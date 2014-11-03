@@ -18,6 +18,8 @@ var search = function() {
                 searchID: i
             }).appendTo("#search-results");
         }
+    }).fail(function() {
+        $("#search-button").prop('disabled', false);
     });
 };
 
@@ -105,15 +107,15 @@ var updateQueue = function() {
             var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
             var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
 
-            var r = 'ff', g = 'ff', b = 'ff';
+            var r = 'f0', g = 'f0', b = 'f0';
 
             if(totalVotes) {
                 if(numUpVotes > numDownVotes) {
-                    r = pad(Number(255 - Math.round(30 * weightedUp)).toString(16), 2);
-                    b = pad(Number(255 - Math.round(30 * weightedUp)).toString(16), 2);
+                    r = pad(Number(255 - Math.round(50 * weightedUp)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(50 * weightedUp)).toString(16), 2);
                 } else if(numUpVotes < numDownVotes) {
-                    g = pad(Number(255 - Math.round(30 * weightedDown)).toString(16), 2);
-                    b = pad(Number(255 - Math.round(30 * weightedDown)).toString(16), 2);
+                    g = pad(Number(255 - Math.round(50 * weightedDown)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(50 * weightedDown)).toString(16), 2);
                 }
             }
 

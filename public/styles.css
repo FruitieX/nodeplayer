@@ -16,7 +16,7 @@
     height:100%;
 }
 .arrows {
-    color: #ccc;
+    color: #aaa;
     font-size:20px;
     width:60px;
     float:left;
@@ -32,12 +32,15 @@
 }
 
 .uparrow:hover {
-    color: #8f8;
+    color: #ccc;
 }
 .downarrow:hover {
-    color: #f88;
+    color: #ccc;
 }
-.active {
+.uparrow .active {
+    color: #000;
+}
+.downarrow .active {
     color: #000;
 }
 
