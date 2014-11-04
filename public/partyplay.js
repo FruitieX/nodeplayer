@@ -96,11 +96,12 @@ var updateQueue = function(queue) {
     if(queue[0])
         $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
 
+    queue = queue[1];
     // rest of queue
-    for(var i = 1; i < queue[1].length; i++) {
-        $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
-        var numUpVotes = Object.keys(queue[1][i].upVotes).length;
-        var numDownVotes = Object.keys(queue[1][i].downVotes).length;
+    for(var i = 0; i < queue.length; i++) {
+        $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
+        var numUpVotes = Object.keys(queue[i].upVotes).length;
+        var numDownVotes = Object.keys(queue[i].downVotes).length;
         var totalVotes = numUpVotes + numDownVotes;
 
         var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
@@ -120,16 +121,16 @@ var updateQueue = function(queue) {
 
         var color = "#" + r + g + b;
 
-        $("#" + queue[1][i].id).css('background-color', color);
+        $("#" + queue[i].id).css('background-color', color);
     }
 
     var userID = $.cookie('userID');
     // update votes
-    for(var i = 0; i < queue[1].length; i++) {
-        if(queue[1][i].upVotes[userID]) {
-            $("#uparrow" + queue[1][i].id).addClass("active");
-        } else if(queue[1][i].downVotes[userID]) {
-            $("#downarrow" + queue[1][i].id).addClass("active");
+    for(var i = 0; i < queue.length; i++) {
+        if(queue[i].upVotes[userID]) {
+            $("#uparrow" + queue[i].id).addClass("active");
+        } else if(queue[i].downVotes[userID]) {
+            $("#downarrow" + queue[i].id).addClass("active");
         }
     }
 };
