@@ -1,13 +1,11 @@
-var PlayMusic = require('playmusic');
-var creds = require(process.env.HOME + '/.googlePlayCreds.json');
+var config = require(process.env.HOME + '/.partyplayConfig.js');
 
 var https = require('https');
 var http = require('http');
 
-var songCachePath = __dirname + '/songCache';
 var fs = require('fs');
-if(!fs.existsSync(songCachePath))
-    fs.mkdirSync(songCachePath);
+if(!fs.existsSync(config.songCachePath))
+    fs.mkdirSync(config.songCachePath);
 
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -15,74 +13,7 @@ var app = express();
 
 var probe = require('node-ffprobe');
 
-var gmusicDownload = function(startUrl, songID, callback, errCallback) {
-    var doDownload = function(streamUrl) {
-        console.log('downloading song ' + songID);
-        var filePath = songCachePath + '/' + songID + '.mp3';
-        var songFd = fs.openSync(filePath, 'w');
-
-        var req = https.request(streamUrl, function(res) {
-
-            res.on('data', function(chunk) {
-                fs.writeSync(songFd, chunk, 0, chunk.length, null);
-                //player.stdin.write(chunk);
-            });
-            res.on('end', function() {
-                if(res.statusCode === 302) { // redirect
-                    console.log('redirected. retrying with new URL');
-                    fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
-                    gmusicDownload(res.headers.location, songID, callback, errCallback);
-                } else if(res.statusCode === 200) {
-                    console.log('download finished ' + songID);
-                    fs.closeSync(songFd);
-                    if(callback)
-                        callback(songID);
-                    //player.stdin.end();
-                } else {
-                    console.log('ERROR: unknown status code ' + res.statusCode);
-                    fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
-                    if(errCallback)
-                        errCallback(songID);
-                }
-            });
-        });
-        req.on('error', function(e) {
-            console.log('error ' + e + ' while fetching! reconnecting in 5s...');
-            setTimeout(function() {
-                initPm(function() {
-                    console.log('error while fetching! now reconnected to gmusic');
-                    pm.getStreamUrl(songID, function(streamUrl) {
-                        gmusicDownload(streamUrl, songID, callback, errCallback);
-                    });
-                });
-            }, 5000);
-        });
-        req.end();
-    };
-
-    if(startUrl) {
-        doDownload(startUrl);
-    } else {
-        pm.getStreamUrl(songID, function(streamUrl) {
-            doDownload(streamUrl);
-        });
-    }
-};
-
 var getAudio = function(songID, callback, errCallback) {
-    var filePath = songCachePath + '/' + songID + '.mp3';
-
-    if(fs.existsSync(filePath)) {
-        // song was found from cache
-        if(callback)
-            callback(songID);
-        return;
-    } else {
-        // song had to be downloaded
-        gmusicDownload(null, songID, callback, errCallback);
-    }
 };
 
 // to be called whenever the queue has been modified
@@ -292,40 +223,18 @@ app.post('/queue', bodyParser.json(), function(req, res) {
 // search for song with given search terms
 app.get('/search/:terms', function(req, res) {
     console.log('got search request: ' + req.params.terms);
-    pm.search(req.params.terms, 11, function(data) {
-        var songs = [];
 
-        if(data.entries) {
-            songs = data.entries.sort(function(a, b) {
-                return a.score < b.score; // sort by score
-            }).filter(function(entry) {
-                return entry.type === '1'; // songs only, no albums/artists
-            });
-
-            for(var i = 0; i < songs.length; i++) {
-                songs[i] = {
-                    artist: songs[i].track.artist,
-                    title: songs[i].track.title,
-                    duration: songs[i].track.durationMillis,
-                    id: songs[i].track.nid
-                };
-            }
-        }
-
-        res.send(JSON.stringify(songs));
-    }, function(err) {
-        console.log(err);
-        res.status(404).send(err);
-    });
+    for(var backend in backends) {
+        backends[backend].search(req.params.terms, function(songs) {
+            res.send(JSON.stringify(songs));
+        }, function(err) {
+            console.log(err);
+            res.status(404).send(err);
+        });
+    }
 });
 
-express.static.mime.define({'audio/mpeg': ['mp3']});
-app.use('/song', express.static(songCachePath));
-app.use(express.static(__dirname + '/public'));
-
 var server = app.listen(process.env.PORT || 8080);
-console.log('listening on port ' + (process.env.PORT || 8080));
-
 var io = require('socket.io')(server);
 io.on('connection', function(socket) {
     if(nowPlaying) {
@@ -337,10 +246,24 @@ io.on('connection', function(socket) {
     socket.emit('queue', [nowPlaying, queue]);
 });
 
-var pm = new PlayMusic();
-var initPm = function(callback) {
-    pm.init(creds, callback);
-};
-initPm(function() {
-    console.log('google play music initialized');
-});
+console.log('listening on port ' + (process.env.PORT || 8080));
+
+// init backends
+var backends = {};
+for(var i = 0; i < config.backends; i++) {
+    // TODO: remove ./ when done debugging
+    var backend = require('./' + config.backends[i]);
+    var backendName = config.backends[i];
+
+    backends[serviceName].init(function() {
+        console.log('backend ' + backendName + ' initialized');
+    });
+    backends[serviceName].cache = backend.cache;
+    app.use('/song/' + backendName, backend.middleware);
+}
+
+// TODO: needed?
+express.static.mime.define({'audio/mpeg': ['mp3']});
+
+app.use('/song', express.static(songCachePath));
+app.use(express.static(__dirname + '/public'));
