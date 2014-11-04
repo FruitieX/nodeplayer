@@ -292,7 +292,7 @@ app.post('/queue', bodyParser.json(), function(req, res) {
 // search for song with given search terms
 app.get('/search/:terms', function(req, res) {
     console.log('got search request: ' + req.params.terms);
-    pm.search(req.params.terms, 10, function(data) {
+    pm.search(req.params.terms, 11, function(data) {
         var songs = [];
 
         if(data.entries) {

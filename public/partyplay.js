@@ -4,6 +4,7 @@ socket.on('queue', function(queue) {
 });
 
 var searchResults = [];
+var resultsCount = 10;
 
 var search = function() {
     var searchTerms = $("#search-terms").val();
@@ -15,12 +16,17 @@ var search = function() {
         $("#search-results-text").removeClass('hidden');
         $("#search-button").prop('disabled', false);
 
-        for (var i = 0; i < searchResults.length; i++) {
+        for (var i = 0; i < Math.min(searchResults.length, resultsCount); i++) {
             $.tmpl( "searchTemplate", {
                 title: searchResults[i].title,
                 artist: searchResults[i].artist,
                 duration: searchResults[i].duration,
                 searchID: i
+            }).appendTo("#search-results");
+        }
+        if (searchResults.length > resultsCount) {
+            $.tmpl( "searchTemplate", {
+                title: "...",
             }).appendTo("#search-results");
         }
     }).fail(function() {
@@ -65,6 +71,7 @@ var vote = function(id, vote) {
 };
 
 var appendQueue = function(searchID) {
+    if (!searchID) return;
     $.ajax({
         type: 'POST',
         url: '/queue',
