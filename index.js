@@ -102,7 +102,7 @@ var queueCheck = function() {
         cleanupSong(nowPlaying.id);
         startedPlayingNext = true;
 
-        for (var i = 0; i < queue.length; i++) {
+        for (var i = queue.length - 1; i >= 0; i--) {
             queue[i].oldness++;
 
             // remove bad songs
