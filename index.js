@@ -18,7 +18,7 @@ var probe = require('node-ffprobe');
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     var doDownload = function(streamUrl) {
         console.log('downloading song ' + songID);
-        var filePath = songCachePath + '/' + songID;
+        var filePath = songCachePath + '/' + songID + '.mp3';
         var songFd = fs.openSync(filePath, 'w');
 
         var req = https.request(streamUrl, function(res) {
@@ -31,7 +31,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 if(res.statusCode === 302) { // redirect
                     console.log('redirected. retrying with new URL');
                     fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID);
+                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
                     gmusicDownload(res.headers.location, songID, callback, errCallback);
                 } else if(res.statusCode === 200) {
                     console.log('download finished ' + songID);
@@ -42,7 +42,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
                     fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID);
+                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
                     if(errCallback)
                         errCallback(songID);
                 }
@@ -72,7 +72,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
 };
 
 var getAudio = function(songID, callback, errCallback) {
-    var filePath = songCachePath + '/' + songID;
+    var filePath = songCachePath + '/' + songID + '.mp3';
 
     if(fs.existsSync(filePath)) {
         // song was found from cache
@@ -117,7 +117,7 @@ var queueCheck = function() {
 
     getAudio(nowPlaying.id, function(songID) {
         if(startedPlayingNext) {
-            var filePath = songCachePath + '/' + songID;
+            var filePath = songCachePath + '/' + songID + '.mp3';
             probe(filePath, function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
                 io.emit('playback', {songID: nowPlaying.id});
@@ -319,6 +319,7 @@ app.get('/search/:terms', function(req, res) {
     });
 });
 
+express.static.mime.define({'audio/mpeg': ['mp3']});
 app.use('/song', express.static(songCachePath));
 app.use(express.static(__dirname + '/public'));
 

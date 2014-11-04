@@ -1,6 +1,6 @@
 var socket = io();
 socket.on('playback', function(data) {
-    $("#audio").attr('src', '/song/' + data.songID);
+    $("#audio").attr('src', '/song/' + data.songID + '.mp3');
     var audio = document.getElementById('audio');
 
     var setPos = function() {
