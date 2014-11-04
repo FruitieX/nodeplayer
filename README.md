@@ -3,6 +3,8 @@ partyplay
 
 party playlist manager for cloud music services
 
+for personal use only
+
 features
 --------
 
