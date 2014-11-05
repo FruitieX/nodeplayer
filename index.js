@@ -51,9 +51,11 @@ var queueCheck = function() {
     backends[nowPlaying.backend].cache(nowPlaying.id, function(filePath) {
         if(startPlayingNext) {
             probe(filePath, function(err, probeData) {
-                console.log(filePath);
                 console.log('playing song: ' + nowPlaying.id);
-                io.emit('playback', {songID: nowPlaying.id});
+                io.emit('playback', {
+                    songID: nowPlaying.id,
+                    backend: nowPlaying.backend
+                });
                 nowPlaying.playbackStart = new Date();
 
                 // TODO: probeData was undefined once, handle this!
@@ -249,6 +251,7 @@ io.on('connection', function(socket) {
     if(nowPlaying) {
         socket.emit('playback', {
             songID: nowPlaying.id,
+            backend: nowPlaying.backend,
             position: new Date() - nowPlaying.playbackStart
         });
     }
