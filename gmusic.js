@@ -2,6 +2,8 @@ var config = require(process.env.HOME + '/.partyplayConfig.js');
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
 var mkdirp = require('mkdirp');
 var https = require('https');
+var send = require('send');
+var url = require('url');
 
 var gmusicBackend = {};
 
@@ -115,6 +117,9 @@ gmusicBackend.init = function(callback) {
     gmusicBackend.pm.init(creds, callback);
 };
 gmusicBackend.middleware = function(req, res, next) {
-    next();
+    send(req, url.parse(req.url).pathname, {
+        dotfiles: 'allow',
+        root: config.songCachePath + '/gmusic'
+    }).pipe(res);
 };
 module.exports = gmusicBackend;
