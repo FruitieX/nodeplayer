@@ -1,12 +1,13 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
+var mkdirp = require('mkdirp');
 
 var gmusicBackend = {};
 
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     var doDownload = function(streamUrl) {
         console.log('downloading song ' + songID);
-        var filePath = songCachePath + '/gmusic/' + songID + '.mp3';
+        var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
         var songFd = fs.openSync(filePath, 'w');
 
         var req = https.request(streamUrl, function(res) {
@@ -19,7 +20,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 if(res.statusCode === 302) { // redirect
                     console.log('redirected. retrying with new URL');
                     fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/gmusic/' + songID + '.mp3');
+                    fs.unlinkSync(config.songCachePath + '/gmusic/' + songID + '.mp3');
                     gmusicDownload(res.headers.location, songID, callback, errCallback);
                 } else if(res.statusCode === 200) {
                     console.log('download finished ' + songID);
@@ -30,7 +31,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
                     fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/gmusic/' + songID + '.mp3');
+                    fs.unlinkSync(config.songCachePath + '/gmusic/' + songID + '.mp3');
                     if(errCallback)
                         errCallback(filePath);
                 }
@@ -66,7 +67,7 @@ var PlayMusic = require('playmusic');
 // on success: callback must be called with file path as argument
 // on failure: errCallback must be called with error message
 gmusicBackend.cache = function(songID, callback, errCallback) {
-    var filePath = songCachePath + '/gmusic/' + songID + '.mp3';
+    var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
 
     if(fs.existsSync(filePath)) {
         // song was found from cache
@@ -108,6 +109,8 @@ gmusicBackend.search = function(terms, callback, errCallback) {
 };
 gmusicBackend.init = function(callback) {
     gmusicBackend.pm = new PlayMusic();
+    mkdirp(config.songCachePath + '/gmusic');
+
     gmusicBackend.pm.init(creds, callback);
 };
 gmusicBackend.middleware = function(req, res, next) {
