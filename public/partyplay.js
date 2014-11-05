@@ -1,7 +1,7 @@
 var queue = [];
 var searchResults = [];
 var resultsCount = 10;
-var progress = {progress: 0, interval: null};
+var progress = {started: 0, interval: null};
 
 var socket = io();
 socket.on('queue', function(data) {
@@ -10,7 +10,8 @@ socket.on('queue', function(data) {
 });
 
 socket.on('playback', function(data) {
-    progress.progress = (data.position || 0);
+    var currentProgress = (data.position || 0);
+    progress.started = new Date() - currentProgress;
     progress.duration = data.duration;
 
     clearInterval(progress.interval);
@@ -115,9 +116,9 @@ var updateProgress = function(dt) { // dt = ms passed since last call
         return;
     }
 
-    progress.progress += dt;
-    $("#progress").css("width", 100 * (progress.progress / progress.duration) + "%");
-    if (progress.progress > progress.duration) {
+    var currentProgress = new Date() - progress.started;
+    $("#progress").css("width", 100 * (currentProgress / progress.duration) + "%");
+    if (currentProgress > progress.duration) {
         $("#progress").css("width", "100%");
     }
 }
