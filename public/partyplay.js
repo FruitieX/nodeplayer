@@ -213,18 +213,11 @@ $(document).ready(function() {
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
     var queueMarkup = '<li class="list-group-item" id="${id}">'
-        + '<div class="row">'
-        + '<div class="col-lg-1">'
         + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${id}"  onclick="vote(\'${id}\', -1);"></div>'
-        + '</div>'
-        + '<div class="col-lg-10">'
-        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
-        + '<div style="clear:both"/>'
-        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
-        + '</div>'
-        + '<div class="col-lg-1">'
         + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></div>'
-        + '</div>'
+        + '<div class="songinfo">'
+        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
+        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
         + '</div>'
         + '</li>';
 
