@@ -129,7 +129,9 @@ var updateQueue = function() {
 
     // now playing
     if(queue[0]) {
-        $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
+        var tmp = queue[0];
+        tmp.duration = durationToString(queue[0].duration / 1000);
+        $.tmpl( "nowPlayingTemplate", tmp).appendTo("#queue");
         updateProgress(0);
     }
 
@@ -194,11 +196,18 @@ $(document).ready(function() {
 
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
         + '<div id="progress"></div>'
+        + '<div class="row">'
+        + '<div class="col-lg-1">'
         + '<div class="nowplayingicon">'
         + '<span class="glyphicon glyphicon-play"></span>'
         + '</div>'
-        + '<div class="big">${title}</div>'
-        + '<div class="small">${artist}</div>'
+        + '</div>'
+        + '<div class="col-lg-11">'
+        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
+        + '<div style="clear:both"/>'
+        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '</div>'
+        + '</div>'
         + '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
