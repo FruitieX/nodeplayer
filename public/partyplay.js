@@ -1,3 +1,8 @@
+var queue = [];
+var searchResults = [];
+var resultsCount = 10;
+var progress = {progress: 0, interval: null};
+
 var socket = io();
 socket.on('queue', function(data) {
     queue = data;
@@ -5,19 +10,13 @@ socket.on('queue', function(data) {
 });
 
 socket.on('playback', function(data) {
-    progress.progress = data.position;
-    progress.playback = true;
+    progress.progress = (data.position || 0);
 
     clearInterval(progress.interval);
     progress.interval = setInterval(function() {
         updateProgress(100);
     }, 100);
 });
-
-var queue = [];
-var searchResults = [];
-var resultsCount = 10;
-var progress = {playback: false, progress: 0, interval: false};
 
 var search = function() {
     var searchTerms = $("#search-terms").val();
