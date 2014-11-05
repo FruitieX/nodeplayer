@@ -6,7 +6,7 @@ var gmusicBackend = {};
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     var doDownload = function(streamUrl) {
         console.log('downloading song ' + songID);
-        var filePath = songCachePath + '/' + songID + '.mp3';
+        var filePath = songCachePath + '/gmusic/' + songID + '.mp3';
         var songFd = fs.openSync(filePath, 'w');
 
         var req = https.request(streamUrl, function(res) {
@@ -19,20 +19,20 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 if(res.statusCode === 302) { // redirect
                     console.log('redirected. retrying with new URL');
                     fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
+                    fs.unlinkSync(songCachePath + '/gmusic/' + songID + '.mp3');
                     gmusicDownload(res.headers.location, songID, callback, errCallback);
                 } else if(res.statusCode === 200) {
                     console.log('download finished ' + songID);
                     fs.closeSync(songFd);
                     if(callback)
-                        callback(songID);
+                        callback(filePath);
                     //player.stdin.end();
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
                     fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
+                    fs.unlinkSync(songCachePath + '/gmusic/' + songID + '.mp3');
                     if(errCallback)
-                        errCallback(songID);
+                        errCallback(filePath);
                 }
             });
         });
@@ -62,13 +62,16 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
 var fs = require('fs');
 var PlayMusic = require('playmusic');
 
+// cache songID to disk.
+// on success: callback must be called with file path as argument
+// on failure: errCallback must be called with error message
 gmusicBackend.cache = function(songID, callback, errCallback) {
-    var filePath = songCachePath + '/' + songID + '.mp3';
+    var filePath = songCachePath + '/gmusic/' + songID + '.mp3';
 
     if(fs.existsSync(filePath)) {
         // song was found from cache
         if(callback)
-            callback(songID);
+            callback(filePath);
         return;
     } else {
         // song had to be downloaded
@@ -93,7 +96,7 @@ gmusicBackend.search = function(terms, callback, errCallback) {
                     album: songs[i].track.album,
                     duration: songs[i].track.durationMillis,
                     id: songs[i].track.nid,
-                    service: 'gmusic'
+                    backend: 'gmusic'
                 };
             }
         }

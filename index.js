@@ -4,8 +4,9 @@ var https = require('https');
 var http = require('http');
 
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 if(!fs.existsSync(config.songCachePath))
-    fs.mkdirSync(config.songCachePath);
+    mkdirp.sync(config.songCachePath);
 
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -13,8 +14,8 @@ var app = express();
 
 var probe = require('node-ffprobe');
 
-var getAudio = function(songID, callback, errCallback) {
-};
+var queue = [];
+var nowPlaying;
 
 // to be called whenever the queue has been modified
 // this function will:
@@ -26,12 +27,12 @@ var queueCheck = function() {
         return;
     }
 
-    var startedPlayingNext = false;
+    var startPlayingNext = false;
     if(!nowPlaying) {
         // play song
         nowPlaying = queue.shift();
         cleanupSong(nowPlaying.id);
-        startedPlayingNext = true;
+        startPlayingNext = true;
 
         for (var i = queue.length - 1; i >= 0; i--) {
             queue[i].oldness++;
@@ -46,9 +47,10 @@ var queueCheck = function() {
         }
     }
 
-    getAudio(nowPlaying.id, function(songID) {
-        if(startedPlayingNext) {
-            var filePath = songCachePath + '/' + songID + '.mp3';
+    // TODO: error handling if backends[...] is undefined
+    // pre-cache now playing
+    backends[nowPlaying.backend].cache(nowPlaying.id, function(filePath) {
+        if(startPlayingNext) {
             probe(filePath, function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
                 io.emit('playback', {songID: nowPlaying.id});
@@ -64,24 +66,22 @@ var queueCheck = function() {
 
         // pre-cache next song in queue
         if(queue.length) {
-            getAudio(queue[0].id, function(songID) {
-                console.log('successfully pre-cached ' + songID);
-            }, function(songID) {
-                console.log('error while pre-caching ' + songID);
-                cleanupSong(songID);
+            backends[queue[0].backend].cache(queue[0].id, function() {
+                console.log('successfully pre-cached ' + queue[0].id);
+            }, function(err) {
+                console.log(err);
+                cleanupSong(queue[0].id);
             });
         } else {
             console.log('nothing to pre-cache');
         }
-    }, function(songID) {
-        cleanupSong(songID);
-        console.log(songID + ' error cb called');
+    }, function(err) {
+        console.log(err);
+        cleanupSong(nowPlaying.id);
     });
 };
 
-var queue = [];
-var nowPlaying;
-
+// sort queue according to votes and oldness
 var sortQueue = function() {
     queue.sort(function(a, b) {
         return ((b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
@@ -89,7 +89,7 @@ var sortQueue = function() {
     });
 };
 
-// find song from queue, if not found then create it
+// find song from queue
 var searchQueue = function(songID) {
     for(var i = 0; i < queue.length; i++) {
         if(queue[i].id === songID)
@@ -102,14 +102,18 @@ var searchQueue = function(songID) {
     return null;
 };
 
+// get rid of song in queue
 var cleanupSong = function(songID) {
     for(var i = 0; i < queue.length; i++) {
-        if(queue[i].id === songID)
+        if(queue[i].id === songID) {
             queue.splice(i, 1);
+            return;
+        }
     }
 };
 
-var createSong = function(song) {
+// initialize song object
+var initializeSong = function(song) {
     song.upVotes = {};
     song.downVotes = {};
     song.oldness = 0; // favor old songs
@@ -207,16 +211,20 @@ app.post('/queue', bodyParser.json(), function(req, res) {
         res.status(404).send('invalid userID');
     }
 
-    // check if the song is already queued
+    // if same song is already queued, don't create a duplicate
     var queuedSong = searchQueue(song.id);
-    if(!queuedSong)
-        queuedSong = createSong(song);
 
+    // no duplicate found, initialize a few properties of song
+    if(!queuedSong)
+        queuedSong = initializeSong(song);
+
+    // new song automatically gets upvote by whoever added it
     voteSong(queuedSong, +1, userID);
+
     queueCheck();
-    io.emit('queue', [nowPlaying, queue]);
 
     console.log('added song to queue: ' + queuedSong.id);
+    io.emit('queue', [nowPlaying, queue]);
     res.send('success');
 });
 
