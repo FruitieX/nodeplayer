@@ -55,16 +55,3 @@
 .now-playing {
     background: #fff;
 }
-
-#progress {
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 1px;
-}
-
-#progress > div {
-    height: 10px;
-    border-radius: 5px;
-    background-color: DeepSkyBlue;
-    width: 0%;
-}

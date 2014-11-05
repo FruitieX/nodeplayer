@@ -3,14 +3,8 @@ socket.on('queue', function(queue) {
     updateQueue(queue);
 });
 
-socket.on('playback', function(data) {
-    progress.progress = data.position;
-    progress.playback = true;
-});
-
 var searchResults = [];
 var resultsCount = 10;
-var progress = {playback: false, progress: 0, interval: false};
 
 var search = function() {
     var searchTerms = $("#search-terms").val();
@@ -102,29 +96,12 @@ var pad = function(number, length) {
     return str;
 }
 
-var updateProgress = function(dt) { // dt = ms passed since last call
-    progress += dt;
-    $("#progress").css("width", (progress / queue[0].duration) + "%");
-    if (progress > queue[0].duration) {
-        $("#progress").css("width", "100%");
-        clearInterval(progressInterval);
-    }
-}
-
 var updateQueue = function(queue) {
     $("#queue").empty();
 
     // now playing
-    if(queue[0]) {
+    if(queue[0])
         $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
-        clearInterval(progress.interval);
-        if (!progress.playback)
-            progress.progress = 0;
-        else
-            progress.playback = false;
-        updateProgress(0);
-        setInterval(updateProgress(1000), 1000);
-    }
 
     queue = queue[1];
     // rest of queue
