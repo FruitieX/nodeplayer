@@ -195,8 +195,8 @@ $(document).ready(function() {
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
         + '<div id="progress"></div>'
         + '<div class="np-songinfo">'
-        + '<div class="big">${title} - ${duration}</div>'
-        + '<div class="small">${artist} (${album})</div>'
+        + '<div class="big"><b>${title}</b> - ${duration}</div>'
+        + '<div class="small"><b>${artist}</b> (${album})</div>'
         + '</div>'
         + '</li>';
 
@@ -206,16 +206,16 @@ $(document).ready(function() {
         + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${id}"  onclick="vote(\'${id}\', -1);"></div>'
         + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></div>'
         + '<div class="songinfo">'
-        + '<div class="big">${title} - ${duration}</div>'
-        + '<div class="small">${artist} (${album})</div>'
+        + '<div class="big"><b>${title}</b> - ${duration}</div>'
+        + '<div class="small"><b>${artist}</b> (${album})</div>'
         + '</div>'
         + '</li>';
 
     $.template( "queueTemplate", queueMarkup );
 
     var searchResultMarkup = '<li class="list-group-item searchResult" id="${id}" onclick="appendQueue(${searchID})">'
-        + '<div class="big">${title} - ${duration}</div>'
-        + '<div class="small">${artist} (${album})</div>'
+        + '<div class="big"><b>${title}</b> - ${duration}</div>'
+        + '<div class="small"><b>${artist}</b> (${album})</div>'
         + '</li>';
 
     $.template( "searchTemplate", searchResultMarkup );

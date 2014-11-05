@@ -70,7 +70,7 @@ var queueCheck = function() {
                     nowPlaying = null;
                     queueCheck();
                     io.emit('queue', [nowPlaying, queue]);
-                }, (accurateDuration + 1) * 1000);
+                }, accurateDuration + config.songDelayMs);
             }
 
             if(filePath)
