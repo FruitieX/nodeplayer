@@ -68,3 +68,17 @@
     background-color:#eee;
     z-index: -1;
 }
+
+#mute {
+    font-size:40px;
+    padding:5px;
+    float:left;
+    cursor:pointer;
+}
+#mute:hover {
+    color: #777;
+}
+#volume{
+    width:400px;
+    height:50px;
+}

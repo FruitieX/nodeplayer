@@ -61,4 +61,12 @@ $(document).ready(function() {
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
     $("#domain").html('queue songs at: <a>http://' + location.host + '</a>');
+
+    $("#volume").change(function(event) {
+        $("#audio")[0].volume = $("#volume").val();
+    });
+    $("#mute").click(function(event) {
+        $("#audio")[0].volume = 0;
+        $("#volume").val(0);
+    });
 });
