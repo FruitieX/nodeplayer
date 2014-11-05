@@ -258,15 +258,18 @@ console.log('listening on port ' + (process.env.PORT || 8080));
 
 // init backends
 var backends = {};
-for(var i = 0; i < config.backends; i++) {
+for(var i = 0; i < config.backendServices.length; i++) {
     // TODO: remove ./ when done debugging
-    var backend = require('./' + config.backends[i]);
-    var backendName = config.backends[i];
+    var backend = require('./' + config.backendServices[i]);
+    var backendName = config.backendServices[i];
 
-    backends[serviceName].init(function() {
+    backend.init(function() {
         console.log('backend ' + backendName + ' initialized');
     });
-    backends[serviceName].cache = backend.cache;
+
+    backends[backendName] = {};
+    backends[backendName].cache = backend.cache;
+    backends[backendName].search = backend.search;
     app.use('/song/' + backendName, backend.middleware);
 }
 

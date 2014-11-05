@@ -39,9 +39,9 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
         req.on('error', function(e) {
             console.log('error ' + e + ' while fetching! reconnecting in 5s...');
             setTimeout(function() {
-                initPm(function() {
+                gmusicBackend.init(function() {
                     console.log('error while fetching! now reconnected to gmusic');
-                    pm.getStreamUrl(songID, function(streamUrl) {
+                    gmusicBackend.pm.getStreamUrl(songID, function(streamUrl) {
                         gmusicDownload(streamUrl, songID, callback, errCallback);
                     });
                 });
@@ -53,7 +53,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     if(startUrl) {
         doDownload(startUrl);
     } else {
-        pm.getStreamUrl(songID, function(streamUrl) {
+        gmusicBackend.pm.getStreamUrl(songID, function(streamUrl) {
             doDownload(streamUrl);
         });
     }
@@ -79,7 +79,7 @@ gmusicBackend.cache = function(songID, callback, errCallback) {
     }
 };
 gmusicBackend.search = function(terms, callback, errCallback) {
-    pm.search(terms, config.searchResultCnt + 1, function(data) {
+    gmusicBackend.pm.search(terms, config.searchResultCnt + 1, function(data) {
         var songs = [];
 
         if(data.entries) {
