@@ -1,5 +1,5 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
-var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
+//var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
 
 var http = require('http');
 
