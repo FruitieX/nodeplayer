@@ -40,7 +40,7 @@ var search = function() {
             }).appendTo("#search-results");
         }
         if (searchResults.length > resultsCount) {
-            $.tmpl( "searchTemplate", {
+            $.tmpl( "ellipsisTemplate", {
                 title: "...",
             }).appendTo("#search-results");
         }
@@ -129,17 +129,15 @@ var updateQueue = function() {
 
     // now playing
     if(queue[0]) {
-        var tmp = queue[0];
-        tmp.duration = durationToString(queue[0].duration / 1000);
-        $.tmpl( "nowPlayingTemplate", tmp).appendTo("#queue");
+        queue[0].duration = durationToString(queue[0].duration / 1000);
+        $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
         updateProgress(0);
     }
 
     // rest of queue
     for(var i = 0; i < queue[1].length; i++) {
-        var tmp = queue[1][i];
-        tmp.duration = durationToString(queue[1][i].duration / 1000);
-        $.tmpl( "queueTemplate", tmp).appendTo("#queue");
+        queue[1][i].duration = durationToString(queue[1][i].duration / 1000);
+        $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
         var numUpVotes = Object.keys(queue[1][i].upVotes).length;
         var numDownVotes = Object.keys(queue[1][i].downVotes).length;
         var totalVotes = numUpVotes + numDownVotes;
@@ -197,8 +195,8 @@ $(document).ready(function() {
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
         + '<div id="progress"></div>'
         + '<div class="np-songinfo">'
-        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
-        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '<div class="big">${title} - ${duration}</div>'
+        + '<div class="small">${artist} (${album})</div>'
         + '</div>'
         + '</li>';
 
@@ -208,19 +206,25 @@ $(document).ready(function() {
         + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${id}"  onclick="vote(\'${id}\', -1);"></div>'
         + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></div>'
         + '<div class="songinfo">'
-        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
-        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '<div class="big">${title} - ${duration}</div>'
+        + '<div class="small">${artist} (${album})</div>'
         + '</div>'
         + '</li>';
 
     $.template( "queueTemplate", queueMarkup );
 
     var searchResultMarkup = '<li class="list-group-item searchResult" id="${id}" onclick="appendQueue(${searchID})">'
-        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
-        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '<div class="big">${title} - ${duration}</div>'
+        + '<div class="small">${artist} (${album})</div>'
         + '</li>';
 
     $.template( "searchTemplate", searchResultMarkup );
+
+    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${id}">'
+        + '<div class="big">${title}</div>'
+        + '</li>';
+
+    $.template( "ellipsisTemplate", ellipsisResultMarkup );
 
     $("#search-terms").keyup(function(e) {
         if(e.keyCode === 13)

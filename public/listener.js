@@ -31,6 +31,16 @@ socket.on('playback', function(data) {
     }, 100);
 });
 
+var pad = function(number, length) {
+    var str = '' + number;
+
+    while (str.length < length) {
+        str = '0' + str;
+    }
+
+    return str;
+}
+
 // UI
 var updateProgress = function(dt) { // dt = ms passed since last call
     if(!queue[0]) {
@@ -50,19 +60,25 @@ var updateQueue = function() {
 
     // now playing
     if(queue[0]) {
+        queue[0].duration = durationToString(queue[0].duration / 1000);
         $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
         updateProgress(0);
     }
+};
+
+var durationToString = function(seconds) {
+    var durationString = Math.floor(seconds / 60);
+    durationString += ":" + pad(Math.floor(seconds % 60), 2);
+    return durationString;
 }
 
 $(document).ready(function() {
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
         + '<div id="progress"></div>'
-        + '<div class="nowplayingicon">'
-        + '<span class="glyphicon glyphicon-play"></span>'
+        + '<div class="np-songinfo">'
+        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
+        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
         + '</div>'
-        + '<div class="title">${title}</div>'
-        + '<div class="artist">${artist}</div>'
         + '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
