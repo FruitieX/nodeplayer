@@ -34,7 +34,8 @@ var search = function() {
             $.tmpl( "searchTemplate", {
                 title: searchResults[i].title,
                 artist: searchResults[i].artist,
-                duration: searchResults[i].duration,
+                album: searchResults[i].album,
+                duration: durationToString(searchResults[i].duration / 1000),
                 searchID: i
             }).appendTo("#search-results");
         }
@@ -134,7 +135,9 @@ var updateQueue = function() {
 
     // rest of queue
     for(var i = 0; i < queue[1].length; i++) {
-        $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
+        var tmp = queue[1][i];
+        tmp.duration = durationToString(queue[1][i].duration / 1000);
+        $.tmpl( "queueTemplate", tmp).appendTo("#queue");
         var numUpVotes = Object.keys(queue[1][i].upVotes).length;
         var numDownVotes = Object.keys(queue[1][i].downVotes).length;
         var totalVotes = numUpVotes + numDownVotes;
@@ -170,6 +173,12 @@ var updateQueue = function() {
     }
 };
 
+var durationToString = function(seconds) {
+    var durationString = Math.floor(seconds / 60);
+    durationString += "m" + Math.floor(seconds % 60) + "s";
+    return durationString;
+}
+
 $(document).ready(function() {
     // generate a user ID if there is not one yet
     if(!$.cookie('userID')) {
@@ -188,30 +197,35 @@ $(document).ready(function() {
         + '<div class="nowplayingicon">'
         + '<span class="glyphicon glyphicon-play"></span>'
         + '</div>'
-        + '<div class="title">${title}</div>'
-        + '<div class="artist">${artist}</div>'
+        + '<div class="big">${title}</div>'
+        + '<div class="small">${artist}</div>'
         + '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
     var queueMarkup = '<li class="list-group-item" id="${id}">'
-        + '<div class="arrows">'
-        + '<div class="uparrow">'
-        + '<span class="glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></span>'
+        + '<div class="row">'
+        + '<div class="col-lg-1">'
+        + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${id}"  onclick="vote(\'${id}\', -1);"></div>'
         + '</div>'
-        + '<div class="downarrow">'
-        + '<span class="glyphicon glyphicon-thumbs-down" id="downarrow${id}" onclick="vote(\'${id}\', -1);"></span>'
+        + '<div class="col-lg-10">'
+        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
+        + '<div style="clear:both"/>'
+        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '</div>'
+        + '<div class="col-lg-1">'
+        + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></div>'
         + '</div>'
         + '</div>'
-        + '<div class="title">${title}</div>'
-        + '<div class="artist">${artist}</div>'
         + '</li>';
 
     $.template( "queueTemplate", queueMarkup );
 
     var searchResultMarkup = '<li class="list-group-item searchResult" id="${id}" onclick="appendQueue(${searchID})">'
-        + '<div class="title">${title}</div>'
-        + '<div class="artist">${artist}</div>'
+        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
+        + '<div style="clear:both"/>'
+        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '<div style="clear:both"/>'
         + '</li>';
 
     $.template( "searchTemplate", searchResultMarkup );
