@@ -1,9 +1,11 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
+var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
 var https = require('https');
 var send = require('send');
 var url = require('url');
+var fs = require('fs');
 
 var gmusicBackend = {};
 
@@ -17,7 +19,6 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
 
             res.on('data', function(chunk) {
                 fs.writeSync(songFd, chunk, 0, chunk.length, null);
-                //player.stdin.write(chunk);
             });
             res.on('end', function() {
                 if(res.statusCode === 302) { // redirect
@@ -30,7 +31,6 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                     fs.closeSync(songFd);
                     if(callback)
                         callback(filePath);
-                    //player.stdin.end();
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
                     fs.closeSync(songFd);
@@ -63,9 +63,6 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     }
 };
 
-var fs = require('fs');
-var PlayMusic = require('playmusic');
-
 // cache songID to disk.
 // on success: callback must be called with file path as argument
 // on failure: errCallback must be called with error message
@@ -82,6 +79,10 @@ gmusicBackend.cache = function(songID, callback, errCallback) {
         gmusicDownload(null, songID, callback, errCallback);
     }
 };
+
+// search for music from the backend
+// on success: callback must be called with a list of song objects
+// on failure: errCallback must be called with error message
 gmusicBackend.search = function(terms, callback, errCallback) {
     gmusicBackend.pm.search(terms, config.searchResultCnt + 1, function(data) {
         var songs = [];
@@ -107,19 +108,26 @@ gmusicBackend.search = function(terms, callback, errCallback) {
 
         callback(songs);
     }, function(err) {
-        errCallback('error while searching gmusic');
+        errCallback('error while searching gmusic: ' + err);
     });
 };
+
+// called when partyplay is started to initialize the backend
+// do any necessary initialization here
 gmusicBackend.init = function(callback) {
     gmusicBackend.pm = new PlayMusic();
     mkdirp(config.songCachePath + '/gmusic');
 
     gmusicBackend.pm.init(creds, callback);
 };
+
+// expressjs middleware for requesting music data
+// must support ranges in the req, and send the data to res
 gmusicBackend.middleware = function(req, res, next) {
     send(req, url.parse(req.url).pathname, {
         dotfiles: 'allow',
         root: config.songCachePath + '/gmusic'
     }).pipe(res);
 };
+
 module.exports = gmusicBackend;
