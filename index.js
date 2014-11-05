@@ -272,6 +272,4 @@ for(var i = 0; i < config.backends; i++) {
 
 // TODO: needed?
 express.static.mime.define({'audio/mpeg': ['mp3']});
-
-app.use('/song', express.static(songCachePath));
 app.use(express.static(__dirname + '/public'));
