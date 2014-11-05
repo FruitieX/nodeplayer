@@ -1,4 +1,4 @@
-var config = require(process.env.HOME + '/.partyplayConfig.js');
+var config;
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
 var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
@@ -114,7 +114,8 @@ gmusicBackend.search = function(terms, callback, errCallback) {
 
 // called when partyplay is started to initialize the backend
 // do any necessary initialization here
-gmusicBackend.init = function(callback) {
+gmusicBackend.init = function(_config, callback) {
+    config = _config;
     gmusicBackend.pm = new PlayMusic();
     mkdirp(config.songCachePath + '/gmusic');
 
