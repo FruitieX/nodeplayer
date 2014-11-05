@@ -39,6 +39,7 @@ var queueCheck = function() {
             // remove bad songs
             var numDownVotes = Object.keys(queue[i].downVotes).length;
             var numUpVotes = Object.keys(queue[i].upVotes).length;
+            var totalVotes = numDownVotes + numUpVotes;
             if(numDownVotes > numUpVotes) {
                 console.log('song ' + queue[i].id + ' removed due to downvotes');
                 cleanupSong(queue[i].id);
@@ -50,7 +51,7 @@ var queueCheck = function() {
     // pre-cache now playing
     backends[nowPlaying.backend].cache(nowPlaying.id, function(filePath) {
         if(startPlayingNext) {
-            probe(filePath, function(err, probeData) {
+            var probeCallback = function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
                 io.emit('playback', {
                     songID: nowPlaying.id,
@@ -66,7 +67,12 @@ var queueCheck = function() {
                     queueCheck();
                     io.emit('queue', [nowPlaying, queue]);
                 }, (probeData.format.duration + 1) * 1000);
-            });
+            }
+
+            if(filePath)
+                probe(filePath, probeCallback);
+            else
+                probeCallback(nowPlaying)
         }
 
         // pre-cache next song in queue
