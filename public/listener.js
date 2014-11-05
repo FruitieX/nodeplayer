@@ -21,7 +21,8 @@ socket.on('playback', function(data) {
     }
     audio.addEventListener('canplaythrough', setPos, false);
 
-    progress.progress = (data.position || 0);
+    var currentProgress = (data.position || 0);
+    progress.started = new Date() - currentProgress;
     progress.duration = data.duration;
 
     clearInterval(progress.interval);
@@ -32,9 +33,14 @@ socket.on('playback', function(data) {
 
 // UI
 var updateProgress = function(dt) { // dt = ms passed since last call
-    progress.progress += dt;
-    $("#progress").css("width", 100 * (progress.progress / progress.duration) + "%");
-    if (progress.progress > progress.duration) {
+    if(!queue[0]) {
+        clearInterval(progress.interval);
+        return;
+    }
+
+    var currentProgress = new Date() - progress.started;
+    $("#progress").css("width", 100 * (currentProgress / progress.duration) + "%");
+    if (currentProgress > progress.duration) {
         $("#progress").css("width", "100%");
     }
 }
@@ -61,4 +67,12 @@ $(document).ready(function() {
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
     $("#domain").html('queue songs at: <a>http://' + location.host + '</a>');
+
+    $("#volume").change(function(event) {
+        $("#audio")[0].volume = $("#volume").val();
+    });
+    $("#mute").click(function(event) {
+        $("#audio")[0].volume = 0;
+        $("#volume").val(0);
+    });
 });

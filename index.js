@@ -273,10 +273,10 @@ console.log('listening on port ' + (process.env.PORT || 8080));
 var backends = {};
 for(var i = 0; i < config.backendServices.length; i++) {
     // TODO: remove ./ when done debugging
-    var backend = require('./' + config.backendServices[i]);
+    var backend = require('./backends/' + config.backendServices[i]);
     var backendName = config.backendServices[i];
 
-    backend.init(function() {
+    backend.init(config, function() {
         console.log('backend ' + backendName + ' initialized');
     });
 
