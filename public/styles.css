@@ -5,8 +5,8 @@
     color: #444;
     height:20px;
     font-size: 16px;
+    text-align:center;
 }
-
 .small {
     white-space:nowrap;
     text-overflow:ellipsis;
@@ -14,6 +14,7 @@
     color: #666;
     height:20px;
     font-size: 15px;
+    text-align:center;
 }
 .arrows {
     color: #aaa;
@@ -21,9 +22,6 @@
     width:30px;
     height:100%;
     cursor:pointer;
-}
-.left {
-    text-align:left;
 }
 
 .uparrow {
