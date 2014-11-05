@@ -1,16 +1,23 @@
+var queue = [];
+var searchResults = [];
+var resultsCount = 10;
+var progress = {progress: 0, interval: null};
+
 var socket = io();
-socket.on('queue', function(queue) {
-    updateQueue(queue);
+socket.on('queue', function(data) {
+    queue = data;
+    updateQueue();
 });
 
 socket.on('playback', function(data) {
-    progress.progress = data.position;
-    progress.playback = true;
-});
+    progress.progress = (data.position || 0);
+    progress.duration = data.duration;
 
-var searchResults = [];
-var resultsCount = 10;
-var progress = {playback: false, progress: 0, interval: false};
+    clearInterval(progress.interval);
+    progress.interval = setInterval(function() {
+        updateProgress(100);
+    }, 100);
+});
 
 var search = function() {
     var searchTerms = $("#search-terms").val();
@@ -77,7 +84,7 @@ var vote = function(id, vote) {
 };
 
 var appendQueue = function(searchID) {
-    if (!searchID) return;
+    if (searchID !== 0 && !searchID) return;
     $.ajax({
         type: 'POST',
         url: '/queue',
@@ -103,35 +110,32 @@ var pad = function(number, length) {
 }
 
 var updateProgress = function(dt) { // dt = ms passed since last call
-    progress += dt;
-    $("#progress").css("width", (progress / queue[0].duration) + "%");
-    if (progress > queue[0].duration) {
+    if(!queue[0]) {
+        clearInterval(progress.interval);
+        return;
+    }
+
+    progress.progress += dt;
+    $("#progress").css("width", 100 * (progress.progress / progress.duration) + "%");
+    if (progress.progress > progress.duration) {
         $("#progress").css("width", "100%");
-        clearInterval(progressInterval);
     }
 }
 
-var updateQueue = function(queue) {
+var updateQueue = function() {
     $("#queue").empty();
 
     // now playing
     if(queue[0]) {
         $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
-        clearInterval(progress.interval);
-        if (!progress.playback)
-            progress.progress = 0;
-        else
-            progress.playback = false;
         updateProgress(0);
-        setInterval(updateProgress(1000), 1000);
     }
 
-    queue = queue[1];
     // rest of queue
-    for(var i = 0; i < queue.length; i++) {
-        $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
-        var numUpVotes = Object.keys(queue[i].upVotes).length;
-        var numDownVotes = Object.keys(queue[i].downVotes).length;
+    for(var i = 0; i < queue[1].length; i++) {
+        $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
+        var numUpVotes = Object.keys(queue[1][i].upVotes).length;
+        var numDownVotes = Object.keys(queue[1][i].downVotes).length;
         var totalVotes = numUpVotes + numDownVotes;
 
         var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
@@ -151,16 +155,16 @@ var updateQueue = function(queue) {
 
         var color = "#" + r + g + b;
 
-        $("#" + queue[i].id).css('background-color', color);
+        $("#" + queue[1][i].id).css('background-color', color);
     }
 
     var userID = $.cookie('userID');
     // update votes
-    for(var i = 0; i < queue.length; i++) {
-        if(queue[i].upVotes[userID]) {
-            $("#uparrow" + queue[i].id).addClass("active");
-        } else if(queue[i].downVotes[userID]) {
-            $("#downarrow" + queue[i].id).addClass("active");
+    for(var i = 0; i < queue[1].length; i++) {
+        if(queue[1][i].upVotes[userID]) {
+            $("#uparrow" + queue[1][i].id).addClass("active");
+        } else if(queue[1][i].downVotes[userID]) {
+            $("#downarrow" + queue[1][i].id).addClass("active");
         }
     }
 };
@@ -179,6 +183,7 @@ $(document).ready(function() {
     }
 
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
+        + '<div id="progress"></div>'
         + '<div class="nowplayingicon">'
         + '<span class="glyphicon glyphicon-play"></span>'
         + '</div>'

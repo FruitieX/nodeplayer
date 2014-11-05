@@ -53,18 +53,18 @@
 }
 
 .now-playing {
-    background: #fff;
+    background: none;
+}
+
+.listener-link {
+    text-align: center;
+    color: #ccc;
 }
 
 #progress {
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 1px;
-}
-
-#progress > div {
-    height: 10px;
-    border-radius: 5px;
-    background-color: DeepSkyBlue;
-    width: 0%;
+    position: absolute;
+    margin: -10px -10px -10px -15px;
+    height: 100%;
+    background-color:#eee;
+    z-index: -1;
 }

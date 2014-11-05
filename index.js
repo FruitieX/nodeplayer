@@ -1,6 +1,5 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
 
-var https = require('https');
 var http = require('http');
 
 var fs = require('fs');
@@ -53,9 +52,15 @@ var queueCheck = function() {
         if(startPlayingNext) {
             probe(filePath, function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
-                io.emit('playback', {songID: nowPlaying.id});
+                io.emit('playback', {
+                    songID: nowPlaying.id,
+                    backend: nowPlaying.backend,
+                    duration: probeData.format.duration * 1000
+                });
                 nowPlaying.playbackStart = new Date();
+                nowPlaying.duration = probeData.format.duration * 1000;
 
+                // TODO: probeData was undefined once, handle this!
                 setTimeout(function() {
                     nowPlaying = null;
                     queueCheck();
@@ -248,6 +253,8 @@ io.on('connection', function(socket) {
     if(nowPlaying) {
         socket.emit('playback', {
             songID: nowPlaying.id,
+            backend: nowPlaying.backend,
+            duration: nowPlaying.duration,
             position: new Date() - nowPlaying.playbackStart
         });
     }
