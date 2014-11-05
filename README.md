@@ -8,7 +8,11 @@ for personal use only
 features
 --------
 
-* google play music all access (currently no other services supported)
+* services as modules:
+  * gmusic
+  * spotify (TODO)
+  * youtube (TODO)
+  * local (TODO)
 * partygoers can:
   * see current queue
   * search for songs
@@ -32,15 +36,20 @@ setup
     * point listener to `http://localhost:8080/listener.html`
     * point clients to `http://localhost:8080`
 
-backends
---------
+backends setup
+--------------
 
-### google play music:
-
-1. configure google credentials:
+* gmusic
     * create an [app password](https://security.google.com/settings/security/apppasswords)
     * `cp googlePlayCreds.json.example ~/.googlePlayCreds.json`
     * edit `~/.googlePlayCreds.json`
+    * enable backend in `~/.partyPlayConfig.js`
+* spotify
+    * TODO
+* youtube
+    * TODO
+* local
+    * TODO
 
 api (OUTDATED)
 --------------
