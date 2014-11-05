@@ -11,6 +11,7 @@ socket.on('queue', function(data) {
 
 socket.on('playback', function(data) {
     progress.progress = (data.position || 0);
+    progress.duration = data.duration;
 
     clearInterval(progress.interval);
     progress.interval = setInterval(function() {
@@ -109,9 +110,14 @@ var pad = function(number, length) {
 }
 
 var updateProgress = function(dt) { // dt = ms passed since last call
+    if(!queue[0]) {
+        clearInterval(progress.interval);
+        return;
+    }
+
     progress.progress += dt;
-    $("#progress").css("width", 100 * (progress.progress / queue[0].duration) + "%");
-    if (progress.progress > queue[0].duration) {
+    $("#progress").css("width", 100 * (progress.progress / progress.duration) + "%");
+    if (progress.progress > progress.duration) {
         $("#progress").css("width", "100%");
     }
 }

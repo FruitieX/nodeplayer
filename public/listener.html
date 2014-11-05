@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>partyplay server</title>
+        <title>partyplay listener</title>
 
         <link rel="stylesheet" href="/css/bootstrap.min.css">
         <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
@@ -15,13 +15,19 @@
         <script src="/js/jquery.tmpl.min.js"></script>
         <script src="/js/bootstrap.min.js"></script>
         <script src="/js/socket.io-1.2.0.js"></script>
-        <script src="/server.js"></script>
+        <script src="/listener.js"></script>
     </head>
     <body>
         <div class="container">
-            <div class="nowplayingicon">
-                <span class="glyphicon glyphicon-play"></span>
-                <h1>partyplay server</h1>
+            <h1>partyplay listener</h1>
+            <h2 id="domain"></h2>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <!-- List group -->
+                    <ul class="list-group" id="queue">
+                    </ul>
+                </div>
             </div>
         </div>
         <audio id="audio" autoplay="yes"></audio>

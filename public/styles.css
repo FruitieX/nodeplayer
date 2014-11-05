@@ -56,6 +56,11 @@
     background: none;
 }
 
+.listener-link {
+    text-align: center;
+    color: #ccc;
+}
+
 #progress {
     position: absolute;
     margin: -10px -10px -10px -15px;

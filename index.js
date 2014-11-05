@@ -54,9 +54,11 @@ var queueCheck = function() {
                 console.log('playing song: ' + nowPlaying.id);
                 io.emit('playback', {
                     songID: nowPlaying.id,
-                    backend: nowPlaying.backend
+                    backend: nowPlaying.backend,
+                    duration: probeData.format.duration * 1000
                 });
                 nowPlaying.playbackStart = new Date();
+                nowPlaying.duration = probeData.format.duration * 1000;
 
                 // TODO: probeData was undefined once, handle this!
                 setTimeout(function() {
@@ -252,6 +254,7 @@ io.on('connection', function(socket) {
         socket.emit('playback', {
             songID: nowPlaying.id,
             backend: nowPlaying.backend,
+            duration: nowPlaying.duration,
             position: new Date() - nowPlaying.playbackStart
         });
     }
