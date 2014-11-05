@@ -76,8 +76,8 @@ $(document).ready(function() {
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
         + '<div id="progress"></div>'
         + '<div class="np-songinfo">'
-        + '<div class="big"><div class="left">${title}</div><div class="right">${duration}</div></div>'
-        + '<div class="small"><div class="left">${artist}</div><div class="right">${album}</div></div>'
+        + '<div class="big">${title} - ${duration}</div>'
+        + '<div class="small">${artist} (${album})</div>'
         + '</div>'
         + '</li>';
 
