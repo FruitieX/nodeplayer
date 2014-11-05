@@ -29,8 +29,8 @@ dummyBackend.cache = function(songID, callback, errCallback) {
     }
 };
 dummyBackend.search = function(terms, callback, errCallback) {
-    callback(JSON.parse('[ {"title":"song1","artist":"qwerty","album":"derpy hits","id":"abc","duration":"10000","backend":"dummy"},\
-    {"title":"song2","artist":"qwerty","album":"derpy hits","id":"def","duration":"20000","backend":"dummy"} ]'));
+    callback(JSON.parse('[ {"title":"song1","artist":"qwerty","album":"derpy hits","id":"abc","duration":"60000","backend":"dummy"},\
+    {"title":"song2","artist":"qwerty","album":"derpy hits","id":"def","duration":"50000","backend":"dummy"} ]'));
 };
 dummyBackend.init = function(_config, callback) {
 console.log("dummyBackend.init");

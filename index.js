@@ -1,4 +1,5 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
+var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
 
 var http = require('http');
 
@@ -53,26 +54,29 @@ var queueCheck = function() {
         if(startPlayingNext) {
             var probeCallback = function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
+                var accurateDuration = nowPlaying.duration;
+                if(probeData)
+                    accurateDuration = probeData.format.duration * 1000;
+
                 io.emit('playback', {
                     songID: nowPlaying.id,
                     backend: nowPlaying.backend,
-                    duration: probeData.format.duration * 1000
+                    duration: accurateDuration
                 });
                 nowPlaying.playbackStart = new Date();
-                nowPlaying.duration = probeData.format.duration * 1000;
+                nowPlaying.duration = accurateDuration;
 
-                // TODO: probeData was undefined once, handle this!
                 setTimeout(function() {
                     nowPlaying = null;
                     queueCheck();
                     io.emit('queue', [nowPlaying, queue]);
-                }, (probeData.format.duration + 1) * 1000);
+                }, (accurateDuration + 1) * 1000);
             }
 
             if(filePath)
                 probe(filePath, probeCallback);
             else
-                probeCallback(nowPlaying)
+                probeCallback();
         }
 
         // pre-cache next song in queue
