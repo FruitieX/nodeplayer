@@ -177,7 +177,7 @@ var updateQueue = function() {
 
 var durationToString = function(seconds) {
     var durationString = Math.floor(seconds / 60);
-    durationString += "m" + Math.floor(seconds % 60) + "s";
+    durationString += ":" + pad(Math.floor(seconds % 60), 2);
     return durationString;
 }
 
