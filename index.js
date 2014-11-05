@@ -1,6 +1,5 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
 
-var https = require('https');
 var http = require('http');
 
 var fs = require('fs');
@@ -52,10 +51,12 @@ var queueCheck = function() {
     backends[nowPlaying.backend].cache(nowPlaying.id, function(filePath) {
         if(startPlayingNext) {
             probe(filePath, function(err, probeData) {
+                console.log(filePath);
                 console.log('playing song: ' + nowPlaying.id);
                 io.emit('playback', {songID: nowPlaying.id});
                 nowPlaying.playbackStart = new Date();
 
+                // TODO: probeData was undefined once, handle this!
                 setTimeout(function() {
                     nowPlaying = null;
                     queueCheck();

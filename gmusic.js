@@ -1,6 +1,7 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
 var mkdirp = require('mkdirp');
+var https = require('https');
 
 var gmusicBackend = {};
 
@@ -33,7 +34,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                     fs.closeSync(songFd);
                     fs.unlinkSync(config.songCachePath + '/gmusic/' + songID + '.mp3');
                     if(errCallback)
-                        errCallback(filePath);
+                        errCallback('error while pre-caching ' + songID);
                 }
             });
         });
