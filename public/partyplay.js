@@ -7,6 +7,11 @@ socket.on('queue', function(data) {
 socket.on('playback', function(data) {
     progress.progress = data.position;
     progress.playback = true;
+
+    clearInterval(progress.interval);
+    progress.interval = setInterval(function() {
+        updateProgress(100);
+    }, 100);
 });
 
 var queue = [];
@@ -118,16 +123,7 @@ var updateQueue = function() {
     // now playing
     if(queue[0]) {
         $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
-        if (!progress.playback)
-            progress.progress = 0;
-        else
-            progress.playback = false;
         updateProgress(0);
-
-        clearInterval(progress.interval);
-        progress.interval = setInterval(function() {
-            updateProgress(1000);
-        }, 1000);
     }
 
     // rest of queue
