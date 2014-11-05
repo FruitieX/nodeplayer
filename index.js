@@ -1,13 +1,12 @@
-var PlayMusic = require('playmusic');
-var creds = require(process.env.HOME + '/.googlePlayCreds.json');
+var config = require(process.env.HOME + '/.partyplayConfig.js');
 
 var https = require('https');
 var http = require('http');
 
-var songCachePath = __dirname + '/songCache';
 var fs = require('fs');
-if(!fs.existsSync(songCachePath))
-    fs.mkdirSync(songCachePath);
+var mkdirp = require('mkdirp');
+if(!fs.existsSync(config.songCachePath))
+    mkdirp.sync(config.songCachePath);
 
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -15,75 +14,8 @@ var app = express();
 
 var probe = require('node-ffprobe');
 
-var gmusicDownload = function(startUrl, songID, callback, errCallback) {
-    var doDownload = function(streamUrl) {
-        console.log('downloading song ' + songID);
-        var filePath = songCachePath + '/' + songID + '.mp3';
-        var songFd = fs.openSync(filePath, 'w');
-
-        var req = https.request(streamUrl, function(res) {
-
-            res.on('data', function(chunk) {
-                fs.writeSync(songFd, chunk, 0, chunk.length, null);
-                //player.stdin.write(chunk);
-            });
-            res.on('end', function() {
-                if(res.statusCode === 302) { // redirect
-                    console.log('redirected. retrying with new URL');
-                    fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
-                    gmusicDownload(res.headers.location, songID, callback, errCallback);
-                } else if(res.statusCode === 200) {
-                    console.log('download finished ' + songID);
-                    fs.closeSync(songFd);
-                    if(callback)
-                        callback(songID);
-                    //player.stdin.end();
-                } else {
-                    console.log('ERROR: unknown status code ' + res.statusCode);
-                    fs.closeSync(songFd);
-                    fs.unlinkSync(songCachePath + '/' + songID + '.mp3');
-                    if(errCallback)
-                        errCallback(songID);
-                }
-            });
-        });
-        req.on('error', function(e) {
-            console.log('error ' + e + ' while fetching! reconnecting in 5s...');
-            setTimeout(function() {
-                initPm(function() {
-                    console.log('error while fetching! now reconnected to gmusic');
-                    pm.getStreamUrl(songID, function(streamUrl) {
-                        gmusicDownload(streamUrl, songID, callback, errCallback);
-                    });
-                });
-            }, 5000);
-        });
-        req.end();
-    };
-
-    if(startUrl) {
-        doDownload(startUrl);
-    } else {
-        pm.getStreamUrl(songID, function(streamUrl) {
-            doDownload(streamUrl);
-        });
-    }
-};
-
-var getAudio = function(songID, callback, errCallback) {
-    var filePath = songCachePath + '/' + songID + '.mp3';
-
-    if(fs.existsSync(filePath)) {
-        // song was found from cache
-        if(callback)
-            callback(songID);
-        return;
-    } else {
-        // song had to be downloaded
-        gmusicDownload(null, songID, callback, errCallback);
-    }
-};
+var queue = [];
+var nowPlaying;
 
 // to be called whenever the queue has been modified
 // this function will:
@@ -95,12 +27,12 @@ var queueCheck = function() {
         return;
     }
 
-    var startedPlayingNext = false;
+    var startPlayingNext = false;
     if(!nowPlaying) {
         // play song
         nowPlaying = queue.shift();
         cleanupSong(nowPlaying.id);
-        startedPlayingNext = true;
+        startPlayingNext = true;
 
         for (var i = queue.length - 1; i >= 0; i--) {
             queue[i].oldness++;
@@ -115,9 +47,10 @@ var queueCheck = function() {
         }
     }
 
-    getAudio(nowPlaying.id, function(songID) {
-        if(startedPlayingNext) {
-            var filePath = songCachePath + '/' + songID + '.mp3';
+    // TODO: error handling if backends[...] is undefined
+    // pre-cache now playing
+    backends[nowPlaying.backend].cache(nowPlaying.id, function(filePath) {
+        if(startPlayingNext) {
             probe(filePath, function(err, probeData) {
                 console.log('playing song: ' + nowPlaying.id);
                 io.emit('playback', {songID: nowPlaying.id});
@@ -133,24 +66,22 @@ var queueCheck = function() {
 
         // pre-cache next song in queue
         if(queue.length) {
-            getAudio(queue[0].id, function(songID) {
-                console.log('successfully pre-cached ' + songID);
-            }, function(songID) {
-                console.log('error while pre-caching ' + songID);
-                cleanupSong(songID);
+            backends[queue[0].backend].cache(queue[0].id, function() {
+                console.log('successfully pre-cached ' + queue[0].id);
+            }, function(err) {
+                console.log(err);
+                cleanupSong(queue[0].id);
             });
         } else {
             console.log('nothing to pre-cache');
         }
-    }, function(songID) {
-        cleanupSong(songID);
-        console.log(songID + ' error cb called');
+    }, function(err) {
+        console.log(err);
+        cleanupSong(nowPlaying.id);
     });
 };
 
-var queue = [];
-var nowPlaying;
-
+// sort queue according to votes and oldness
 var sortQueue = function() {
     queue.sort(function(a, b) {
         return ((b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
@@ -158,7 +89,7 @@ var sortQueue = function() {
     });
 };
 
-// find song from queue, if not found then create it
+// find song from queue
 var searchQueue = function(songID) {
     for(var i = 0; i < queue.length; i++) {
         if(queue[i].id === songID)
@@ -171,14 +102,18 @@ var searchQueue = function(songID) {
     return null;
 };
 
+// get rid of song in queue
 var cleanupSong = function(songID) {
     for(var i = 0; i < queue.length; i++) {
-        if(queue[i].id === songID)
+        if(queue[i].id === songID) {
             queue.splice(i, 1);
+            return;
+        }
     }
 };
 
-var createSong = function(song) {
+// initialize song object
+var initializeSong = function(song) {
     song.upVotes = {};
     song.downVotes = {};
     song.oldness = 0; // favor old songs
@@ -276,56 +211,38 @@ app.post('/queue', bodyParser.json(), function(req, res) {
         res.status(404).send('invalid userID');
     }
 
-    // check if the song is already queued
+    // if same song is already queued, don't create a duplicate
     var queuedSong = searchQueue(song.id);
-    if(!queuedSong)
-        queuedSong = createSong(song);
 
+    // no duplicate found, initialize a few properties of song
+    if(!queuedSong)
+        queuedSong = initializeSong(song);
+
+    // new song automatically gets upvote by whoever added it
     voteSong(queuedSong, +1, userID);
+
     queueCheck();
-    io.emit('queue', [nowPlaying, queue]);
 
     console.log('added song to queue: ' + queuedSong.id);
+    io.emit('queue', [nowPlaying, queue]);
     res.send('success');
 });
 
 // search for song with given search terms
 app.get('/search/:terms', function(req, res) {
     console.log('got search request: ' + req.params.terms);
-    pm.search(req.params.terms, 11, function(data) {
-        var songs = [];
 
-        if(data.entries) {
-            songs = data.entries.sort(function(a, b) {
-                return a.score < b.score; // sort by score
-            }).filter(function(entry) {
-                return entry.type === '1'; // songs only, no albums/artists
-            });
-
-            for(var i = 0; i < songs.length; i++) {
-                songs[i] = {
-                    artist: songs[i].track.artist,
-                    title: songs[i].track.title,
-                    duration: songs[i].track.durationMillis,
-                    id: songs[i].track.nid
-                };
-            }
-        }
-
-        res.send(JSON.stringify(songs));
-    }, function(err) {
-        console.log(err);
-        res.status(404).send(err);
-    });
+    for(var backend in backends) {
+        backends[backend].search(req.params.terms, function(songs) {
+            res.send(JSON.stringify(songs));
+        }, function(err) {
+            console.log(err);
+            res.status(404).send(err);
+        });
+    }
 });
 
-express.static.mime.define({'audio/mpeg': ['mp3']});
-app.use('/song', express.static(songCachePath));
-app.use(express.static(__dirname + '/public'));
-
 var server = app.listen(process.env.PORT || 8080);
-console.log('listening on port ' + (process.env.PORT || 8080));
-
 var io = require('socket.io')(server);
 io.on('connection', function(socket) {
     if(nowPlaying) {
@@ -337,10 +254,25 @@ io.on('connection', function(socket) {
     socket.emit('queue', [nowPlaying, queue]);
 });
 
-var pm = new PlayMusic();
-var initPm = function(callback) {
-    pm.init(creds, callback);
-};
-initPm(function() {
-    console.log('google play music initialized');
-});
+console.log('listening on port ' + (process.env.PORT || 8080));
+
+// init backends
+var backends = {};
+for(var i = 0; i < config.backendServices.length; i++) {
+    // TODO: remove ./ when done debugging
+    var backend = require('./' + config.backendServices[i]);
+    var backendName = config.backendServices[i];
+
+    backend.init(function() {
+        console.log('backend ' + backendName + ' initialized');
+    });
+
+    backends[backendName] = {};
+    backends[backendName].cache = backend.cache;
+    backends[backendName].search = backend.search;
+    app.use('/song/' + backendName, backend.middleware);
+}
+
+// TODO: needed?
+express.static.mime.define({'audio/mpeg': ['mp3']});
+app.use(express.static(__dirname + '/public'));
