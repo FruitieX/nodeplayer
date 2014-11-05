@@ -40,7 +40,7 @@ var queueCheck = function() {
             var numDownVotes = Object.keys(queue[i].downVotes).length;
             var numUpVotes = Object.keys(queue[i].upVotes).length;
             var totalVotes = numDownVotes + numUpVotes;
-            if(numDownVotes > numUpVotes) {
+            if(numDownVotes / totalVotes > config.badVotePercent) {
                 console.log('song ' + queue[i].id + ' removed due to downvotes');
                 cleanupSong(queue[i].id);
             }
