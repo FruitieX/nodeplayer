@@ -68,11 +68,31 @@ $(document).ready(function() {
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
     $("#domain").html('queue songs at: <a>http://' + location.host + '</a>');
 
+    var preMuteVolume;
+    var setVolumeIcon = function() {
+        var volume = $("#audio")[0].volume;
+        $("#mute").removeClass("glyphicon-volume-off glyphicon-volume-down glyphicon-volume-up");
+        if (volume >= 0.5) {
+            $("#mute").addClass("glyphicon-volume-up");
+        } else if (volume > 0) {
+            $("#mute").addClass("glyphicon-volume-down");
+        } else {
+            $("#mute").addClass("glyphicon-volume-off");
+        }
+    }
     $("#volume").change(function(event) {
         $("#audio")[0].volume = $("#volume").val();
+        setVolumeIcon();
     });
     $("#mute").click(function(event) {
-        $("#audio")[0].volume = 0;
-        $("#volume").val(0);
+        if ($("#volume").val() == 0) {
+            $("#audio")[0].volume = preMuteVolume;
+            $("#volume").val(preMuteVolume);
+        } else {
+            preMuteVolume = $("#audio")[0].volume;
+            $("#audio")[0].volume = 0;
+            $("#volume").val(0);
+        }
+        setVolumeIcon();
     });
 });

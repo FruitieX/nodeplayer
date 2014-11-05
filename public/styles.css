@@ -1,9 +1,9 @@
-.title {
+.big {
     color: #444;
     font-size: 20px;
 }
 
-.artist {
+.small {
     color: #666;
     font-size: 15px;
 }
@@ -17,18 +17,24 @@
 }
 .arrows {
     color: #aaa;
-    font-size:20px;
-    width:60px;
-    float:left;
+    font-size:40px;
     height:100%;
-    padding-left:10px;
+    cursor:pointer;
+}
+.left {
+    float:left;
+    display:inline-block;
+}
+.right {
+    float:right;
+    display:inline-block;
 }
 
 .uparrow {
-    height:50%;
+    float:right;
 }
 .downarrow {
-    height:50%;
+    float:left;
 }
 
 .uparrow:hover {
