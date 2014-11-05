@@ -71,7 +71,7 @@ var vote = function(id, vote) {
 };
 
 var appendQueue = function(searchID) {
-    if (!searchID) return;
+    if (searchID !== 0 && !searchID) return;
     $.ajax({
         type: 'POST',
         url: '/queue',
