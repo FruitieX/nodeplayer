@@ -72,7 +72,7 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
     if(fs.existsSync(filePath)) {
         // song was found from cache
         if(callback)
-            callback(filePath);
+            callback();
         return;
     } else {
         // song had to be downloaded

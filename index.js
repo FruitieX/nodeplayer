@@ -61,11 +61,13 @@ var queueCheck = function() {
             });
             nowPlaying.playbackStart = new Date();
 
+            var songTimeout = parseInt(nowPlaying.duration) + config.songDelayMs;
             setTimeout(function() {
+                console.log('end of song ' + nowPlaying.id);
                 nowPlaying = null;
                 queueCheck();
                 io.emit('queue', [nowPlaying, queue]);
-            }, nowPlaying.duration + config.songDelayMs);
+            }, songTimeout);
         }
 
         // prepare next song in queue
