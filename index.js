@@ -12,7 +12,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 
-var probe = require('node-ffprobe');
+var ipfilter = require('express-ipfilter');
 
 var queue = [];
 var nowPlaying;
@@ -263,6 +263,9 @@ io.on('connection', function(socket) {
 });
 
 console.log('listening on port ' + (process.env.PORT || 8080));
+
+var checkIP = ipfilter(config.streamIPs, {mode: 'allow', log: config.log});
+app.use('/song', checkIP);
 
 // init backends
 var backends = {};
