@@ -8,7 +8,7 @@ config.badVotePercent = 0.67;
 config.songDelayMs = 1000;
 config.log = true;
 
-// supports IPs, CIDR subnets, ranges
-config.streamIPs = ['127.0.0.1', '192.168.0.0/24', ['10.8.0.0', '10.8.0.10']]
+// list of IP addresses in CIDR format that are allowed to stream music
+config.streamIPs = ['10.8.0.1/24', '127.0.0.1/32']
 
 module.exports = config;
