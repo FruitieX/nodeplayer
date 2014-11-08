@@ -11,7 +11,7 @@ var fs = require('fs');
 // cache songID to disk.
 // on success: callback must be called with file path as argument
 // on failure: errCallback must be called with error message
-dummyBackend.cache = function(songID, callback, errCallback) {
+dummyBackend.prepareSong = function(songID, callback, errCallback) {
     console.log("dummyBackend.cache");
     var filePath = config.songCachePath + '/dummy/music.mp3';
 
