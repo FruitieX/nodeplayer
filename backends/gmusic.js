@@ -30,7 +30,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                     console.log('download finished ' + songID);
                     fs.closeSync(songFd);
                     if(callback)
-                        callback(filePath);
+                        callback();
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
                     fs.closeSync(songFd);
@@ -64,9 +64,9 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
 };
 
 // cache songID to disk.
-// on success: callback must be called with file path as argument
+// on success: callback must be called
 // on failure: errCallback must be called with error message
-gmusicBackend.cache = function(songID, callback, errCallback) {
+gmusicBackend.prepareSong = function(songID, callback, errCallback) {
     var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
 
     if(fs.existsSync(filePath)) {

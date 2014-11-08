@@ -26,7 +26,7 @@ setup
 
 1. install `ffmpeg` - needed to determine exact length of songs
 2. configure partyplay:
-    * `cp partyPlayConfig.js.example ~/.partyplayConfig.js`
+    * `cp partyPlayConfigDefaults.js ~/.partyplayConfig.js`
     * edit `~/.partyPlayConfig.js`
 3. install dependencies:
     * run `npm install`

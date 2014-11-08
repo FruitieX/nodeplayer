@@ -20,7 +20,7 @@ var nowPlaying;
 // to be called whenever the queue has been modified
 // this function will:
 // - play back the first song in the queue if no song is playing
-// - precache first and second songs in the queue
+// - prepare first and second songs in the queue
 var queueCheck = function() {
     if(!queue.length) {
         console.log('end of queue, waiting for more songs');
@@ -49,46 +49,35 @@ var queueCheck = function() {
     }
 
     // TODO: error handling if backends[...] is undefined
-    // pre-cache now playing
-    backends[nowPlaying.backend].cache(nowPlaying.id, function(filePath) {
+    // prepare now playing song
+    backends[nowPlaying.backend].prepareSong(nowPlaying.id, function() {
         if(startPlayingNext) {
-            var probeCallback = function(err, probeData) {
-                console.log('playing song: ' + nowPlaying.id);
-                var accurateDuration = nowPlaying.duration;
-                if(probeData)
-                    accurateDuration = probeData.format.duration * 1000;
+            console.log('playing song: ' + nowPlaying.id);
 
-                io.emit('playback', {
-                    songID: nowPlaying.id,
-                    backend: nowPlaying.backend,
-                    duration: accurateDuration
-                });
-                nowPlaying.playbackStart = new Date();
-                nowPlaying.duration = accurateDuration;
+            io.emit('playback', {
+                songID: nowPlaying.id,
+                backend: nowPlaying.backend,
+                duration: nowPlaying.duration
+            });
+            nowPlaying.playbackStart = new Date();
 
-                setTimeout(function() {
-                    nowPlaying = null;
-                    queueCheck();
-                    io.emit('queue', [nowPlaying, queue]);
-                }, accurateDuration + config.songDelayMs);
-            }
-
-            if(filePath)
-                probe(filePath, probeCallback);
-            else
-                probeCallback();
+            setTimeout(function() {
+                nowPlaying = null;
+                queueCheck();
+                io.emit('queue', [nowPlaying, queue]);
+            }, nowPlaying.duration + config.songDelayMs);
         }
 
-        // pre-cache next song in queue
+        // prepare next song in queue
         if(queue.length) {
-            backends[queue[0].backend].cache(queue[0].id, function() {
-                console.log('successfully pre-cached ' + queue[0].id);
+            backends[queue[0].backend].prepareSong(queue[0].id, function() {
+                console.log('successfully prepared ' + queue[0].id);
             }, function(err) {
                 console.log(err);
                 cleanupSong(queue[0].id);
             });
         } else {
-            console.log('nothing to pre-cache');
+            console.log('no songs in queue to prepare');
         }
     }, function(err) {
         console.log(err);
@@ -276,7 +265,7 @@ console.log('listening on port ' + (process.env.PORT || 8080));
 // init backends
 var backends = {};
 for(var i = 0; i < config.backendServices.length; i++) {
-    // TODO: remove ./ when done debugging
+    // TODO: put backend modules into npm
     var backend = require('./backends/' + config.backendServices[i]);
     var backendName = config.backendServices[i];
 
@@ -285,11 +274,9 @@ for(var i = 0; i < config.backendServices.length; i++) {
     });
 
     backends[backendName] = {};
-    backends[backendName].cache = backend.cache;
+    backends[backendName].prepareSong = backend.prepareSong;
     backends[backendName].search = backend.search;
     app.use('/song/' + backendName, backend.middleware);
 }
 
-// TODO: needed?
-express.static.mime.define({'audio/mpeg': ['mp3']});
 app.use(express.static(__dirname + '/public'));
