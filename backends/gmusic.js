@@ -63,11 +63,17 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     }
 };
 
+var pendingSongs = {};
 // cache songID to disk.
 // on success: callback must be called
 // on failure: errCallback must be called with error message
 gmusicBackend.prepareSong = function(songID, callback, errCallback) {
     var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
+
+    // song is already downloading
+    if(pendingSongs[songID]) {
+        return;
+    }
 
     if(fs.existsSync(filePath)) {
         // song was found from cache
@@ -76,7 +82,14 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
         return;
     } else {
         // song had to be downloaded
-        gmusicDownload(null, songID, callback, errCallback);
+        pendingSongs[songID] = true;
+        gmusicDownload(null, songID, function() {
+            delete(pendingSongs[songID]);
+            callback();
+        }, function() {
+            delete(pendingSongs[songID]);
+            errCallback();
+        });
     }
 };
 
