@@ -86,9 +86,9 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
         gmusicDownload(null, songID, function() {
             delete(pendingSongs[songID]);
             callback();
-        }, function() {
+        }, function(err) {
             delete(pendingSongs[songID]);
-            errCallback();
+            errCallback(err);
         });
     }
 };

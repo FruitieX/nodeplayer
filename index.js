@@ -74,7 +74,7 @@ var queueCheck = function() {
         // prepare next song in queue
         if(queue.length) {
             backends[queue[0].backend].prepareSong(queue[0].id, function() {
-                console.log('successfully prepared ' + queue[0].id);
+                // do nothing
             }, function(err) {
                 console.log(err);
                 cleanupSong(queue[0].id);

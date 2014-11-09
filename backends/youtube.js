@@ -21,12 +21,14 @@ var youtubeDownload = function(songID, callback, errCallback) {
     .audioCodec('libvorbis')
     .audioBitrate('320k')
     .on('end', function() {
+        console.log('successfully transcoded ' + songID);
         callback();
     })
     .on('error', function(err) {
         errCallback('youtube: error while transcoding ' + songID + ': ' + err);
     })
     .save(filePath);
+    console.log('transcoding ' + songID + '...');
 };
 
 var pendingSongs = {};
@@ -52,9 +54,9 @@ youtubeBackend.prepareSong = function(songID, callback, errCallback) {
         youtubeDownload(songID, function() {
             delete(pendingSongs[songID]);
             callback();
-        }, function() {
+        }, function(err) {
             delete(pendingSongs[songID]);
-            errCallback();
+            errCallback(err);
         });
     }
 };
