@@ -13,13 +13,13 @@ var youtubeBackend = {};
 var musicCategoryId = '';
 
 var youtubeDownload = function(songID, callback, errCallback) {
-    var filePath = config.songCachePath + '/youtube/' + songID + '.ogg';
+    var filePath = config.songCachePath + '/youtube/' + songID + '.opus';
 
     var stream = ytdl('http://www.youtube.com/watch?v=' + songID)
     ffmpeg(stream)
     .noVideo()
-    .audioCodec('libvorbis')
-    .audioBitrate('320k')
+    .audioCodec('libopus')
+    .audioBitrate('192')
     .on('end', function() {
         console.log('successfully transcoded ' + songID);
         callback();
@@ -39,7 +39,7 @@ var pendingCallbacks = {};
 // on success: callback must be called
 // on failure: errCallback must be called with error message
 youtubeBackend.prepareSong = function(songID, callback, errCallback) {
-    var filePath = config.songCachePath + '/youtube/' + songID + '.ogg';
+    var filePath = config.songCachePath + '/youtube/' + songID + '.opus';
 
     // song is already downloading, run callback function when its done
     if(pendingCallbacks[songID]) {
@@ -175,7 +175,7 @@ youtubeBackend.search = function(terms, callback, errCallback) {
                             duration: durations[jsonData.items[i].id.videoId],
                             id: jsonData.items[i].id.videoId,
                             backend: 'youtube',
-                            format: 'ogg'
+                            format: 'opus'
                         };
                     }
                     callback(songs);
