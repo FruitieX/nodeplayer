@@ -31,7 +31,7 @@ var queueCheck = function() {
     if(!nowPlaying) {
         // play song
         nowPlaying = queue.shift();
-        cleanupSong(nowPlaying.id);
+        removeFromQueue(nowPlaying.id);
         startPlayingNext = true;
 
         for (var i = queue.length - 1; i >= 0; i--) {
@@ -43,7 +43,7 @@ var queueCheck = function() {
             var totalVotes = numDownVotes + numUpVotes;
             if(numDownVotes / totalVotes > config.badVotePercent) {
                 console.log('song ' + queue[i].id + ' removed due to downvotes');
-                cleanupSong(queue[i].id);
+                removeFromQueue(queue[i].id);
             }
         }
     }
@@ -76,15 +76,17 @@ var queueCheck = function() {
             backends[queue[0].backend].prepareSong(queue[0].id, function() {
                 // do nothing
             }, function(err) {
-                console.log(err);
-                cleanupSong(queue[0].id);
+                console.log('error! removing song from queue ' + queue[0].id);
+                removeFromQueue(queue[0].id);
+                io.emit('queue', [nowPlaying, queue]);
             });
         } else {
             console.log('no songs in queue to prepare');
         }
     }, function(err) {
-        console.log(err);
-        cleanupSong(nowPlaying.id);
+        console.log('error! removing song from queue ' + nowPlaying.id);
+        removeFromQueue(nowPlaying.id);
+        io.emit('queue', [nowPlaying, queue]);
     });
 };
 
@@ -110,7 +112,7 @@ var searchQueue = function(songID) {
 };
 
 // get rid of song in queue
-var cleanupSong = function(songID) {
+var removeFromQueue = function(songID) {
     for(var i = 0; i < queue.length; i++) {
         if(queue[i].id === songID) {
             queue.splice(i, 1);

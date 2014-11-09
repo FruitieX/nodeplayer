@@ -25,21 +25,26 @@ var youtubeDownload = function(songID, callback, errCallback) {
         callback();
     })
     .on('error', function(err) {
-        errCallback('youtube: error while transcoding ' + songID + ': ' + err);
+        console.log('youtube: error while transcoding ' + songID + ': ' + err);
+        if(fs.existsSync(filePath))
+            fs.unlinkSync(filePath);
+        errCallback();
     })
     .save(filePath);
     console.log('transcoding ' + songID + '...');
 };
 
-var pendingSongs = {};
+var pendingCallbacks = {};
 // cache songID to disk.
 // on success: callback must be called
 // on failure: errCallback must be called with error message
 youtubeBackend.prepareSong = function(songID, callback, errCallback) {
     var filePath = config.songCachePath + '/youtube/' + songID + '.ogg';
 
-    // song is already downloading
-    if(pendingSongs[songID]) {
+    // song is already downloading, run callback function when its done
+    if(pendingCallbacks[songID]) {
+        pendingCallbacks[songID].successCallbacks.push(callback);
+        pendingCallbacks[songID].errorCallbacks.push(errCallback);
         return;
     }
 
@@ -50,13 +55,21 @@ youtubeBackend.prepareSong = function(songID, callback, errCallback) {
         return;
     } else {
         // song had to be downloaded
-        pendingSongs[songID] = true;
+        pendingCallbacks[songID] = {
+            successCallbacks: [callback],
+            errorCallbacks: [errCallback]
+        }
+
         youtubeDownload(songID, function() {
-            delete(pendingSongs[songID]);
-            callback();
-        }, function(err) {
-            delete(pendingSongs[songID]);
-            errCallback(err);
+            for(var i = 0; i < pendingCallbacks[songID].successCallbacks.length; i++)
+                pendingCallbacks[songID].successCallbacks[i]();
+
+            delete(pendingCallbacks[songID]);
+        }, function() {
+            for(var i = 0; i < pendingCallbacks[songID].errorCallbacks.length; i++)
+                pendingCallbacks[songID].errorCallbacks[i]();
+
+            delete(pendingCallbacks[songID]);
         });
     }
 };
