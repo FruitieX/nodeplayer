@@ -8,7 +8,9 @@ config.badVotePercent = 0.67;
 config.songDelayMs = 1000;
 config.log = true;
 
-// list of IP addresses (CIDR) that are allowed to stream
-config.streamIPs = ['10.8.0.0/24', '127.0.0.1']
+// IP filter for listener
+config.filterStreamIPs = ['10.8.0.0/24', '127.0.0.1'];
+// is the above a blacklist (deny) or whitelist (allow)?
+config.filterAction = 'allow';
 
 module.exports = config;

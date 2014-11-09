@@ -285,7 +285,7 @@ io.on('connection', function(socket) {
 
 console.log('listening on port ' + (process.env.PORT || 8080));
 
-var checkIP = ipfilter(config.streamIPs, {mode: 'allow', log: config.log, cidr: true});
+var checkIP = ipfilter(config.filterStreamIPs, {mode: config.filterAction, log: config.log, cidr: true});
 app.use('/song', checkIP);
 
 // init backends
