@@ -8,7 +8,7 @@ config.badVotePercent = 0.67;
 config.songDelayMs = 1000;
 config.log = true;
 
-// list of IP addresses in CIDR format that are allowed to stream music
-config.streamIPs = ['10.8.0.1/24', '127.0.0.1/32']
+// list of IP addresses (CIDR) that are allowed to stream
+config.streamIPs = ['10.8.0.0/24', '127.0.0.1']
 
 module.exports = config;
