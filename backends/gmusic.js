@@ -36,7 +36,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                     fs.closeSync(songFd);
                     fs.unlinkSync(config.songCachePath + '/gmusic/' + songID + '.mp3');
                     if(errCallback)
-                        errCallback('error while pre-caching ' + songID);
+                        errCallback();
                 }
             });
         });
@@ -72,6 +72,8 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
 
     // song is already downloading
     if(pendingSongs[songID]) {
+        pendingCallbacks[songID].successCallbacks.push(callback);
+        pendingCallbacks[songID].errorCallbacks.push(errCallback);
         return;
     }
 
@@ -82,13 +84,21 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
         return;
     } else {
         // song had to be downloaded
-        pendingSongs[songID] = true;
+        pendingCallbacks[songID] = {
+            successCallbacks: [callback],
+            errorCallbacks: [errCallback]
+        }
+
         gmusicDownload(null, songID, function() {
-            delete(pendingSongs[songID]);
-            callback();
-        }, function(err) {
-            delete(pendingSongs[songID]);
-            errCallback(err);
+            for(var i = 0; i < pendingCallbacks[songID].successCallbacks.length; i++)
+                pendingCallbacks[songID].successCallbacks[i]();
+
+            delete(pendingCallbacks[songID]);
+        }, function() {
+            for(var i = 0; i < pendingCallbacks[songID].errorCallbacks.length; i++)
+                pendingCallbacks[songID].errorCallbacks[i]();
+
+            delete(pendingCallbacks[songID]);
         });
     }
 };
