@@ -1,15 +1,15 @@
 partyplay
 =========
 
-party playlist manager for cloud music services
+party playlist manager
 
-for personal use only - make sure you configure IP filtering properly so that
-others can't access your music
+disclaimer: for personal use only - make sure you configure IP filtering
+properly so that others can't access your music
 
 features
 --------
 
-* services as modules:
+* backend services as modules:
   * gmusic
   * spotify (TODO)
   * youtube (TODO)
