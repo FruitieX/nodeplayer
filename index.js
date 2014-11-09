@@ -56,6 +56,7 @@ var queueCheck = function() {
 
             io.emit('playback', {
                 songID: nowPlaying.id,
+                format: nowPlaying.format,
                 backend: nowPlaying.backend,
                 duration: nowPlaying.duration
             });
@@ -254,6 +255,7 @@ io.on('connection', function(socket) {
     if(nowPlaying) {
         socket.emit('playback', {
             songID: nowPlaying.id,
+            format: nowPlaying.format,
             backend: nowPlaying.backend,
             duration: nowPlaying.duration,
             position: new Date() - nowPlaying.playbackStart
@@ -275,13 +277,15 @@ for(var i = 0; i < config.backendServices.length; i++) {
     var backendName = config.backendServices[i];
 
     backend.init(config, function() {
-        console.log('backend ' + backendName + ' initialized');
-    });
+        backends[backendName] = {};
+        backends[backendName].prepareSong = backend.prepareSong;
+        backends[backendName].search = backend.search;
+        app.use('/song/' + backendName, backend.middleware);
 
-    backends[backendName] = {};
-    backends[backendName].prepareSong = backend.prepareSong;
-    backends[backendName].search = backend.search;
-    app.use('/song/' + backendName, backend.middleware);
+        console.log('backend ' + backendName + ' initialized');
+    }, function(err) {
+        console.log('error ' + err + ' while initializing ' +  backendName);
+    });
 }
 
 app.use(express.static(__dirname + '/public'));

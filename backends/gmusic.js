@@ -114,7 +114,8 @@ gmusicBackend.search = function(terms, callback, errCallback) {
                     album: songs[i].track.album,
                     duration: songs[i].track.durationMillis,
                     id: songs[i].track.nid,
-                    backend: 'gmusic'
+                    backend: 'gmusic',
+                    format: 'mp3'
                 };
             }
         }
