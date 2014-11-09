@@ -102,7 +102,7 @@ var ytDurationToMillis = function(ytDuration) {
     return seconds * 1000;
 };
 
-var getSongDurations = function(ids, callback) {
+var getSongDurations = function(ids, callback, errCallback) {
     var url = 'https://www.googleapis.com/youtube/v3/videos?'
             + 'id=' + ids.join(',')
             + '&'

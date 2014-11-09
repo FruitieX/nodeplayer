@@ -63,7 +63,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     }
 };
 
-var pendingSongs = {};
+var pendingCallbacks = {};
 // cache songID to disk.
 // on success: callback must be called
 // on failure: errCallback must be called with error message
@@ -71,7 +71,7 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
     var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
 
     // song is already downloading
-    if(pendingSongs[songID]) {
+    if(pendingCallbacks[songID]) {
         pendingCallbacks[songID].successCallbacks.push(callback);
         pendingCallbacks[songID].errorCallbacks.push(errCallback);
         return;

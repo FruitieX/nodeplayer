@@ -25,7 +25,7 @@ dummyBackend.prepareSong = function(songID, callback, errCallback) {
         // simulate with arbitrary 3 second delay
         setTimeout(function() {
             callback(filePath);
-        }, 3000);
+        }, 500);
     }
 };
 dummyBackend.search = function(terms, callback, errCallback) {

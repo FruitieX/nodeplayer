@@ -241,13 +241,30 @@ app.post('/queue', bodyParser.json(), function(req, res) {
 app.get('/search/:terms', function(req, res) {
     console.log('got search request: ' + req.params.terms);
 
+    var resultCnt = 0;
+    var results = [];
+
     for(var backend in backends) {
-        backends[backend].search(req.params.terms, function(songs) {
-            res.send(JSON.stringify(songs));
-        }, function(err) {
-            console.log(err);
-            res.status(404).send(err);
-        });
+        (function(backend) {
+            backends[backend].search(req.params.terms, function(songs) {
+                resultCnt++;
+
+                for(song in songs) {
+                    results.push(songs[song]);
+                }
+
+                // got results from all services?
+                if(resultCnt >= Object.keys(backends).length)
+                    res.send(JSON.stringify(results));
+            }, function(err) {
+                resultCnt++;
+                console.log(err);
+
+                // got results from all services?
+                if(resultCnt >= Object.keys(backends).length)
+                    res.send(JSON.stringify(results));
+            });
+        })(backend);
     }
 });
 
@@ -275,19 +292,23 @@ app.use('/song', checkIP);
 var backends = {};
 for(var i = 0; i < config.backendServices.length; i++) {
     // TODO: put backend modules into npm
-    var backend = require('./backends/' + config.backendServices[i]);
-    var backendName = config.backendServices[i];
+    (function(i) {
+        var backend = require('./backends/' + config.backendServices[i]);
 
-    backend.init(config, function() {
-        backends[backendName] = {};
-        backends[backendName].prepareSong = backend.prepareSong;
-        backends[backendName].search = backend.search;
-        app.use('/song/' + backendName, backend.middleware);
+        backend.init(config, function() {
+            var backendName = config.backendServices[i];
 
-        console.log('backend ' + backendName + ' initialized');
-    }, function(err) {
-        console.log('error ' + err + ' while initializing ' +  backendName);
-    });
+            backends[backendName] = {};
+            backends[backendName].prepareSong = backend.prepareSong;
+            backends[backendName].search = backend.search;
+            app.use('/song/' + backendName, backend.middleware);
+
+            console.log('backend ' + backendName + ' initialized');
+            }, function(err) {
+                console.log('error ' + err + ' while initializing ' +  backendName);
+            }
+        );
+    })(i);
 }
 
 app.use(express.static(__dirname + '/public'));
