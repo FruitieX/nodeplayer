@@ -3,7 +3,8 @@ partyplay
 
 party playlist manager for cloud music services
 
-for personal use only
+for personal use only - make sure you configure IP filtering properly so that
+others can't access your music
 
 features
 --------
