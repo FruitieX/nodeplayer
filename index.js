@@ -103,25 +103,26 @@ var onQueueModify = function() {
             }, songTimeout);
         }
 
-        // prepare next song in queue
+        // TODO: support pre-caching multiple songs at once if configured so
+        // prepare next song(s) in queue
         if(_playerState.queue.length) {
             _playerState.backends[_playerState.queue[0].backend].prepareSong(_playerState.queue[0].id, function() {
-                _callHooks('onNextSongPrepared', [_playerState]);
+                _callHooks('onNextSongPrepared', [_playerState, 0]);
                 // do nothing
             }, function(err) {
-                _callHooks('onNextSongPrepareError', [_playerState]);
                 console.log('error! removing song from queue ' + _playerState.queue[0].id);
+                _callHooks('onNextSongPrepareError', [_playerState, 0]);
                 removeFromQueue(_playerState.queue[0].id);
                 // TODO: socket.io frontend
                 //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             });
         } else {
-            _callHooks('onNothingToPrepare', [_playerState]);
             console.log('no songs in queue to prepare');
+            _callHooks('onNothingToPrepare', [_playerState]);
         }
     }, function(err) {
-        _callHooks('onSongPrepareError', [_playerState]);
         console.log('error! removing song from queue ' + _playerState.nowPlaying.id);
+        _callHooks('onSongPrepareError', [_playerState]);
         removeFromQueue(_playerState.nowPlaying.id);
         // TODO: socket.io frontend
         //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
