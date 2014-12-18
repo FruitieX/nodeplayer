@@ -12,11 +12,15 @@ var gmusicBackend = {};
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     var doDownload = function(streamUrl) {
         console.log('downloading song ' + songID);
+
+        // download to incomplete/ directory, move it out of there once done
+        // this is to safeguard against partyplay crashes and storing an
+        // incomplete download in the song cache
+        var incompleteFilePath = config.songCachePath + '/gmusic/incomplete/' + songID + '.mp3';
         var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
-        var songFd = fs.openSync(filePath, 'w');
+        var songFd = fs.openSync(incompleteFilePath, 'w');
 
         var req = https.request(streamUrl, function(res) {
-
             res.on('data', function(chunk) {
                 fs.writeSync(songFd, chunk, 0, chunk.length, null);
             });
@@ -24,17 +28,18 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 if(res.statusCode === 302) { // redirect
                     console.log('redirected. retrying with new URL');
                     fs.closeSync(songFd);
-                    fs.unlinkSync(config.songCachePath + '/gmusic/' + songID + '.mp3');
+                    fs.unlinkSync(incompleteFilePath);
                     gmusicDownload(res.headers.location, songID, callback, errCallback);
                 } else if(res.statusCode === 200) {
                     console.log('download finished ' + songID);
                     fs.closeSync(songFd);
+                    fs.renameSync(incompleteFilePath, filePath);
                     if(callback)
                         callback();
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
                     fs.closeSync(songFd);
-                    fs.unlinkSync(config.songCachePath + '/gmusic/' + songID + '.mp3');
+                    fs.unlinkSync(incompleteFilePath);
                     if(errCallback)
                         errCallback();
                 }
@@ -63,7 +68,10 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     }
 };
 
+// callbacks for in progress downloads are stored here
+// this way we can reject any possible duplicate download requests
 var pendingCallbacks = {};
+
 // cache songID to disk.
 // on success: callback must be called
 // on failure: errCallback must be called with error message
@@ -140,9 +148,10 @@ gmusicBackend.search = function(terms, callback, errCallback) {
 // do any necessary initialization here
 gmusicBackend.init = function(_config, callback) {
     config = _config;
-    gmusicBackend.pm = new PlayMusic();
-    mkdirp(config.songCachePath + '/gmusic');
+    mkdirp(config.songCachePath + '/gmusic/incomplete');
 
+    // initialize google play music backend
+    gmusicBackend.pm = new PlayMusic();
     gmusicBackend.pm.init(creds, callback);
 };
 

@@ -18,6 +18,7 @@
     "playmusic": "^0.2.0",
     "send": "^0.10.1",
     "socket.io": "^1.2.0",
+    "underscore": "^1.7.0",
     "ytdl-core": "^0.2.4"
   }
 }
