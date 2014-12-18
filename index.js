@@ -78,12 +78,15 @@ var onQueueModify = function() {
         if(startPlayingNext) {
             console.log('playing song: ' + _playerState.nowPlaying.id);
 
+            // TODO: socket.io frontend
+            /*
             io.emit('playback', {
                 songID: _playerState.nowPlaying.id,
                 format: _playerState.nowPlaying.format,
                 backend: _playerState.nowPlaying.backend,
                 duration: _playerState.nowPlaying.duration
             });
+            */
             _playerState.nowPlaying.playbackStart = new Date();
 
             _callHooks('onSongChange', [_playerState]);
@@ -95,7 +98,8 @@ var onQueueModify = function() {
 
                 _playerState.nowPlaying = null;
                 onQueueModify();
-                io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+                // TODO: socket.io frontend
+                //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             }, songTimeout);
         }
 
@@ -108,7 +112,8 @@ var onQueueModify = function() {
                 _callHooks('onNextSongPrepareError', [_playerState]);
                 console.log('error! removing song from queue ' + _playerState.queue[0].id);
                 removeFromQueue(_playerState.queue[0].id);
-                io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+                // TODO: socket.io frontend
+                //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             });
         } else {
             _callHooks('onNothingToPrepare', [_playerState]);
@@ -118,7 +123,8 @@ var onQueueModify = function() {
         _callHooks('onSongPrepareError', [_playerState]);
         console.log('error! removing song from queue ' + _playerState.nowPlaying.id);
         removeFromQueue(_playerState.nowPlaying.id);
-        io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+        // TODO: socket.io frontend
+        //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
     });
 };
 
@@ -186,7 +192,7 @@ var addToQueue = function(song) {
         return 'duplicate songID';
     }
 
-    var err = _callHooks('preSongQueued', [_playerState]);
+    var err = _callHooks('preSongQueued', [_playerState, song]);
     if(err)
         return err;
 
@@ -202,8 +208,9 @@ var addToQueue = function(song) {
     onQueueModify();
 
     console.log('added song to queue: ' + queuedSong.id);
-    _callHooks('postSongQueued', [_playerState]);
-    io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+    _callHooks('postSongQueued', [_playerState, queuedSong]);
+    // TODO socket.io frontend
+    //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
 };
 
 // TODO: move to partyplay module
