@@ -38,7 +38,7 @@ var _callHooks = function(hook, argv) {
 // this function will:
 // - play back the first song in the queue if no song is playing
 // - prepare first and second songs in the queue
-var onQueueModify = function() {
+var _onQueueModify = function() {
     if(!_playerState.queue.length) {
         _callHooks('onEndOfQueue', [_playerState]);
         console.log('end of queue, waiting for more songs');
@@ -49,7 +49,7 @@ var onQueueModify = function() {
     if(!_playerState.nowPlaying) {
         // play song
         _playerState.nowPlaying = _playerState.queue.shift();
-        removeFromQueue(_playerState.nowPlaying.id);
+        _removeFromQueue(_playerState.nowPlaying.id);
         startPlayingNext = true;
 
 
@@ -64,7 +64,7 @@ var onQueueModify = function() {
             var totalVotes = numDownVotes + numUpVotes;
             if(numDownVotes / totalVotes > config.badVotePercent) {
                 console.log('song ' + _playerState.queue[i].id + ' removed due to downvotes');
-                removeFromQueue(_playerState.queue[i].id);
+                _removeFromQueue(_playerState.queue[i].id);
             }
         }
         */
@@ -97,7 +97,7 @@ var onQueueModify = function() {
                 _callHooks('onSongEnd', [_playerState]);
 
                 _playerState.nowPlaying = null;
-                onQueueModify();
+                _onQueueModify();
                 // TODO: socket.io frontend
                 //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             }, songTimeout);
@@ -112,7 +112,7 @@ var onQueueModify = function() {
             }, function(err) {
                 console.log('error! removing song from queue ' + _playerState.queue[0].id);
                 _callHooks('onNextSongPrepareError', [_playerState, 0]);
-                removeFromQueue(_playerState.queue[0].id);
+                _removeFromQueue(_playerState.queue[0].id);
                 // TODO: socket.io frontend
                 //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             });
@@ -123,7 +123,7 @@ var onQueueModify = function() {
     }, function(err) {
         console.log('error! removing song from queue ' + _playerState.nowPlaying.id);
         _callHooks('onSongPrepareError', [_playerState]);
-        removeFromQueue(_playerState.nowPlaying.id);
+        _removeFromQueue(_playerState.nowPlaying.id);
         // TODO: socket.io frontend
         //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
     });
@@ -141,7 +141,7 @@ var sortQueue = function() {
 */
 
 // find song from queue
-var searchQueue = function(songID) {
+var _searchQueue = function(songID) {
     for(var i = 0; i < _playerState.queue.length; i++) {
         if(_playerState.queue[i].id === songID)
             return _playerState.queue[i];
@@ -154,7 +154,7 @@ var searchQueue = function(songID) {
 };
 
 // get rid of song in queue
-var removeFromQueue = function(songID) {
+var _removeFromQueue = function(songID) {
     for(var i = 0; i < _playerState.queue.length; i++) {
         if(_playerState.queue[i].id === songID) {
             _playerState.queue.splice(i, 1);
@@ -164,7 +164,7 @@ var removeFromQueue = function(songID) {
 };
 
 // initialize song object
-var initializeSong = function(song) {
+var _initializeSong = function(song) {
     song.upVotes = {};
     song.downVotes = {};
     song.oldness = 0; // favor old songs
@@ -174,7 +174,7 @@ var initializeSong = function(song) {
     return song;
 };
 
-var addToQueue = function(song) {
+var _addToQueue = function(song) {
     // check that required fields are provided
     if(!song.title || !song.id || !song.duration) {
         return 'required song fields not provided';
@@ -187,7 +187,7 @@ var addToQueue = function(song) {
     }
 
     // if same song is already queued, don't create a duplicate
-    var queuedSong = searchQueue(song.id);
+    var queuedSong = _searchQueue(song.id);
     if(queuedSong) {
         console.log('not adding duplicate song to queue: ' + queuedSong.id);
         return 'duplicate songID';
@@ -198,7 +198,7 @@ var addToQueue = function(song) {
         return err;
 
     // no duplicate found, initialize a few properties of song
-    queuedSong = initializeSong(song);
+    queuedSong = _initializeSong(song);
 
     // TODO: partyplay onSongQueued()
     /*
@@ -206,7 +206,7 @@ var addToQueue = function(song) {
     voteSong(queuedSong, +1, userID);
     */
 
-    onQueueModify();
+    _onQueueModify();
 
     console.log('added song to queue: ' + queuedSong.id);
     _callHooks('postSongQueued', [_playerState, queuedSong]);
@@ -247,13 +247,13 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
         res.status(404).send('please provide both userID and vote in the body');
     }
 
-    var queuedSong = searchQueue(songID);
+    var queuedSong = _searchQueue(songID);
     if(!queuedSong) {
         res.status(404).send('song not found');
     }
 
     voteSong(queuedSong, vote, userID);
-    onQueueModify();
+    _onQueueModify();
     io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
 
     console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
@@ -294,7 +294,7 @@ app.get('/queue', function(req, res) {
 
 // queue song
 app.post('/queue', bodyParser.json(), function(req, res) {
-    var err = addToQueue(req.body.song);
+    var err = _addToQueue(req.body.song);
     if(err)
         res.status(404).send(err);
     else
