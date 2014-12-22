@@ -10,7 +10,11 @@ partyplay.init = function(_player, callback, errCallback) {
     if(!player.expressApp) {
         errCallback('module must be initialized after expressjs module!');
     } else if(!player.socketio) {
+        // partyplay client depends on socketio module
         errCallback('module must be initialized after socketio module!');
+    } else if(!player.rest) {
+        // partyplay client depends on rest module
+        errCallback('module must be initialized after rest module!');
     } else {
         player.expressApp.use(express.static(__dirname + '/partyplay'));
 
