@@ -56,14 +56,6 @@ partyplay.onPluginsInitialized = function(player) {
         console.log('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
 };
 
-// check that song was added by valid user ID
-partyplay.preSongQueued = function(player, song, metadata) {
-    // TODO: actually validate the ID?
-    if(!metadata.userID) {
-        return 'invalid userID';
-    }
-};
-
 // automatically add an upvote after user has added a song
 partyplay.postSongQueued = function(player, song, metadata) {
     voteSong(song, +1, metadata.userID);
@@ -72,6 +64,7 @@ partyplay.postSongQueued = function(player, song, metadata) {
 // remove extremely downvoted (bad) songs
 partyplay.onSongEnd = function(player) {
     for (var i = player.queue.length - 1; i >= 0; i--) {
+        // bump oldness parameter for all queued songs at song switch
         player.queue[i].oldness++;
 
         var numDownVotes = Object.keys(player.queue[i].downVotes).length;
@@ -84,19 +77,45 @@ partyplay.onSongEnd = function(player) {
     }
 };
 
-// check duration of song
-partyplay.preSongQueued = function(player, song, metadata) {
+var checkDuration = function(song) {
+    // check duration of song
     if(song.duration > config.songMaxDuration) {
         return "partyplay: song duration too long";
     }
+}
+
+partyplay.preSongQueued = function(player, song, metadata) {
+    if(checkDuration(song)) {
+        return checkDuration(song);
+    }
+    else if(!metadata.userID) {
+        // TODO: actually validate the ID?
+        // check valid ID
+        return 'invalid userID';
+    } else {
+        // initialize song fields used by partyplay
+        song.upVotes = {};
+        song.downVotes = {};
+        song.oldness = 0; // favor old songs
+    }
 };
-partyplay.preAddSearchResult = partyplay.preSongQueued;
+partyplay.preAddSearchResult = function(player, song) {
+    if(checkDuration(song)) {
+        return checkDuration(song);
+    }
+};
 
 // sort queue according to votes
 partyplay.sortQueue = function(player) {
     player.queue.sort(function(a, b) {
-        return ((b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
-               (a.oldness + Object.keys(a.upVotes).length - Object.keys(a.downVotes).length));
+        var aVotes = a.oldness + Object.keys(a.upVotes).length - Object.keys(a.downVotes).length;
+        var bVotes = b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length;
+        if(aVotes !== bVotes)
+            // ordering first determined by votes + oldness
+            return (bVotes - aVotes);
+        else
+            // if votes equal, prioritize song that has waited longer
+            return a.timeAdded - b.timeAdded;
     });
 };
 

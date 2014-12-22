@@ -138,10 +138,8 @@ _playerState.removeFromQueue = _removeFromQueue;
 // TODO: partyplay specific stuff
 // initialize song object
 var _initializeSong = function(song) {
-    song.upVotes = {};
-    song.downVotes = {};
-    song.oldness = 0; // favor old songs
     song.playbackStart = null;
+    song.timeAdded = new Date().getTime();
 
     _playerState.queue.push(song);
     return song;
