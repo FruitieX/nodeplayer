@@ -20,13 +20,13 @@ partyplay.init = function(_player, callback, errCallback) {
                 res.status(404).send('please provide both userID and vote in the body');
             }
 
-            var queuedSong = _searchQueue(songID);
+            var queuedSong = player.searchQueue(songID);
             if(!queuedSong) {
                 res.status(404).send('song not found');
             }
 
             voteSong(queuedSong, vote, userID);
-            _onQueueModify();
+            player.onQueueModify();
             io.emit('queue', [player.nowPlaying, player.queue]);
 
             console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
@@ -101,7 +101,7 @@ var voteSong = function(song, vote, userID) {
         song.downVotes[userID] = true;
     }
 
-    _callHooks('sortQueue', [player]);
+    player.callHooks('sortQueue', [player]);
 };
 
 module.exports = partyplay;

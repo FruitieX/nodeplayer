@@ -1,6 +1,7 @@
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var url = require('url');
+var send = require('send');
 
 var rest = {};
 var config, player;
