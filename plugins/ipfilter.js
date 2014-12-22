@@ -12,6 +12,8 @@ ipfilter.init = function(_player, callback, errCallback) {
         // TODO: separate config file for plugins?
         var checkIP = filter(config.filterStreamIPs, {mode: config.filterAction, log: config.log, cidr: true});
         player.expressApp.use('/song', checkIP);
+
+        callback();
     }
 };
 
