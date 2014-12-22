@@ -139,14 +139,15 @@ var getSongDurations = function(ids, callback, errCallback) {
 // search for music from the backend
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
-youtubeBackend.search = function(terms, callback, errCallback) {
+youtubeBackend.search = function(query, callback, errCallback) {
     var jsonData = "";
     var url = 'https://www.googleapis.com/youtube/v3/search?'
             + querystring.stringify({
-                'q': terms,
+                'q': query.terms,
+                'pageToken': query.pageToken,
                 'type': 'video',
                 'part': 'snippet',
-                'maxResults': config.searchResultCnt + 1,
+                'maxResults': config.searchResultCnt,
                 'regionCode': 'FI', // TODO: put this into a youtube specific config file
                 'key': creds.apiKey
             });
@@ -157,9 +158,13 @@ youtubeBackend.search = function(terms, callback, errCallback) {
         });
         res.on('end', function() {
             jsonData = JSON.parse(jsonData);
-            var songs = [];
+            var results = {};
+            results.songs = {};
             var ids = [];
             if(jsonData.items) {
+                results.nextPageToken = jsonData.nextPageToken;
+                results.prevPageToken = jsonData.prevPageToken;
+
                 for(var i = 0; i < jsonData.items.length; i++) {
                     ids.push(jsonData.items[i].id.videoId);
                 }
@@ -167,18 +172,18 @@ youtubeBackend.search = function(terms, callback, errCallback) {
                 getSongDurations(ids, function(durations) {
                     for(var i = 0; i < jsonData.items.length; i++) {
                         var splitTitle = jsonData.items[i].snippet.title.split(/\s-\s(.+)?/);
-                        songs[i] = {
+                        results.songs[jsonData.items[i].id.videoId] = {
                             artist: splitTitle[0],
                             title: splitTitle[1],
                             album: null,
                             albumArt: jsonData.items[i].snippet.thumbnails.default,
                             duration: durations[jsonData.items[i].id.videoId],
-                            id: jsonData.items[i].id.videoId,
+                            songID: jsonData.items[i].id.videoId,
                             backend: 'youtube',
                             format: 'opus'
                         };
                     }
-                    callback(songs);
+                    callback(results);
                 }, function(err) {
                     errCallback(err);
                 });

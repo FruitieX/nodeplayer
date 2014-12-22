@@ -1,5 +1,5 @@
 var queue = [];
-var searchResults = [];
+var searchResults = {};
 var resultsCount = 10;
 var progress = {started: 0, interval: null};
 
@@ -24,26 +24,44 @@ var search = function() {
     var searchTerms = $("#search-terms").val();
     $("#search-button").prop('disabled', true);
 
-    $.ajax('/search/' + searchTerms).done(function(data) {
+    $.ajax({
+        type: 'POST',
+        url: '/search',
+        data: JSON.stringify({
+            terms: searchTerms
+            //pageToken: 0 // don't use unless you really want a specific page
+        }),
+        contentType: 'application/json'
+    })
+    .done(function(data) {
         searchResults = JSON.parse(data);
         $("#search-results").empty();
         $("#search-results-text").removeClass('hidden');
         $("#search-button").prop('disabled', false);
 
-        for (var i = 0; i < Math.min(searchResults.length, resultsCount); i++) {
-            $.tmpl( "searchTemplate", {
-                title: searchResults[i].title,
-                artist: searchResults[i].artist,
-                album: searchResults[i].album,
-                duration: durationToString(searchResults[i].duration / 1000),
-                searchID: i
-            }).appendTo("#search-results");
-        }
+        // TODO: separate backends somehow
+        // right now we just sort them by name and merge
+        var backendsInOrder = _.sortBy(_.keys(searchResults));
+        _.each(backendsInOrder, function(backendName) {
+            _.each(searchResults[backendName].songs, function(song) {
+                $.tmpl( "searchTemplate", {
+                    title: song.title,
+                    artist: song.artist,
+                    album: song.album,
+                    duration: durationToString(song.duration / 1000),
+                    songID: song.songID,
+                    backendName: backendName
+                }).appendTo("#search-results");
+            });
+        });
+        // TODO: pagination using backendResults.next/prevPageToken
+        /*
         if (searchResults.length > resultsCount) {
             $.tmpl( "ellipsisTemplate", {
                 title: "...",
             }).appendTo("#search-results");
         }
+        */
     }).fail(function() {
         $("#search-button").prop('disabled', false);
     });
@@ -85,13 +103,16 @@ var vote = function(id, vote) {
     });
 };
 
-var appendQueue = function(searchID) {
-    if (searchID !== 0 && !searchID) return;
+var appendQueue = function(backendName, songID) {
+    console.log(backendName, songID);
+    console.log(searchResults[backendName]);
+    if (songID !== 0 && !songID) return;
+    if (!backendName) return;
     $.ajax({
         type: 'POST',
         url: '/queue',
         data: JSON.stringify({
-            song: searchResults[searchID],
+            song: searchResults[backendName].songs[songID],
             userID: $.cookie('userID')
         }),
         contentType: 'application/json'
@@ -213,7 +234,7 @@ $(document).ready(function() {
 
     $.template( "queueTemplate", queueMarkup );
 
-    var searchResultMarkup = '<li class="list-group-item searchResult" id="${id}" onclick="appendQueue(${searchID})">'
+    var searchResultMarkup = '<li class="list-group-item searchResult" id="${id}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
         + '<div class="big"><b>${title}</b> - ${duration}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
         + '</li>';

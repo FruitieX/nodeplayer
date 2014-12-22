@@ -79,6 +79,14 @@ partyplay.onSongEnd = function(player) {
     }
 };
 
+// check duration of song
+partyplay.preSongQueued = function(player, song, metadata) {
+    if(song.duration > config.songMaxDuration) {
+        return "partyplay: song duration too long";
+    }
+};
+partyplay.preAddSearchResult = partyplay.preSongQueued;
+
 // sort queue according to votes
 partyplay.sortQueue = function(player) {
     player.queue.sort(function(a, b) {

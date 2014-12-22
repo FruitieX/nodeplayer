@@ -114,10 +114,13 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
 // search for music from the backend
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
-gmusicBackend.search = function(terms, callback, errCallback) {
-    gmusicBackend.pm.search(terms, config.searchResultCnt + 1, function(data) {
-        var songs = [];
+gmusicBackend.search = function(query, callback, errCallback) {
+    gmusicBackend.pm.search(query.terms, config.searchResultCnt, function(data) {
+        var songs;
+        var results = {};
+        results.songs = {};
 
+        console.log(data);
         if(data.entries) {
             songs = data.entries.sort(function(a, b) {
                 return a.score < b.score; // sort by score
@@ -126,19 +129,19 @@ gmusicBackend.search = function(terms, callback, errCallback) {
             });
 
             for(var i = 0; i < songs.length; i++) {
-                songs[i] = {
+                results.songs[songs[i].track.nid] = {
                     artist: songs[i].track.artist,
                     title: songs[i].track.title,
                     album: songs[i].track.album,
                     duration: songs[i].track.durationMillis,
-                    id: songs[i].track.nid,
+                    songID: songs[i].track.nid,
                     backend: 'gmusic',
                     format: 'mp3'
                 };
             }
         }
 
-        callback(songs);
+        callback(results);
     }, function(err) {
         errCallback('error while searching gmusic: ' + err);
     });

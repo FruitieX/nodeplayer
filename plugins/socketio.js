@@ -16,7 +16,7 @@ socketio.init = function(_player, callback, errCallback) {
         socketio.io.on('connection', function(socket) {
             if(player.nowPlaying) {
                 socket.emit('playback', {
-                    songID: player.nowPlaying.id,
+                    songID: player.nowPlaying.songID,
                     format: player.nowPlaying.format,
                     backend: player.nowPlaying.backend,
                     duration: player.nowPlaying.duration,
@@ -36,7 +36,7 @@ socketio.init = function(_player, callback, errCallback) {
 // updates to queue
 socketio.onSongChange = function(player) {
     socketio.io.emit('playback', {
-        songID: player.nowPlaying.id,
+        songID: player.nowPlaying.songID,
         format: player.nowPlaying.format,
         backend: player.nowPlaying.backend,
         duration: player.nowPlaying.duration

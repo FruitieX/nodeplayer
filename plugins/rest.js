@@ -22,7 +22,7 @@ rest.init = function(_player, callback, errCallback) {
                     artist: player.nowPlaying.artist,
                     title: player.nowPlaying.title,
                     duration: player.nowPlaying.duration,
-                    id: player.nowPlaying.id,
+                    songID: player.nowPlaying.songID,
                     downVotes: player.nowPlaying.downVotes,
                     upVotes: player.nowPlaying.upVotes,
                     oldness: player.nowPlaying.oldness
@@ -33,7 +33,7 @@ rest.init = function(_player, callback, errCallback) {
                     artist: player.queue[i].artist,
                     title: player.queue[i].title,
                     duration: player.queue[i].duration,
-                    id: player.queue[i].id,
+                    songID: player.queue[i].songID,
                     downVotes: player.queue[i].downVotes,
                     upVotes: player.queue[i].upVotes,
                     oldness: player.queue[i].oldness
@@ -54,30 +54,38 @@ rest.init = function(_player, callback, errCallback) {
         });
 
         // search for song with given search terms
-        player.expressApp.get('/search/:terms', function(req, res) {
-            console.log('got search request: ' + req.params.terms);
+        player.expressApp.post('/search', bodyParser.json(), function(req, res) {
+            console.log('got search request: ' + req.body.terms);
 
             var resultCnt = 0;
-            var results = [];
+            var allResults = {};
 
             _.each(player.backends, function(backend) {
-                backend.search(req.params.terms, function(songs) {
+                backend.search(req.body, function(results) {
                     resultCnt++;
 
-                    _.each(songs, function(song) {
-                        results.push(song);
+                    // make a temporary copy of songlist, clear songlist, check
+                    // each song and add them again if they are ok
+                    var tempSongs = _.clone(results.songs);
+                    allResults[backend.name] = results;
+                    allResults[backend.name].songs = {};
+
+                    _.each(tempSongs, function(song) {
+                        var err = player.callHooks('preAddSearchResult', [player, song]);
+                        if(!err)
+                            allResults[backend.name].songs[song.songID] = song;
                     });
 
                     // got results from all services?
                     if(resultCnt >= Object.keys(player.backends).length)
-                        res.send(JSON.stringify(results));
+                        res.send(JSON.stringify(allResults));
                 }, function(err) {
                     resultCnt++;
                     console.log(err);
 
                     // got results from all services?
                     if(resultCnt >= Object.keys(player.backends).length)
-                        res.send(JSON.stringify(results));
+                        res.send(JSON.stringify(allResults));
                 });
             });
         });

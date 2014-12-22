@@ -57,17 +57,17 @@ var _onQueueModify = function() {
     if(!_playerState.nowPlaying) {
         // play song
         _playerState.nowPlaying = _playerState.queue.shift();
-        _removeFromQueue(_playerState.nowPlaying.id);
+        _removeFromQueue(_playerState.nowPlaying.songID);
         startPlayingNext = true;
     }
 
     // TODO: error handling if backends[...] is undefined
     // prepare now playing song
-    _playerState.backends[_playerState.nowPlaying.backend].prepareSong(_playerState.nowPlaying.id, function() {
+    _playerState.backends[_playerState.nowPlaying.backend].prepareSong(_playerState.nowPlaying.songID, function() {
         _callHooks('onSongPrepared', [_playerState]);
 
         if(startPlayingNext) {
-            console.log('playing song: ' + _playerState.nowPlaying.id);
+            console.log('playing song: ' + _playerState.nowPlaying.songID);
 
             _playerState.nowPlaying.playbackStart = new Date();
 
@@ -75,7 +75,7 @@ var _onQueueModify = function() {
 
             var songTimeout = parseInt(_playerState.nowPlaying.duration) + config.songDelayMs;
             setTimeout(function() {
-                console.log('end of song ' + _playerState.nowPlaying.id);
+                console.log('end of song ' + _playerState.nowPlaying.songID);
                 _callHooks('onSongEnd', [_playerState]);
 
                 _playerState.nowPlaying = null;
@@ -86,14 +86,14 @@ var _onQueueModify = function() {
         // TODO: support pre-caching multiple songs at once if configured so
         // prepare next song(s) in queue
         if(_playerState.queue.length) {
-            _playerState.backends[_playerState.queue[0].backend].prepareSong(_playerState.queue[0].id, function() {
+            _playerState.backends[_playerState.queue[0].backend].prepareSong(_playerState.queue[0].songID, function() {
                 _callHooks('onNextSongPrepared', [_playerState, 0]);
                 // do nothing
             }, function(err) {
                 // error pre-caching, get rid of this song
-                console.log('error! removing song from queue ' + _playerState.queue[0].id);
+                console.log('error! removing song from queue ' + _playerState.queue[0].songID);
                 _callHooks('onNextSongPrepareError', [_playerState, 0]);
-                _removeFromQueue(_playerState.queue[0].id);
+                _removeFromQueue(_playerState.queue[0].songID);
             });
         } else {
             console.log('no songs in queue to prepare');
@@ -101,9 +101,9 @@ var _onQueueModify = function() {
         }
     }, function(err) {
         // error pre-caching, get rid of this song
-        console.log('error! removing song from queue ' + _playerState.nowPlaying.id);
+        console.log('error! removing song from queue ' + _playerState.nowPlaying.songID);
         _callHooks('onSongPrepareError', [_playerState]);
-        _removeFromQueue(_playerState.nowPlaying.id);
+        _removeFromQueue(_playerState.nowPlaying.songID);
     });
 };
 _playerState.onQueueModify = _onQueueModify;
@@ -111,11 +111,11 @@ _playerState.onQueueModify = _onQueueModify;
 // find song from queue
 var _searchQueue = function(songID) {
     for(var i = 0; i < _playerState.queue.length; i++) {
-        if(_playerState.queue[i].id === songID)
+        if(_playerState.queue[i].songID === songID)
             return _playerState.queue[i];
     }
 
-    if(_playerState.nowPlaying && _playerState.nowPlaying.id === songID)
+    if(_playerState.nowPlaying && _playerState.nowPlaying.songID === songID)
         return _playerState.nowPlaying;
 
     return null;
@@ -125,7 +125,7 @@ _playerState.searchQueue = _searchQueue;
 // get rid of song in queue
 var _removeFromQueue = function(songID) {
     for(var i = 0; i < _playerState.queue.length; i++) {
-        if(_playerState.queue[i].id === songID) {
+        if(_playerState.queue[i].songID === songID) {
             _playerState.queue.splice(i, 1);
             return;
         }
@@ -133,6 +133,7 @@ var _removeFromQueue = function(songID) {
 };
 _playerState.removeFromQueue = _removeFromQueue;
 
+// TODO: partyplay specific stuff
 // initialize song object
 var _initializeSong = function(song) {
     song.upVotes = {};
@@ -151,14 +152,14 @@ _playerState.initializeSong = _initializeSong;
 // (e.g. which user added a song)
 var _addToQueue = function(song, metadata) {
     // check that required fields are provided
-    if(!song.title || !song.id || !song.duration) {
+    if(!song.title || !song.songID || !song.duration) {
         return 'required song fields not provided';
     }
 
     // if same song is already queued, don't create a duplicate
-    var queuedSong = _searchQueue(song.id);
+    var queuedSong = _searchQueue(song.songID);
     if(queuedSong) {
-        console.log('not adding duplicate song to queue: ' + queuedSong.id);
+        console.log('not adding duplicate song to queue: ' + queuedSong.songID);
         return 'duplicate songID';
     }
 
@@ -172,7 +173,7 @@ var _addToQueue = function(song, metadata) {
     _callHooks('sortQueue', [_playerState, metadata]);
     _onQueueModify();
 
-    console.log('added song to queue: ' + queuedSong.id);
+    console.log('added song to queue: ' + queuedSong.songID);
     _callHooks('postSongQueued', [_playerState, queuedSong, metadata]);
 };
 _playerState.addToQueue = _addToQueue;
