@@ -27,7 +27,7 @@ partyplay.init = function(_player, callback, errCallback) {
 
             voteSong(queuedSong, vote, userID);
             _onQueueModify();
-            io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+            io.emit('queue', [player.nowPlaying, player.queue]);
 
             console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
 
@@ -101,7 +101,7 @@ var voteSong = function(song, vote, userID) {
         song.downVotes[userID] = true;
     }
 
-    _callHooks('sortQueue', [_playerState]);
+    _callHooks('sortQueue', [player]);
 };
 
 module.exports = partyplay;

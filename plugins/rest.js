@@ -55,6 +55,7 @@ rest.init = function(_player, callback, errCallback) {
         var resultCnt = 0;
         var results = [];
 
+        console.log(player.backends);
         _.each(player.backends, function(backend) {
             backend.search(req.params.terms, function(songs) {
                 resultCnt++;

@@ -14,16 +14,16 @@ socketio.init = function(_player, callback, errCallback) {
     } else {
         socketio.io = require('socket.io')(player.expressServer);
         socketio.io.on('connection', function(socket) {
-            if(_playerState.nowPlaying) {
+            if(player.nowPlaying) {
                 socket.emit('playback', {
-                    songID: _playerState.nowPlaying.id,
-                    format: _playerState.nowPlaying.format,
-                    backend: _playerState.nowPlaying.backend,
-                    duration: _playerState.nowPlaying.duration,
-                    position: new Date() - _playerState.nowPlaying.playbackStart
+                    songID: player.nowPlaying.id,
+                    format: player.nowPlaying.format,
+                    backend: player.nowPlaying.backend,
+                    duration: player.nowPlaying.duration,
+                    position: new Date() - player.nowPlaying.playbackStart
                 });
             }
-            socket.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+            socket.emit('queue', [player.nowPlaying, player.queue]);
         });
 
         console.log('listening on port ' + (process.env.PORT || 8080));
