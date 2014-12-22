@@ -1,5 +1,4 @@
 var mkdirp = require('mkdirp');
-var send = require('send');
 
 var dummyBackend = {};
 dummyBackend.name = 'dummy';

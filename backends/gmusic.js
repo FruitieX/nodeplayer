@@ -2,8 +2,6 @@ var creds = require(process.env.HOME + '/.googlePlayCreds.json');
 var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
 var https = require('https');
-var send = require('send');
-var url = require('url');
 var fs = require('fs');
 
 var config, player;
