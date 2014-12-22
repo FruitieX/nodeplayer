@@ -29,7 +29,7 @@ partyplay.init = function(_player, callback, errCallback) {
                 return;
             }
 
-            var queuedSong = player.searchQueue(songID, backendName);
+            var queuedSong = player.searchQueue(backendName, songID);
             if(!queuedSong) {
                 console.log('invalid vote rejected: song not found');
                 res.status(404).send('song not found');

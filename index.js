@@ -109,7 +109,7 @@ var _onQueueModify = function() {
 _playerState.onQueueModify = _onQueueModify;
 
 // find song from queue
-var _searchQueue = function(songID, backendName) {
+var _searchQueue = function(backendName, songID) {
     for(var i = 0; i < _playerState.queue.length; i++) {
         if(_playerState.queue[i].songID === songID
                 && _playerState.queue[i].backendName === backendName)
@@ -157,7 +157,7 @@ var _addToQueue = function(song, metadata) {
     }
 
     // if same song is already queued, don't create a duplicate
-    var queuedSong = _searchQueue(song.songID);
+    var queuedSong = _searchQueue(song.backendName, song.songID);
     if(queuedSong) {
         console.log('not adding duplicate song to queue: ' + queuedSong.songID);
         return 'duplicate songID';
