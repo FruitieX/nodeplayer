@@ -1,6 +1,3 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
 var _ = require('underscore');
 
 var socketio = {};
@@ -12,22 +9,26 @@ socketio.init = function(_player, callback, errCallback) {
     player = _player;
     config = _player.config;
 
-    socketio.io = require('socket.io')(server);
-    socketio.io.on('connection', function(socket) {
-        if(_playerState.nowPlaying) {
-            socket.emit('playback', {
-                songID: _playerState.nowPlaying.id,
-                format: _playerState.nowPlaying.format,
-                backend: _playerState.nowPlaying.backend,
-                duration: _playerState.nowPlaying.duration,
-                position: new Date() - _playerState.nowPlaying.playbackStart
-            });
-        }
-        socket.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
-    });
+    if(!player.expressServer) {
+        errCallback('module must be initialized after expressjs module!');
+    } else {
+        socketio.io = require('socket.io')(player.expressServer);
+        socketio.io.on('connection', function(socket) {
+            if(_playerState.nowPlaying) {
+                socket.emit('playback', {
+                    songID: _playerState.nowPlaying.id,
+                    format: _playerState.nowPlaying.format,
+                    backend: _playerState.nowPlaying.backend,
+                    duration: _playerState.nowPlaying.duration,
+                    position: new Date() - _playerState.nowPlaying.playbackStart
+                });
+            }
+            socket.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+        });
 
-    console.log('listening on port ' + (process.env.PORT || 8080));
-    callback();
+        console.log('listening on port ' + (process.env.PORT || 8080));
+        callback();
+    }
 };
 
 // updates to queue

@@ -1,3 +1,6 @@
+var express = require('express');
+var bodyParser = require('body-parser');
+
 var partyplay = {};
 
 partyplay.init = function(_player, callback, errCallback) {
@@ -8,6 +11,29 @@ partyplay.init = function(_player, callback, errCallback) {
         errCallback('module must be initialized after expressjs module!');
     } else {
         player.expressApp.use(express.static(__dirname + '/partyplay'));
+
+        player.expressApp.post('/vote/:id', bodyParser.json(), function(req, res) {
+            var userID = req.body.userID;
+            var vote = req.body.vote;
+            var songID = req.params.id;
+            if(!userID || vote === undefined || !songID) {
+                res.status(404).send('please provide both userID and vote in the body');
+            }
+
+            var queuedSong = _searchQueue(songID);
+            if(!queuedSong) {
+                res.status(404).send('song not found');
+            }
+
+            voteSong(queuedSong, vote, userID);
+            _onQueueModify();
+            io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+
+            console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
+
+            res.send('success');
+        });
+
     }
 
     callback();

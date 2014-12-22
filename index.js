@@ -2,13 +2,6 @@ var config = require(process.env.HOME + '/.partyplayConfig.js');
 // TODO: default config override function
 //var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
 
-var http = require('http');
-
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-if(!fs.existsSync(config.songCachePath))
-    mkdirp.sync(config.songCachePath);
-
 var _ = require('underscore');
 
 var _playerState = {
@@ -184,36 +177,13 @@ var _addToQueue = function(song, metadata) {
 };
 _playerState.addToQueue = _addToQueue;
 
-app.post('/vote/:id', bodyParser.json(), function(req, res) {
-    var userID = req.body.userID;
-    var vote = req.body.vote;
-    var songID = req.params.id;
-    if(!userID || vote === undefined || !songID) {
-        res.status(404).send('please provide both userID and vote in the body');
-    }
-
-    var queuedSong = _searchQueue(songID);
-    if(!queuedSong) {
-        res.status(404).send('song not found');
-    }
-
-    voteSong(queuedSong, vote, userID);
-    _onQueueModify();
-    io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
-
-    console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
-
-    res.send('success');
-});
-*/
-
 _.each(config.plugins, function(pluginName) {
     // TODO: put plugin modules into npm
     var plugin = require('./plugins/' + pluginName);
 
     plugin.init(_playerState, function() {
         _playerState.plugins[pluginName] = {};
-        console.log('plugin ' + backendName + ' initialized');
+        console.log('plugin ' + pluginName + ' initialized');
     }, function(err) {
         console.log('error in ' + pluginName + ': ' + err);
         _callHooks('onPluginInitError', [_playerState, plugin]);

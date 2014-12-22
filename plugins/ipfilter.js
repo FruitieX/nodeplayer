@@ -10,7 +10,7 @@ ipfilter.init = function(_player, callback, errCallback) {
         errCallback('module must be initialized after expressjs module!');
     } else {
         // TODO: separate config file for plugins?
-        var checkIP = ipfilter(config.filterStreamIPs, {mode: config.filterAction, log: config.log, cidr: true});
+        var checkIP = filter(config.filterStreamIPs, {mode: config.filterAction, log: config.log, cidr: true});
         player.expressApp.use('/song', checkIP);
     }
 };

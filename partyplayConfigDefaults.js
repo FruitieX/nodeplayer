@@ -1,7 +1,7 @@
 var config = {};
 
 config.backends = ['dummy', 'gmusic'];
-config.plugins = ['express', 'rest', 'ipfilter', 'socketio', 'partyplay'];
+config.plugins = ['expressjs', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
 config.searchResultCnt = 10;
