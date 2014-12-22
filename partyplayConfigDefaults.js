@@ -1,6 +1,10 @@
 var config = {};
 
+// backends are sources of music
 config.backends = ['dummy', 'gmusic'];
+
+// plugins are "everything else", most of the functionality is in plugins
+//
 // NOTE: ordering is important here, plugins that depend on other plugins will
 // complain if order is wrong
 config.plugins = ['expressjs', 'rest', 'ipfilter', 'socketio', 'partyplay'];
