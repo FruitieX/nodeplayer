@@ -179,7 +179,7 @@ youtubeBackend.search = function(query, callback, errCallback) {
                             albumArt: jsonData.items[i].snippet.thumbnails.default,
                             duration: durations[jsonData.items[i].id.videoId],
                             songID: jsonData.items[i].id.videoId,
-                            backend: 'youtube',
+                            backendName: 'youtube',
                             format: 'opus'
                         };
                     }

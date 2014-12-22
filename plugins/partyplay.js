@@ -18,24 +18,29 @@ partyplay.init = function(_player, callback, errCallback) {
     } else {
         player.expressApp.use(express.static(__dirname + '/partyplay'));
 
-        player.expressApp.post('/vote/:id', bodyParser.json(), function(req, res) {
+        player.expressApp.post('/vote', bodyParser.json(), function(req, res) {
             var userID = req.body.userID;
             var vote = req.body.vote;
-            var songID = req.params.id;
-            if(!userID || vote === undefined || !songID) {
-                res.status(404).send('please provide both userID and vote in the body');
+            var songID = req.body.songID;
+            var backendName = req.body.backendName;
+            if(!userID || vote === undefined || !songID || !backendName) {
+                console.log('invalid vote rejected: missing fields');
+                res.status(404).send('please provide userID, songID, backendName and vote in the body');
+                return;
             }
 
-            var queuedSong = player.searchQueue(songID);
+            var queuedSong = player.searchQueue(songID, backendName);
             if(!queuedSong) {
+                console.log('invalid vote rejected: song not found');
                 res.status(404).send('song not found');
+                return;
             }
 
             voteSong(queuedSong, vote, userID);
             player.onQueueModify();
-            io.emit('queue', [player.nowPlaying, player.queue]);
+            player.socketio.io.emit('queue', [player.nowPlaying, player.queue]);
 
-            console.log('got vote ' + vote + ' for song: ' + queuedSong.id);
+            console.log('got vote ' + vote + ' for song: ' + queuedSong.songID);
 
             res.send('success');
         });

@@ -67,37 +67,39 @@ var search = function() {
     });
 };
 
-var vote = function(id, vote) {
-    var upArrow = $("#uparrow" + id);
-    var downArrow = $("#downarrow" + id);
+var vote = function(backendName, songID, vote) {
+    var upArrow = $("#uparrow" + backendName + songID);
+    var downArrow = $("#downarrow" + backendName + songID);
     if(vote > 0) {
         // is already upvoted: remove upvote
         if(upArrow.hasClass("active")) {
-            $("#uparrow" + id).removeClass("active");
+            upArrow.removeClass("active");
             vote = 0;
         // upvote
         } else {
-            $("#uparrow" + id).addClass("active");
+            upArrow.addClass("active");
         }
-        $("#downarrow" + id).removeClass("active");
+        downArrow.removeClass("active");
     } else if(vote < 0) {
         // is already downvoted: remove downvote
         if(downArrow.hasClass("active")) {
-            $("#downarrow" + id).removeClass("active");
+            downArrow.removeClass("active");
             vote = 0;
         // downvote
         } else {
-            $("#downarrow" + id).addClass("active");
+            downArrow.addClass("active");
         }
-        $("#uparrow" + id).removeClass("active");
+        upArrow.removeClass("active");
     }
 
     $.ajax({
         type: 'POST',
-        url: '/vote/' + id,
+        url: '/vote',
         data: JSON.stringify({
             vote: vote,
-            userID: $.cookie('userID')
+            userID: $.cookie('userID'),
+            songID: songID,
+            backendName: backendName
         }),
         contentType: 'application/json'
     });
@@ -180,16 +182,16 @@ var updateQueue = function() {
 
         var color = "#" + r + g + b;
 
-        $("#" + queue[1][i].id).css('background-color', color);
+        $("#" + queue[1][i].backendName + queue[1][i].songID).css('background-color', color);
     }
 
     var userID = $.cookie('userID');
     // update votes
     for(var i = 0; i < queue[1].length; i++) {
         if(queue[1][i].upVotes[userID]) {
-            $("#uparrow" + queue[1][i].id).addClass("active");
+            $("#uparrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
         } else if(queue[1][i].downVotes[userID]) {
-            $("#downarrow" + queue[1][i].id).addClass("active");
+            $("#downarrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
         }
     }
 };
@@ -213,7 +215,7 @@ $(document).ready(function() {
         $.cookie('userID', guid);
     }
 
-    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
+    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">'
         + '<div id="progress"></div>'
         + '<div class="np-songinfo">'
         + '<div class="big"><b>${title}</b> - ${duration}</div>'
@@ -223,9 +225,9 @@ $(document).ready(function() {
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
-    var queueMarkup = '<li class="list-group-item" id="${id}">'
-        + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${id}"  onclick="vote(\'${id}\', -1);"></div>'
-        + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${id}" onclick="vote(\'${id}\', 1);"></div>'
+    var queueMarkup = '<li class="list-group-item" id="${backendName}${songID}">'
+        + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${backendName}${songID}"  onclick="vote(\'${backendName}\', \'${songID}\', -1);"></div>'
+        + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${backendName}${songID}" onclick="vote(\'${backendName}\', \'${songID}\', 1);"></div>'
         + '<div class="songinfo">'
         + '<div class="big"><b>${title}</b> - ${duration}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
@@ -234,14 +236,14 @@ $(document).ready(function() {
 
     $.template( "queueTemplate", queueMarkup );
 
-    var searchResultMarkup = '<li class="list-group-item searchResult" id="${id}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
+    var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
         + '<div class="big"><b>${title}</b> - ${duration}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
         + '</li>';
 
     $.template( "searchTemplate", searchResultMarkup );
 
-    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${id}">'
+    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">'
         + '<div class="big">${title}</div>'
         + '</li>';
 

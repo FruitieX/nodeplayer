@@ -63,7 +63,7 @@ var _onQueueModify = function() {
 
     // TODO: error handling if backends[...] is undefined
     // prepare now playing song
-    _playerState.backends[_playerState.nowPlaying.backend].prepareSong(_playerState.nowPlaying.songID, function() {
+    _playerState.backends[_playerState.nowPlaying.backendName].prepareSong(_playerState.nowPlaying.songID, function() {
         _callHooks('onSongPrepared', [_playerState]);
 
         if(startPlayingNext) {
@@ -86,7 +86,7 @@ var _onQueueModify = function() {
         // TODO: support pre-caching multiple songs at once if configured so
         // prepare next song(s) in queue
         if(_playerState.queue.length) {
-            _playerState.backends[_playerState.queue[0].backend].prepareSong(_playerState.queue[0].songID, function() {
+            _playerState.backends[_playerState.queue[0].backendName].prepareSong(_playerState.queue[0].songID, function() {
                 _callHooks('onNextSongPrepared', [_playerState, 0]);
                 // do nothing
             }, function(err) {
@@ -109,13 +109,15 @@ var _onQueueModify = function() {
 _playerState.onQueueModify = _onQueueModify;
 
 // find song from queue
-var _searchQueue = function(songID) {
+var _searchQueue = function(songID, backendName) {
     for(var i = 0; i < _playerState.queue.length; i++) {
-        if(_playerState.queue[i].songID === songID)
+        if(_playerState.queue[i].songID === songID
+                && _playerState.queue[i].backendName === backendName)
             return _playerState.queue[i];
     }
 
-    if(_playerState.nowPlaying && _playerState.nowPlaying.songID === songID)
+    if(_playerState.nowPlaying && _playerState.nowPlaying.songID === songID
+            && _playerState.nowPlaying.backendName === backendName)
         return _playerState.nowPlaying;
 
     return null;
@@ -152,7 +154,7 @@ _playerState.initializeSong = _initializeSong;
 // (e.g. which user added a song)
 var _addToQueue = function(song, metadata) {
     // check that required fields are provided
-    if(!song.title || !song.songID || !song.duration) {
+    if(!song.title || !song.songID || !song.backendName || !song.duration) {
         return 'required song fields not provided';
     }
 
