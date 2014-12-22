@@ -1,4 +1,3 @@
-var config;
 var creds = require(process.env.HOME + '/.youtubeCreds.json');
 var mkdirp = require('mkdirp');
 var https = require('https');
@@ -9,7 +8,10 @@ var fs = require('fs');
 var ytdl = require('ytdl-core');
 var ffmpeg = require('fluent-ffmpeg');
 
+var config, player;
+
 var youtubeBackend = {};
+youtubeBackend.name = 'youtube';
 var musicCategoryId = '';
 
 var youtubeDownload = function(songID, callback, errCallback) {
@@ -192,8 +194,10 @@ youtubeBackend.search = function(terms, callback, errCallback) {
 
 // called when partyplay is started to initialize the backend
 // do any necessary initialization here
-youtubeBackend.init = function(_config, callback, errCallback) {
-    config = _config;
+youtubeBackend.init = function(_player, callback, errCallback) {
+    player = _player;
+    config = _player.config;
+
     mkdirp(config.songCachePath + '/youtube');
 
     // find the category id for music videos

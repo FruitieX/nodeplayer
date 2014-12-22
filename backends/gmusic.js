@@ -1,4 +1,3 @@
-var config;
 var creds = require(process.env.HOME + '/.googlePlayCreds.json');
 var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
@@ -7,7 +6,10 @@ var send = require('send');
 var url = require('url');
 var fs = require('fs');
 
+var config, player;
+
 var gmusicBackend = {};
+gmusicBackend.name = 'gmusic';
 
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     var doDownload = function(streamUrl) {
@@ -146,22 +148,15 @@ gmusicBackend.search = function(terms, callback, errCallback) {
 
 // called when partyplay is started to initialize the backend
 // do any necessary initialization here
-gmusicBackend.init = function(_config, callback) {
-    config = _config;
+gmusicBackend.init = function(_player, callback) {
+    player = _player;
+    config = _player.config;
+
     mkdirp(config.songCachePath + '/gmusic/incomplete');
 
     // initialize google play music backend
     gmusicBackend.pm = new PlayMusic();
     gmusicBackend.pm.init(creds, callback);
-};
-
-// expressjs middleware for requesting music data
-// must support ranges in the req, and send the data to res
-gmusicBackend.middleware = function(req, res, next) {
-    send(req, url.parse(req.url).pathname, {
-        dotfiles: 'allow',
-        root: config.songCachePath + '/gmusic'
-    }).pipe(res);
 };
 
 module.exports = gmusicBackend;

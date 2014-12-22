@@ -1,6 +1,7 @@
 var config = {};
 
-config.backendServices = ['dummy', 'gmusic'];
+config.backends = ['dummy', 'gmusic'];
+config.plugins = ['express', 'rest', 'ipfilter', 'socketio'];
 
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
 config.searchResultCnt = 10;

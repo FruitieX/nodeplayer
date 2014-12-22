@@ -1,4 +1,5 @@
 var config = require(process.env.HOME + '/.partyplayConfig.js');
+// TODO: default config override function
 //var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
 
 var http = require('http');
@@ -8,31 +9,45 @@ var mkdirp = require('mkdirp');
 if(!fs.existsSync(config.songCachePath))
     mkdirp.sync(config.songCachePath);
 
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
-
-var ipfilter = require('express-ipfilter');
 var _ = require('underscore');
 
 var _playerState = {
+    config: config,
     queue: [],
     nowPlaying: null,
-    modules: {},
+    plugins: {},
     backends: {},
     frontends: {}
 }
 
+// call hook function in all modules
+// if any hooks return a truthy value, it is an error and we abort
+// be very careful with calling hooks from within a hook, infinite loops are possible
 var _callHooks = function(hook, argv) {
     // _.find() used instead of _.each() because we want to break out as soon
     // as a hook returns a truthy value (used to indicate an error, e.g. in form
     // of a string)
-    return _.find(_playerState.modules, function(module) {
-        if(module[hook]) {
-            return module[hook].apply(null, argv);
+    return _.find(_playerState.plugins, function(plugin) {
+        if(plugin[hook]) {
+            return plugin[hook].apply(null, argv);
         }
     });
 };
+_playerState.callHooks = _callHooks;
+
+// returns number of hook functions attached to given hook
+var _numHooks = function(hook) {
+    var cnt = 0;
+
+    _.find(_playerState.plugins, function(plugin) {
+        if(plugin[hook]) {
+            cnt++;
+        }
+    });
+
+    return cnt;
+};
+_playerState.numHooks = _numHooks;
 
 // to be called whenever the queue has been modified
 // this function will:
@@ -51,23 +66,6 @@ var _onQueueModify = function() {
         _playerState.nowPlaying = _playerState.queue.shift();
         _removeFromQueue(_playerState.nowPlaying.id);
         startPlayingNext = true;
-
-
-        // TODO: move to partyplay module onSongEnd()
-        /*
-        for (var i = queue.length - 1; i >= 0; i--) {
-            _playerState.queue[i].oldness++;
-
-            // remove bad songs
-            var numDownVotes = Object.keys(_playerState.queue[i].downVotes).length;
-            var numUpVotes = Object.keys(_playerState.queue[i].upVotes).length;
-            var totalVotes = numDownVotes + numUpVotes;
-            if(numDownVotes / totalVotes > config.badVotePercent) {
-                console.log('song ' + _playerState.queue[i].id + ' removed due to downvotes');
-                _removeFromQueue(_playerState.queue[i].id);
-            }
-        }
-        */
     }
 
     // TODO: error handling if backends[...] is undefined
@@ -78,15 +76,6 @@ var _onQueueModify = function() {
         if(startPlayingNext) {
             console.log('playing song: ' + _playerState.nowPlaying.id);
 
-            // TODO: socket.io frontend
-            /*
-            io.emit('playback', {
-                songID: _playerState.nowPlaying.id,
-                format: _playerState.nowPlaying.format,
-                backend: _playerState.nowPlaying.backend,
-                duration: _playerState.nowPlaying.duration
-            });
-            */
             _playerState.nowPlaying.playbackStart = new Date();
 
             _callHooks('onSongChange', [_playerState]);
@@ -98,8 +87,6 @@ var _onQueueModify = function() {
 
                 _playerState.nowPlaying = null;
                 _onQueueModify();
-                // TODO: socket.io frontend
-                //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             }, songTimeout);
         }
 
@@ -110,35 +97,23 @@ var _onQueueModify = function() {
                 _callHooks('onNextSongPrepared', [_playerState, 0]);
                 // do nothing
             }, function(err) {
+                // error pre-caching, get rid of this song
                 console.log('error! removing song from queue ' + _playerState.queue[0].id);
                 _callHooks('onNextSongPrepareError', [_playerState, 0]);
                 _removeFromQueue(_playerState.queue[0].id);
-                // TODO: socket.io frontend
-                //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
             });
         } else {
             console.log('no songs in queue to prepare');
             _callHooks('onNothingToPrepare', [_playerState]);
         }
     }, function(err) {
+        // error pre-caching, get rid of this song
         console.log('error! removing song from queue ' + _playerState.nowPlaying.id);
         _callHooks('onSongPrepareError', [_playerState]);
         _removeFromQueue(_playerState.nowPlaying.id);
-        // TODO: socket.io frontend
-        //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
     });
 };
-
-// TODO: partyplay sortQueue() hook
-// sort queue according to votes and oldness
-/*
-var sortQueue = function() {
-    _playerState.queue.sort(function(a, b) {
-        return ((b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length) -
-               (a.oldness + Object.keys(a.upVotes).length - Object.keys(a.downVotes).length));
-    });
-};
-*/
+_playerState.onQueueModify = _onQueueModify;
 
 // find song from queue
 var _searchQueue = function(songID) {
@@ -152,6 +127,7 @@ var _searchQueue = function(songID) {
 
     return null;
 };
+_playerState.searchQueue = _searchQueue;
 
 // get rid of song in queue
 var _removeFromQueue = function(songID) {
@@ -162,6 +138,7 @@ var _removeFromQueue = function(songID) {
         }
     }
 };
+_playerState.removeFromQueue = _removeFromQueue;
 
 // initialize song object
 var _initializeSong = function(song) {
@@ -173,17 +150,16 @@ var _initializeSong = function(song) {
     _playerState.queue.push(song);
     return song;
 };
+_playerState.initializeSong = _initializeSong;
 
-var _addToQueue = function(song) {
+// add a song to the queue
+//
+// metadata is optional and can contain information passed between plugins
+// (e.g. which user added a song)
+var _addToQueue = function(song, metadata) {
     // check that required fields are provided
     if(!song.title || !song.id || !song.duration) {
         return 'required song fields not provided';
-    }
-
-    // check that user has an id
-    var userID = req.body.userID;
-    if(!userID) {
-        return 'invalid userID';
     }
 
     // if same song is already queued, don't create a duplicate
@@ -193,51 +169,20 @@ var _addToQueue = function(song) {
         return 'duplicate songID';
     }
 
-    var err = _callHooks('preSongQueued', [_playerState, song]);
+    var err = _callHooks('preSongQueued', [_playerState, song, metadata]);
     if(err)
         return err;
 
     // no duplicate found, initialize a few properties of song
     queuedSong = _initializeSong(song);
 
-    // TODO: partyplay onSongQueued()
-    /*
-    // new song automatically gets upvote by whoever added it
-    voteSong(queuedSong, +1, userID);
-    */
-
+    _callHooks('sortQueue', [_playerState, metadata]);
     _onQueueModify();
 
     console.log('added song to queue: ' + queuedSong.id);
-    _callHooks('postSongQueued', [_playerState, queuedSong]);
-    // TODO socket.io frontend
-    //io.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
+    _callHooks('postSongQueued', [_playerState, queuedSong, metadata]);
 };
-
-// TODO: move to partyplay module
-/*
-var voteSong = function(song, vote, userID) {
-    // normalize vote to -1, 0, 1
-    vote = parseInt(vote);
-
-    if(vote)
-        vote = vote / Math.abs(vote);
-    else
-        vote = 0;
-
-    if(!vote) {
-        delete(song.upVotes[userID]);
-        delete(song.downVotes[userID]);
-    } else if (vote > 0) {
-        delete(song.downVotes[userID]);
-        song.upVotes[userID] = true;
-    } else if (vote < 0) {
-        delete(song.upVotes[userID]);
-        song.downVotes[userID] = true;
-    }
-
-    _callHooks('sortQueue');
-};
+_playerState.addToQueue = _addToQueue;
 
 app.post('/vote/:id', bodyParser.json(), function(req, res) {
     var userID = req.body.userID;
@@ -262,118 +207,37 @@ app.post('/vote/:id', bodyParser.json(), function(req, res) {
 });
 */
 
-// TODO: move to REST API frontend
-// get entire queue
-/*
-app.get('/queue', function(req, res) {
-    var response = [];
-    if(_playerState.nowPlaying) {
-        response.push({
-            artist: _playerState.nowPlaying.artist,
-            title: _playerState.nowPlaying.title,
-            duration: _playerState.nowPlaying.duration,
-            id: _playerState.nowPlaying.id,
-            downVotes: _playerState.nowPlaying.downVotes,
-            upVotes: _playerState.nowPlaying.upVotes,
-            oldness: _playerState.nowPlaying.oldness
-        });
-    }
-    for(var i = 0; i < _playerState.queue.length; i++) {
-        response.push({
-            artist: _playerState.queue[i].artist,
-            title: _playerState.queue[i].title,
-            duration: _playerState.queue[i].duration,
-            id: _playerState.queue[i].id,
-            downVotes: _playerState.queue[i].downVotes,
-            upVotes: _playerState.queue[i].upVotes,
-            oldness: _playerState.queue[i].oldness
-        });
-    }
-    res.send(JSON.stringify(response));
+_.each(config.plugins, function(pluginName) {
+    // TODO: put plugin modules into npm
+    var plugin = require('./plugins/' + pluginName);
+
+    plugin.init(_playerState, function() {
+        _playerState.plugins[pluginName] = {};
+        console.log('plugin ' + backendName + ' initialized');
+    }, function(err) {
+        console.log('error in ' + pluginName + ': ' + err);
+        _callHooks('onPluginInitError', [_playerState, plugin]);
+    });
 });
 
-// queue song
-app.post('/queue', bodyParser.json(), function(req, res) {
-    var err = _addToQueue(req.body.song);
-    if(err)
-        res.status(404).send(err);
-    else
-        res.send('success');
-});
-
-// search for song with given search terms
-app.get('/search/:terms', function(req, res) {
-    console.log('got search request: ' + req.params.terms);
-
-    var resultCnt = 0;
-    var results = [];
-
-    for(var backend in _playerState.backends) {
-        (function(backend) {
-            _playerState.backends[backend].search(req.params.terms, function(songs) {
-                resultCnt++;
-
-                for(song in songs) {
-                    results.push(songs[song]);
-                }
-
-                // got results from all services?
-                if(resultCnt >= Object.keys(_playerState.backends).length)
-                    res.send(JSON.stringify(results));
-            }, function(err) {
-                resultCnt++;
-                console.log(err);
-
-                // got results from all services?
-                if(resultCnt >= Object.keys(_playerState.backends).length)
-                    res.send(JSON.stringify(results));
-            });
-        })(backend);
-    }
-});
-
-var checkIP = ipfilter(config.filterStreamIPs, {mode: config.filterAction, log: config.log, cidr: true});
-app.use('/song', checkIP);
-app.use(express.static(__dirname + '/public'));
-*/
-
-// TODO: socket.io frontend
-/*
-var server = app.listen(process.env.PORT || 8080);
-var io = require('socket.io')(server);
-io.on('connection', function(socket) {
-    if(_playerState.nowPlaying) {
-        socket.emit('playback', {
-            songID: _playerState.nowPlaying.id,
-            format: _playerState.nowPlaying.format,
-            backend: _playerState.nowPlaying.backend,
-            duration: _playerState.nowPlaying.duration,
-            position: new Date() - _playerState.nowPlaying.playbackStart
-        });
-    }
-    socket.emit('queue', [_playerState.nowPlaying, _playerState.queue]);
-});
-
-console.log('listening on port ' + (process.env.PORT || 8080));
-*/
+_callHooks('onPluginsInitialized', [_playerState]);
 
 // init backends
-_.each(config.backendServices, function(backendName) {
+_.each(config.backends, function(backendName) {
     // TODO: put backend modules into npm
     var backend = require('./backends/' + backendName);
 
-    backend.init(config, function() {
+    backend.init(_playerState, function() {
         _playerState.backends[backendName] = {};
         _playerState.backends[backendName].prepareSong = backend.prepareSong;
         _playerState.backends[backendName].search = backend.search;
 
         console.log('backend ' + backendName + ' initialized');
-        _callHooks('onBackendInit', [_playerState, backendName]);
-
-        // TODO: move to REST API frontend
-        //app.use('/song/' + backendName, backend.middleware);
+        _callHooks('onBackendInit', [_playerState, backend]);
     }, function(err) {
-        console.log('error ' + err + ' while initializing ' +  backendName);
-        _callHooks('onBackendInitError', [_playerState, backendName]);
+        console.log('error in ' + backendName + ': ' + err);
+        _callHooks('onBackendInitError', [_playerState, backend]);
     });
 });
+
+_callHooks('onBackendsInitialized', [_playerState]);
