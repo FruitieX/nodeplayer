@@ -3,22 +3,7 @@ var searchResults = {};
 var resultsCount = 10;
 var progress = {started: 0, interval: null};
 
-var socket = io();
-socket.on('queue', function(data) {
-    queue = data;
-    updateQueue();
-});
-
-socket.on('playback', function(data) {
-    var currentProgress = (data.position || 0);
-    progress.started = new Date() - currentProgress;
-    progress.duration = data.duration;
-
-    clearInterval(progress.interval);
-    progress.interval = setInterval(function() {
-        updateProgress(100);
-    }, 100);
-});
+var socket;
 
 var search = function() {
     var searchTerms = $("#search-terms").val();
@@ -203,54 +188,78 @@ var durationToString = function(seconds) {
 }
 
 $(document).ready(function() {
-    // generate a user ID if there is not one yet
-    if(!$.cookie('userID')) {
-        var s4 = function() {
-            return Math.floor((1 + Math.random()) * 0x10000)
-                .toString(16)
-                .substring(1);
+    detectPrivateMode(function(isPrivate) {
+        if(isPrivate) {
+            document.write('Private browsing unsupported to prevent abuse.<br><img src="media/antitroll.png"></img>');
+            return;
         }
-        var guid = s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                s4() + '-' + s4() + s4() + s4();
-        $.cookie('userID', guid);
-    }
 
-    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">'
-        + '<div id="progress"></div>'
-        + '<div class="np-songinfo">'
-        + '<div class="big"><b>${title}</b> - ${duration}</div>'
-        + '<div class="small"><b>${artist}</b> (${album})</div>'
-        + '</div>'
-        + '</li>';
+        // generate a user ID if there is not one yet
+        if(!$.cookie('userID')) {
+            var s4 = function() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                    .toString(16)
+                    .substring(1);
+            }
+            var guid = s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                    s4() + '-' + s4() + s4() + s4();
+            $.cookie('userID', guid);
+        }
 
-    $.template( "nowPlayingTemplate", nowPlayingMarkup );
+        var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">'
+            + '<div id="progress"></div>'
+            + '<div class="np-songinfo">'
+            + '<div class="big"><b>${title}</b> - ${duration}</div>'
+            + '<div class="small"><b>${artist}</b> (${album})</div>'
+            + '</div>'
+            + '</li>';
 
-    var queueMarkup = '<li class="list-group-item" id="${backendName}${songID}">'
-        + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${backendName}${songID}"  onclick="vote(\'${backendName}\', \'${songID}\', -1);"></div>'
-        + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${backendName}${songID}" onclick="vote(\'${backendName}\', \'${songID}\', 1);"></div>'
-        + '<div class="songinfo">'
-        + '<div class="big"><b>${title}</b> - ${duration}</div>'
-        + '<div class="small"><b>${artist}</b> (${album})</div>'
-        + '</div>'
-        + '</li>';
+        $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
-    $.template( "queueTemplate", queueMarkup );
+        var queueMarkup = '<li class="list-group-item" id="${backendName}${songID}">'
+            + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${backendName}${songID}"  onclick="vote(\'${backendName}\', \'${songID}\', -1);"></div>'
+            + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${backendName}${songID}" onclick="vote(\'${backendName}\', \'${songID}\', 1);"></div>'
+            + '<div class="songinfo">'
+            + '<div class="big"><b>${title}</b> - ${duration}</div>'
+            + '<div class="small"><b>${artist}</b> (${album})</div>'
+            + '</div>'
+            + '</li>';
 
-    var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
-        + '<div class="big"><b>${title}</b> - ${duration}</div>'
-        + '<div class="small"><b>${artist}</b> (${album})</div>'
-        + '</li>';
+        $.template( "queueTemplate", queueMarkup );
 
-    $.template( "searchTemplate", searchResultMarkup );
+        var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
+            + '<div class="big"><b>${title}</b> - ${duration}</div>'
+            + '<div class="small"><b>${artist}</b> (${album})</div>'
+            + '</li>';
 
-    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">'
-        + '<div class="big">${title}</div>'
-        + '</li>';
+        $.template( "searchTemplate", searchResultMarkup );
 
-    $.template( "ellipsisTemplate", ellipsisResultMarkup );
+        var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">'
+            + '<div class="big">${title}</div>'
+            + '</li>';
 
-    $("#search-terms").keyup(function(e) {
-        if(e.keyCode === 13)
-            search();
+        $.template( "ellipsisTemplate", ellipsisResultMarkup );
+
+        $("#search-terms").keyup(function(e) {
+            if(e.keyCode === 13)
+                search();
+        });
+
+        socket = io();
+        socket.on('queue', function(data) {
+            queue = data;
+            updateQueue();
+        });
+
+        socket.on('playback', function(data) {
+            var currentProgress = (data.position || 0);
+            progress.started = new Date() - currentProgress;
+            progress.duration = data.duration;
+
+            clearInterval(progress.interval);
+            progress.interval = setInterval(function() {
+                updateProgress(100);
+            }, 100);
+        });
     });
 });
