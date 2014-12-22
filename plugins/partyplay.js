@@ -71,8 +71,8 @@ partyplay.onSongEnd = function(player) {
         var numUpVotes = Object.keys(player.queue[i].upVotes).length;
         var totalVotes = numDownVotes + numUpVotes;
         if(numDownVotes / totalVotes > config.badVotePercent) {
-            console.log('song ' + player.queue[i].id + ' removed due to downvotes');
-            player.removeFromQueue(player.queue[i].id);
+            console.log('song ' + player.queue[i].songID + ' removed due to downvotes');
+            player.removeFromQueue(player.queue[i].backendName, player.queue[i].songID);
         }
     }
 };

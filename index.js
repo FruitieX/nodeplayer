@@ -57,7 +57,7 @@ var _onQueueModify = function() {
     if(!_playerState.nowPlaying) {
         // play song
         _playerState.nowPlaying = _playerState.queue.shift();
-        _removeFromQueue(_playerState.nowPlaying.songID);
+        _removeFromQueue(_playerState.nowPlaying.backendName, _playerState.nowPlaying.songID);
         startPlayingNext = true;
     }
 
@@ -93,7 +93,7 @@ var _onQueueModify = function() {
                 // error pre-caching, get rid of this song
                 console.log('error! removing song from queue ' + _playerState.queue[0].songID);
                 _callHooks('onNextSongPrepareError', [_playerState, 0]);
-                _removeFromQueue(_playerState.queue[0].songID);
+                _removeFromQueue(_playerState.queue[0].backendName, _playerState.queue[0].songID);
             });
         } else {
             console.log('no songs in queue to prepare');
@@ -103,7 +103,7 @@ var _onQueueModify = function() {
         // error pre-caching, get rid of this song
         console.log('error! removing song from queue ' + _playerState.nowPlaying.songID);
         _callHooks('onSongPrepareError', [_playerState]);
-        _removeFromQueue(_playerState.nowPlaying.songID);
+        _removeFromQueue(_playerState.nowPlaying.backendName, _playerState.nowPlaying.songID);
     });
 };
 _playerState.onQueueModify = _onQueueModify;
@@ -125,9 +125,9 @@ var _searchQueue = function(songID, backendName) {
 _playerState.searchQueue = _searchQueue;
 
 // get rid of song in queue
-var _removeFromQueue = function(songID) {
+var _removeFromQueue = function(backendName, songID) {
     for(var i = 0; i < _playerState.queue.length; i++) {
-        if(_playerState.queue[i].songID === songID) {
+        if(_playerState.queue[i].songID === songID && _playerState.queue[i].backendName === backendName) {
             _playerState.queue.splice(i, 1);
             return;
         }
