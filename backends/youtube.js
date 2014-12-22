@@ -230,13 +230,4 @@ youtubeBackend.init = function(_player, callback, errCallback) {
     req.end();
 };
 
-// expressjs middleware for requesting music data
-// must support ranges in the req, and send the data to res
-youtubeBackend.middleware = function(req, res, next) {
-    send(req, url.parse(req.url).pathname, {
-        dotfiles: 'allow',
-        root: config.songCachePath + '/youtube'
-    }).pipe(res);
-};
-
 module.exports = youtubeBackend;

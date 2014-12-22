@@ -182,7 +182,7 @@ _.each(config.plugins, function(pluginName) {
     var plugin = require('./plugins/' + pluginName);
 
     plugin.init(_playerState, function() {
-        _playerState.plugins[pluginName] = {};
+        _playerState.plugins[pluginName] = plugin;
         console.log('plugin ' + pluginName + ' initialized');
     }, function(err) {
         console.log('error in ' + pluginName + ': ' + err);
@@ -190,17 +190,17 @@ _.each(config.plugins, function(pluginName) {
     });
 });
 
+// TODO: maybe wait for callbacks before this?
 _callHooks('onPluginsInitialized', [_playerState]);
 
 // init backends
 _.each(config.backends, function(backendName) {
     // TODO: put backend modules into npm
+    // must implement .search, .prepareSong, .init
     var backend = require('./backends/' + backendName);
 
     backend.init(_playerState, function() {
-        _playerState.backends[backendName] = {};
-        _playerState.backends[backendName].prepareSong = backend.prepareSong;
-        _playerState.backends[backendName].search = backend.search;
+        _playerState.backends[backendName] = backend;
 
         console.log('backend ' + backendName + ' initialized');
         _callHooks('onBackendInit', [_playerState, backend]);
@@ -210,4 +210,5 @@ _.each(config.backends, function(backendName) {
     });
 });
 
+// TODO: maybe wait for callbacks before this?
 _callHooks('onBackendsInitialized', [_playerState]);
