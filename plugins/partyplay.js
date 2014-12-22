@@ -9,6 +9,8 @@ partyplay.init = function(_player, callback, errCallback) {
 
     if(!player.expressApp) {
         errCallback('module must be initialized after expressjs module!');
+    } else if(!player.socketio) {
+        errCallback('module must be initialized after socketio module!');
     } else {
         player.expressApp.use(express.static(__dirname + '/partyplay'));
 
@@ -60,7 +62,7 @@ partyplay.postSongQueued = function(player, song, metadata) {
 
 // remove extremely downvoted (bad) songs
 partyplay.onSongEnd = function(player) {
-    for (var i = queue.length - 1; i >= 0; i--) {
+    for (var i = player.queue.length - 1; i >= 0; i--) {
         player.queue[i].oldness++;
 
         var numDownVotes = Object.keys(player.queue[i].downVotes).length;

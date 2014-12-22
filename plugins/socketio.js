@@ -26,6 +26,8 @@ socketio.init = function(_player, callback, errCallback) {
             socket.emit('queue', [player.nowPlaying, player.queue]);
         });
 
+        player.socketio = socketio;
+
         console.log('listening on port ' + (process.env.PORT || 8080));
         callback();
     }
