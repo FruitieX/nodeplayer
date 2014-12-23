@@ -172,6 +172,7 @@ youtubeBackend.search = function(query, callback, errCallback) {
                 getSongDurations(ids, function(durations) {
                     for(var i = 0; i < jsonData.items.length; i++) {
                         var splitTitle = jsonData.items[i].snippet.title.split(/\s-\s(.+)?/);
+                        var numItems = jsonData.items.length;
                         results.songs[jsonData.items[i].id.videoId] = {
                             artist: splitTitle[0],
                             title: splitTitle[1],
@@ -179,6 +180,7 @@ youtubeBackend.search = function(query, callback, errCallback) {
                             albumArt: jsonData.items[i].snippet.thumbnails.default,
                             duration: durations[jsonData.items[i].id.videoId],
                             songID: jsonData.items[i].id.videoId,
+                            score: 100 * (numItems - i) / numItems, // TODO: is there a better way?
                             backendName: 'youtube',
                             format: 'opus'
                         };

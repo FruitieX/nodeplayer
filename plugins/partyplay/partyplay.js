@@ -25,20 +25,31 @@ var search = function() {
         $("#search-button").prop('disabled', false);
 
         // TODO: separate backends somehow
-        // right now we just sort them by name and merge
-        var backendsInOrder = _.sortBy(_.keys(searchResults));
-        _.each(backendsInOrder, function(backendName) {
-            _.each(searchResults[backendName].songs, function(song) {
-                $.tmpl( "searchTemplate", {
-                    title: song.title,
-                    artist: song.artist,
-                    album: song.album,
-                    duration: durationToString(song.duration / 1000),
-                    songID: song.songID,
-                    backendName: backendName
-                }).appendTo("#search-results");
+        // right now we just sort songs by score
+        var songs = [];
+        _.each(_.pluck(searchResults, 'songs'), function(backendSongs) {
+            _.each(backendSongs, function(song) {
+                songs.push(song);
             });
         });
+        _.each(songs, function(song) {
+            $.tmpl( "searchTemplate", {
+                title: song.title,
+                artist: song.artist,
+                album: song.album,
+                albumArt: song.albumArt,
+                duration: durationToString(song.duration / 1000),
+                songID: song.songID,
+                backendName: song.backendName
+            }).appendTo("#search-results");
+        });
+        /*
+            var songsInOrder = _.sortBy(searchResults[backendName].songs, 'score');
+            _.each(songsInOrder, function(songID) {
+                var song = searchResults[backendName].songs[songID];
+            });
+        });
+        */
         // TODO: pagination using backendResults.next/prevPageToken
         /*
         if (searchResults.length > resultsCount) {

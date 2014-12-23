@@ -120,11 +120,8 @@ gmusicBackend.search = function(query, callback, errCallback) {
         var results = {};
         results.songs = {};
 
-        console.log(data);
         if(data.entries) {
-            songs = data.entries.sort(function(a, b) {
-                return a.score < b.score; // sort by score
-            }).filter(function(entry) {
+            songs = data.entries.filter(function(entry) {
                 return entry.type === '1'; // songs only, no albums/artists
             });
 
@@ -133,8 +130,10 @@ gmusicBackend.search = function(query, callback, errCallback) {
                     artist: songs[i].track.artist,
                     title: songs[i].track.title,
                     album: songs[i].track.album,
+                    albumArt: null, // TODO: can we add this?
                     duration: songs[i].track.durationMillis,
                     songID: songs[i].track.nid,
+                    score: songs[i].score,
                     backendName: 'gmusic',
                     format: 'mp3'
                 };
