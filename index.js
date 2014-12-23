@@ -1,8 +1,8 @@
-var config = require(process.env.HOME + '/.partyplayConfig.js');
-// TODO: default config override function
-//var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
-
 var _ = require('underscore');
+
+var userConfig = require(process.env.HOME + '/.partyplayConfig.js');
+var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
+var config = _.defaults(userConfig, defaultConfig);
 
 var _playerState = {
     config: config,

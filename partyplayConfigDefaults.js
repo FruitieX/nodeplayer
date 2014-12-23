@@ -1,7 +1,7 @@
 var config = {};
 
 // backends are sources of music
-config.backends = ['dummy', 'gmusic'];
+config.backends = ['youtube', 'gmusic'];
 
 // plugins are "everything else", most of the functionality is in plugins
 //
@@ -10,7 +10,7 @@ config.backends = ['dummy', 'gmusic'];
 config.plugins = ['expressjs', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
-config.searchResultCnt = 100;
+config.searchResultCnt = 10;
 //config.badVotePercent = 0.67;
 config.badVotePercent = 0.51;
 config.songDelayMs = 1000; // add delay between songs to prevent skips
