@@ -18,7 +18,7 @@ socketio.init = function(_player, callback, errCallback) {
                 socket.emit('playback', {
                     songID: player.nowPlaying.songID,
                     format: player.nowPlaying.format,
-                    backend: player.nowPlaying.backend,
+                    backendName: player.nowPlaying.backendName,
                     duration: player.nowPlaying.duration,
                     position: new Date() - player.nowPlaying.playbackStart
                 });
@@ -38,7 +38,7 @@ socketio.onSongChange = function(player) {
     socketio.io.emit('playback', {
         songID: player.nowPlaying.songID,
         format: player.nowPlaying.format,
-        backend: player.nowPlaying.backend,
+        backendName: player.nowPlaying.backendName,
         duration: player.nowPlaying.duration
     });
 };

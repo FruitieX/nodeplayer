@@ -8,7 +8,8 @@ socket.on('queue', function(data) {
 });
 
 socket.on('playback', function(data) {
-    $("#audio").attr('src', '/song/' + data.backend + '/' + data.songID + '.' + data.format);
+    console.log(data);
+    $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
     var audio = document.getElementById('audio');
 
     var setPos = function() {
