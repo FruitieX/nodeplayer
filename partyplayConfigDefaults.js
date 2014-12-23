@@ -11,7 +11,8 @@ config.plugins = ['expressjs', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
 config.searchResultCnt = 100;
-config.badVotePercent = 0.67;
+//config.badVotePercent = 0.67;
+config.badVotePercent = 0.51;
 config.songDelayMs = 1000; // add delay between songs to prevent skips
 config.songMaxDuration = 8 * 60 * 1000; // max allowed song duration
 config.log = true;

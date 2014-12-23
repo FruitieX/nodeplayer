@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
 
 var partyplay = {};
 
@@ -56,10 +57,6 @@ partyplay.onPluginsInitialized = function(player) {
         console.log('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
 };
 
-// automatically add an upvote after user has added a song
-partyplay.postSongQueued = function(player, song, metadata) {
-    voteSong(song, +1, metadata.userID);
-};
 
 // remove extremely downvoted (bad) songs
 partyplay.onSongEnd = function(player) {
@@ -70,7 +67,7 @@ partyplay.onSongEnd = function(player) {
         var numDownVotes = Object.keys(player.queue[i].downVotes).length;
         var numUpVotes = Object.keys(player.queue[i].upVotes).length;
         var totalVotes = numDownVotes + numUpVotes;
-        if(numDownVotes / totalVotes > config.badVotePercent) {
+        if(numDownVotes / totalVotes >= config.badVotePercent) {
             console.log('song ' + player.queue[i].songID + ' removed due to downvotes');
             player.removeFromQueue(player.queue[i].backendName, player.queue[i].songID);
         }
@@ -97,6 +94,9 @@ partyplay.preSongQueued = function(player, song, metadata) {
         song.upVotes = {};
         song.downVotes = {};
         song.oldness = 0; // favor old songs
+
+        // automatically add an upvote after user has added a song
+        voteSong(song, +1, metadata.userID);
     }
 };
 partyplay.preAddSearchResult = function(player, song) {
@@ -136,6 +136,11 @@ var voteSong = function(song, vote, userID) {
         song.upVotes[userID] = true;
     } else if (vote < 0) {
         delete(song.upVotes[userID]);
+        // TODO: more downvotes than only one?
+        // users only have one downvote to prevent abuse
+        _.each(player.queue, function(queueSong) {
+            delete(queueSong.downVotes[userID]);
+        });
         song.downVotes[userID] = true;
     }
 
