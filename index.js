@@ -9,8 +9,7 @@ var _playerState = {
     queue: [],
     nowPlaying: null,
     plugins: {},
-    backends: {},
-    frontends: {}
+    backends: {}
 }
 
 // call hook function in all modules
