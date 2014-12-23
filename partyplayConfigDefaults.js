@@ -1,5 +1,13 @@
 var config = {};
 
+// Default partyplay config
+//
+// These variables can be overridden by writing the variables you
+// wish to override into ~/.partyplayConfig.js
+//
+// Use the same structure, a config object which contains config variables
+// as properties. Export the object at the bottom of the file.
+
 // backends are sources of music
 config.backends = ['youtube', 'gmusic'];
 
