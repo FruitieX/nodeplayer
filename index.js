@@ -179,6 +179,7 @@ _playerState.addToQueue = _addToQueue;
 
 _.each(config.plugins, function(pluginName) {
     // TODO: put plugin modules into npm
+    // must implement .init, can implement hooks
     var plugin = require('./plugins/' + pluginName);
 
     plugin.init(_playerState, function() {
