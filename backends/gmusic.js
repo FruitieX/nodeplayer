@@ -3,6 +3,7 @@ var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
 var https = require('https');
 var fs = require('fs');
+var ffmpeg = require('fluent-ffmpeg');
 
 var config, player;
 
@@ -17,28 +18,44 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
         // this is to safeguard against partyplay crashes and storing an
         // incomplete download in the song cache
         var incompleteFilePath = config.songCachePath + '/gmusic/incomplete/' + songID + '.mp3';
-        var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
-        var songFd = fs.openSync(incompleteFilePath, 'w');
+        var filePath = config.songCachePath + '/gmusic/' + songID + '.opus';
+        var incompleteSongFd = fs.openSync(incompleteFilePath, 'w');
 
         var req = https.request(streamUrl, function(res) {
             res.on('data', function(chunk) {
-                fs.writeSync(songFd, chunk, 0, chunk.length, null);
+                fs.writeSync(incompleteSongFd, chunk, 0, chunk.length, null);
             });
             res.on('end', function() {
                 if(res.statusCode === 302) { // redirect
                     console.log('redirected. retrying with new URL');
-                    fs.closeSync(songFd);
+                    fs.closeSync(incompleteSongFd);
                     fs.unlinkSync(incompleteFilePath);
                     gmusicDownload(res.headers.location, songID, callback, errCallback);
                 } else if(res.statusCode === 200) {
-                    console.log('download finished ' + songID);
-                    fs.closeSync(songFd);
-                    fs.renameSync(incompleteFilePath, filePath);
-                    if(callback)
+                    console.log('download finished ' + songID + ', transcoding');
+                    fs.closeSync(incompleteSongFd);
+                    ffmpeg(fs.createReadStream(incompleteFilePath))
+                    .noVideo()
+                    .audioCodec('libopus')
+                    .audioBitrate('192')
+                    .on('end', function() {
+                        console.log('successfully transcoded ' + songID);
+                        if(fs.existsSync(incompleteFilePath))
+                            fs.unlinkSync(incompleteFilePath);
                         callback();
+                    })
+                    .on('error', function(err) {
+                        console.log('gmusic: error while transcoding ' + songID + ': ' + err);
+                        if(fs.existsSync(filePath))
+                            fs.unlinkSync(filePath);
+                        if(fs.existsSync(incompleteFilePath))
+                            fs.unlinkSync(incompleteFilePath);
+                        errCallback();
+                    })
+                    .save(filePath);
                 } else {
                     console.log('ERROR: unknown status code ' + res.statusCode);
-                    fs.closeSync(songFd);
+                    fs.closeSync(incompleteSongFd);
                     fs.unlinkSync(incompleteFilePath);
                     if(errCallback)
                         errCallback();
@@ -76,7 +93,7 @@ var pendingCallbacks = {};
 // on success: callback must be called
 // on failure: errCallback must be called with error message
 gmusicBackend.prepareSong = function(songID, callback, errCallback) {
-    var filePath = config.songCachePath + '/gmusic/' + songID + '.mp3';
+    var filePath = config.songCachePath + '/gmusic/' + songID + '.opus';
 
     // song is already downloading
     if(pendingCallbacks[songID]) {
@@ -135,7 +152,7 @@ gmusicBackend.search = function(query, callback, errCallback) {
                     songID: songs[i].track.nid,
                     score: songs[i].score,
                     backendName: 'gmusic',
-                    format: 'mp3'
+                    format: 'opus'
                 };
             }
         }
