@@ -41,6 +41,7 @@ socketio.onSongChange = function(player) {
         backendName: player.nowPlaying.backendName,
         duration: player.nowPlaying.duration
     });
+    socketio.io.emit('queue', [player.nowPlaying, player.queue]);
 };
 
 socketio.postSongQueued = function(player) {
@@ -48,6 +49,5 @@ socketio.postSongQueued = function(player) {
 };
 socketio.onNextSongPrepareError = socketio.postSongQueued;
 socketio.onSongPrepareError = socketio.postSongQueued;
-socketio.onSongEnd = socketio.postSongQueued;
 
 module.exports = socketio;
