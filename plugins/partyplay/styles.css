@@ -86,3 +86,11 @@
     width:200px;
     height:50px;
 }
+#windowdisclaimer {
+    margin-top:50px;
+    text-overflow:ellipsis;
+    color: #666;
+    height:20px;
+    font-size: 15px;
+    text-align:center;
+}
