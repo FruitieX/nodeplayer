@@ -34,6 +34,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                 } else if(res.statusCode === 200) {
                     console.log('download finished ' + songID + ', transcoding');
                     fs.closeSync(incompleteSongFd);
+                    // TODO: can we read this directly from the HTTPS stream?
                     ffmpeg(fs.createReadStream(incompleteFilePath))
                     .noVideo()
                     .audioCodec('libopus')
