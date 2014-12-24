@@ -32,6 +32,7 @@ var search = function() {
                 songs.push(song);
             });
         });
+        songs = _.sortBy(songs, 'score').reverse();
         _.each(songs, function(song) {
             $.tmpl( "searchTemplate", {
                 title: song.title,
