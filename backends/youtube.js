@@ -171,12 +171,22 @@ youtubeBackend.search = function(query, callback, errCallback) {
 
                 getSongDurations(ids, function(durations) {
                     for(var i = 0; i < jsonData.items.length; i++) {
+                        var artist, title;
                         var splitTitle = jsonData.items[i].snippet.title.split(/\s-\s(.+)?/);
+                        // title could not be parsed out
+                        if(!splitTitle[1]) {
+                            artist = null;
+                            title = splitTitle[0];
+                        } else {
+                            artist = splitTitle[0];
+                            title = splitTitle[1];
+                        }
+
                         var numItems = jsonData.items.length;
                         results.songs[jsonData.items[i].id.videoId] = {
-                            artist: splitTitle[0],
-                            title: splitTitle[1],
-                            album: null,
+                            artist: artist,
+                            title: title,
+                            album: jsonData.items[i].snippet.channelTitle,
                             albumArt: jsonData.items[i].snippet.thumbnails.default,
                             duration: durations[jsonData.items[i].id.videoId],
                             songID: jsonData.items[i].id.videoId,
