@@ -152,7 +152,7 @@ player.initializeSong = initializeSong;
 var addToQueue = function(song, metadata) {
     // check that required fields are provided
     if(!song.title || !song.songID || !song.backendName || !song.duration) {
-        console.log('required song fields not provided' + queuedSong.songID);
+        console.log('required song fields not provided: ' + song.songID);
         return 'required song fields not provided';
     }
 
