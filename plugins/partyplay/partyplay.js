@@ -146,48 +146,50 @@ var updateProgress = function(dt) { // dt = ms passed since last call
 var updateQueue = function() {
     $("#queue").empty();
 
-    // now playing
-    if(queue[0]) {
-        queue[0].duration = durationToString(queue[0].duration / 1000);
-        $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
-        updateProgress(0);
-    }
-
-    // rest of queue
-    for(var i = 0; i < queue[1].length; i++) {
-        queue[1][i].duration = durationToString(queue[1][i].duration / 1000);
-        $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
-        var numUpVotes = Object.keys(queue[1][i].upVotes).length;
-        var numDownVotes = Object.keys(queue[1][i].downVotes).length;
-        var totalVotes = numUpVotes + numDownVotes;
-
-        var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
-        var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
-
-        var r = 'f0', g = 'f0', b = 'f0';
-
-        if(totalVotes) {
-            if(numUpVotes > numDownVotes) {
-                r = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
-                b = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
-            } else if(numUpVotes < numDownVotes) {
-                g = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
-                b = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
-            }
+    if(queue) {
+        // now playing
+        if(queue[0]) {
+            queue[0].duration = durationToString(queue[0].duration / 1000);
+            $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
+            updateProgress(0);
         }
 
-        var color = "#" + r + g + b;
+        // rest of queue
+        for(var i = 0; i < queue[1].length; i++) {
+            queue[1][i].duration = durationToString(queue[1][i].duration / 1000);
+            $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
+            var numUpVotes = Object.keys(queue[1][i].upVotes).length;
+            var numDownVotes = Object.keys(queue[1][i].downVotes).length;
+            var totalVotes = numUpVotes + numDownVotes;
 
-        $("#" + queue[1][i].backendName + queue[1][i].songID).css('background-color', color);
-    }
+            var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
+            var weightedDown = 1 - (totalVotes - numDownVotes) / totalVotes;
 
-    var userID = $.cookie('userID');
-    // update votes
-    for(var i = 0; i < queue[1].length; i++) {
-        if(queue[1][i].upVotes[userID]) {
-            $("#uparrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
-        } else if(queue[1][i].downVotes[userID]) {
-            $("#downarrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
+            var r = 'f0', g = 'f0', b = 'f0';
+
+            if(totalVotes) {
+                if(numUpVotes > numDownVotes) {
+                    r = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(40 * weightedUp)).toString(16), 2);
+                } else if(numUpVotes < numDownVotes) {
+                    g = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
+                    b = pad(Number(255 - Math.round(40 * weightedDown)).toString(16), 2);
+                }
+            }
+
+            var color = "#" + r + g + b;
+
+            $("#" + queue[1][i].backendName + queue[1][i].songID).css('background-color', color);
+        }
+
+        var userID = $.cookie('userID');
+        // update votes
+        for(var i = 0; i < queue[1].length; i++) {
+            if(queue[1][i].upVotes[userID]) {
+                $("#uparrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
+            } else if(queue[1][i].downVotes[userID]) {
+                $("#downarrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
+            }
         }
     }
 };

@@ -59,11 +59,13 @@ var updateProgress = function(dt) { // dt = ms passed since last call
 var updateQueue = function() {
     $("#queue").empty();
 
-    // now playing
-    if(queue[0]) {
-        queue[0].duration = durationToString(queue[0].duration / 1000);
-        $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
-        updateProgress(0);
+    if(queue) {
+        // now playing
+        if(queue[0]) {
+            queue[0].duration = durationToString(queue[0].duration / 1000);
+            $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
+            updateProgress(0);
+        }
     }
 };
 
