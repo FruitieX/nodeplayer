@@ -214,3 +214,9 @@ _.each(config.backends, function(backendName) {
 
 // TODO: maybe wait for callbacks before this?
 callHooks('onBackendsInitialized', [player]);
+
+process.on('uncaughtException', function (err) {
+    console.error(err.stack);
+    console.log("ERROR! Node not exiting.");
+});
+
