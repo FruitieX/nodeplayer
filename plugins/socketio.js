@@ -28,7 +28,7 @@ socketio.init = function(_player, callback, errCallback) {
 
         player.socketio = socketio;
 
-        console.log('listening on port ' + (process.env.PORT || 8080));
+        console.log('listening on port ' + (process.env.PORT || config.port));
         callback();
     }
 };
