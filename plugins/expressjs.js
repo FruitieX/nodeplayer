@@ -10,7 +10,7 @@ expressjs.init = function(_player, callback, errCallback) {
     config = _player.config;
 
     player.expressApp = express();
-    player.expressServer = player.expressApp.listen(process.env.PORT || 8080);
+    player.expressServer = player.expressApp.listen(process.env.PORT || config.port);
 
     callback();
 };
