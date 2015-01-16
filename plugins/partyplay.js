@@ -46,9 +46,8 @@ partyplay.init = function(_player, callback, errCallback) {
             res.send('success');
         });
 
+        callback();
     }
-
-    callback();
 };
 
 partyplay.onPluginsInitialized = function(player) {
