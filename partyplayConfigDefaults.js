@@ -17,7 +17,7 @@ config.backends = ['youtube', 'gmusic'];
 // complain if order is wrong
 config.plugins = ['expressjs', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
-config.hostname = 'mydomain.com';
+config.hostname = 'http://mydomain.com';
 config.port = 8080;
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
 config.searchResultCnt = 10;
