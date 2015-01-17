@@ -18,26 +18,10 @@ rest.init = function(_player, callback, errCallback) {
         player.expressApp.get('/queue', function(req, res) {
             var response = [];
             if(player.nowPlaying) {
-                response.push({
-                    artist: player.nowPlaying.artist,
-                    title: player.nowPlaying.title,
-                    duration: player.nowPlaying.duration,
-                    songID: player.nowPlaying.songID,
-                    downVotes: player.nowPlaying.downVotes,
-                    upVotes: player.nowPlaying.upVotes,
-                    oldness: player.nowPlaying.oldness
-                });
+                response.push(player.nowPlaying);
             }
             for(var i = 0; i < player.queue.length; i++) {
-                response.push({
-                    artist: player.queue[i].artist,
-                    title: player.queue[i].title,
-                    duration: player.queue[i].duration,
-                    songID: player.queue[i].songID,
-                    downVotes: player.queue[i].downVotes,
-                    upVotes: player.queue[i].upVotes,
-                    oldness: player.queue[i].oldness
-                });
+                response.push(player.queue[i]);
             }
             res.send(JSON.stringify(response));
         });
