@@ -70,6 +70,8 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                     console.log('error while fetching! now reconnected to gmusic');
                     gmusicBackend.pm.getStreamUrl(songID, function(streamUrl) {
                         gmusicDownload(streamUrl, songID, callback, errCallback);
+                    }, function(err) {
+                        errCallback(err);
                     });
                 });
             }, 5000);
@@ -82,6 +84,8 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     } else {
         gmusicBackend.pm.getStreamUrl(songID, function(streamUrl) {
             doDownload(streamUrl);
+        }, function(err) {
+            errCallback(err);
         });
     }
 };

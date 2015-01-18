@@ -56,7 +56,6 @@ var onQueueModify = function() {
     if(!player.nowPlaying) {
         // play song
         player.nowPlaying = player.queue.shift();
-        removeFromQueue(player.nowPlaying.backendName, player.nowPlaying.songID);
         startPlayingNext = true;
     }
 

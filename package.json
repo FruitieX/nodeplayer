@@ -15,7 +15,7 @@
     "fluent-ffmpeg": "^2.0.0-rc3",
     "mkdirp": "^0.5.0",
     "node-ffprobe": "^1.2.2",
-    "playmusic": "^0.2.0",
+    "playmusic": ">=1.1.1",
     "send": "^0.10.1",
     "socket.io": "^1.2.0",
     "underscore": "^1.7.0",
