@@ -92,6 +92,7 @@ var onQueueModify = function() {
                 console.log('error! removing song from queue ' + player.queue[0].songID);
                 callHooks('onNextSongPrepareError', [player, 0]);
                 removeFromQueue(player.queue[0].backendName, player.queue[0].songID);
+                onQueueModify();
             });
         } else {
             console.log('no songs in queue to prepare');
@@ -102,6 +103,7 @@ var onQueueModify = function() {
         console.log('error! removing song from queue ' + player.nowPlaying.songID);
         callHooks('onSongPrepareError', [player]);
         removeFromQueue(player.nowPlaying.backendName, player.nowPlaying.songID);
+        onQueueModify();
     });
 };
 player.onQueueModify = onQueueModify;
