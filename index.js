@@ -79,7 +79,6 @@ var prepareError = function(song, err) {
 
 player.songsPreparing = {};
 var prepareSong = function(song, asyncCallback) {
-    console.log('DEBUG: prepareSong() ' + song.songID);
     if(!song) {
         console.log('DEBUG: prepareSong() without song');
         asyncCallback(true);
@@ -92,6 +91,7 @@ var prepareSong = function(song, asyncCallback) {
 
     // don't run prepareSong() multiple times for the same song
     if(!player.songsPreparing[song.backendName][song.songID]) {
+        console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = true;
 
         player.backends[song.backendName].prepareSong(song.songID, function() {
@@ -109,7 +109,6 @@ var prepareSong = function(song, asyncCallback) {
             asyncCallback(true);
         });
     } else {
-        console.log('DEBUG: returning null');
         asyncCallback();
     }
 };
@@ -118,7 +117,6 @@ var prepareSong = function(song, asyncCallback) {
 var prepareSongs = function() {
     async.series([
         function(callback) {
-            console.log('player.nowPlaying: ' + player.nowPlaying);
             // prepare now-playing song if it exists and if not prepared
             if(player.nowPlaying) {
                 if(!player.nowPlaying.prepared) {
@@ -139,7 +137,6 @@ var prepareSongs = function() {
             }
         },
         function(callback) {
-            console.log('player.queue[0]: ' + player.queue[0]);
             // prepare next song in queue if it exists and if not prepared
             if(player.queue[0]) {
                 if(!player.queue[0].prepared) {
@@ -216,6 +213,7 @@ player.initializeSong = initializeSong;
 // metadata is optional and can contain information passed between plugins
 // (e.g. which user added a song)
 var addToQueue = function(song, metadata) {
+    console.log('DEBUG: addToQueue(): ' + song.songID);
     // check that required fields are provided
     if(!song.title || !song.songID || !song.backendName || !song.duration) {
         console.log('required song fields not provided: ' + song.songID);
