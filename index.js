@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var async = require('async');
 
 var userConfig = require(process.env.HOME + '/.partyplayConfig.js');
 var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
@@ -41,10 +42,122 @@ var numHooks = function(hook) {
 };
 player.numHooks = numHooks;
 
+player.songEndTimeout = null;
+var startPlayback = function() {
+    var np = player.nowPlaying;
+    console.log('playing song: ' + np.songID);
+
+    np.playbackStart = new Date();
+    np.playing = true; // TODO: is there a better solution?
+
+    callHooks('onSongChange', [player]);
+
+    var duration = parseInt(np.duration) + config.songDelayMs;
+    if(player.songEndTimeout) {
+        console.log('DEBUG: songEndTimeout was cleared');
+        clearTimeout(player.songEndTimeout);
+    }
+    player.songEndTimeout = setTimeout(function() {
+        console.log('end of song ' + np.songID);
+        callHooks('onSongEnd', [player]);
+
+        player.nowPlaying = null;
+        onQueueModify();
+    }, duration);
+};
+
+var prepareError = function(song, err) {
+    console.log('DEBUG: error! (' + err + ') removing song from queue: ' + song.songID);
+    removeFromQueue(song.backendName, song.songID);
+    if(player.nowPlaying.backendName === song.backendName &&
+            player.nowPlaying.songID === song.songID) {
+        player.nowPlaying = null;
+    }
+    callHooks('onSongPrepareError', [player]); // TODO: consider changing player to song?
+    onQueueModify(); // if this was now playing we need to find another song
+};
+
+player.songsPreparing = {};
+var prepareSong = function(song, asyncCallback) {
+    console.log('DEBUG: prepareSong() ' + song.songID);
+    if(!song) {
+        console.log('DEBUG: prepareSong() without song');
+        asyncCallback(true);
+        return;
+    }
+
+    // create songsPreparing for current backend if one does not exist
+    if(!player.songsPreparing[song.backendName])
+        player.songsPreparing[song.backendName] = {};
+
+    // don't run prepareSong() multiple times for the same song
+    if(!player.songsPreparing[song.backendName][song.songID]) {
+        player.songsPreparing[song.backendName][song.songID] = true;
+
+        player.backends[song.backendName].prepareSong(song.songID, function() {
+            // mark song as prepared
+            callHooks('onSongPrepared', song);
+
+            delete(player.songsPreparing[song.backendName][song.songID]);
+            song.prepared = true;
+            asyncCallback();
+        }, function(err) {
+            // error while preparing
+            prepareError(song, err);
+
+            delete(player.songsPreparing[song.backendName][song.songID]);
+            asyncCallback(true);
+        });
+    } else {
+        console.log('DEBUG: returning null');
+        asyncCallback();
+    }
+};
+
+// prepare now playing and queued songs for playback
+var prepareSongs = function() {
+    async.series([
+        function(callback) {
+            console.log('player.nowPlaying: ' + player.nowPlaying);
+            // prepare now-playing song if it exists and if not prepared
+            if(player.nowPlaying) {
+                if(!player.nowPlaying.prepared) {
+                    prepareSong(player.nowPlaying, function(err) {
+                        // when done preparing now playing, run prepareSongs again
+                        // next event loop in case now playing song has changed
+                        // since we started preparing it
+                        if (player.nowPlaying && player.nowPlaying.prepared && !player.nowPlaying.playing)
+                            startPlayback();
+
+                        callback(err);
+                    });
+                } else {
+                    callback();
+                }
+            } else {
+                callback(true);
+            }
+        },
+        function(callback) {
+            console.log('player.queue[0]: ' + player.queue[0]);
+            // prepare next song in queue if it exists and if not prepared
+            if(player.queue[0]) {
+                if(!player.queue[0].prepared) {
+                    prepareSong(player.queue[0], callback);
+                } else {
+                    callback();
+                }
+            } else {
+                callback(true);
+            }
+        }
+    ]);
+};
+
 // to be called whenever the queue has been modified
 // this function will:
 // - play back the first song in the queue if no song is playing
-// - prepare first and second songs in the queue
+// - call prepareSongs()
 var onQueueModify = function() {
     if(!player.queue.length) {
         callHooks('onEndOfQueue', [player]);
@@ -52,59 +165,11 @@ var onQueueModify = function() {
         return;
     }
 
-    var startPlayingNext = false;
-    if(!player.nowPlaying) {
-        // play song
+    // set next song as now playing
+    if(!player.nowPlaying)
         player.nowPlaying = player.queue.shift();
-        startPlayingNext = true;
-    }
 
-    // TODO: error handling if backends[...] is undefined
-    // prepare now playing song
-    player.backends[player.nowPlaying.backendName].prepareSong(player.nowPlaying.songID, function() {
-        callHooks('onSongPrepared', [player]);
-
-        if(startPlayingNext) {
-            console.log('playing song: ' + player.nowPlaying.songID);
-
-            player.nowPlaying.playbackStart = new Date();
-
-            callHooks('onSongChange', [player]);
-
-            var songTimeout = parseInt(player.nowPlaying.duration) + config.songDelayMs;
-            setTimeout(function() {
-                console.log('end of song ' + player.nowPlaying.songID);
-                callHooks('onSongEnd', [player]);
-
-                player.nowPlaying = null;
-                onQueueModify();
-            }, songTimeout);
-        }
-
-        // TODO: support pre-caching multiple songs at once if configured so
-        // prepare next song(s) in queue
-        if(player.queue.length) {
-            player.backends[player.queue[0].backendName].prepareSong(player.queue[0].songID, function() {
-                callHooks('onNextSongPrepared', [player, 0]);
-                // do nothing
-            }, function(err) {
-                // error pre-caching, get rid of this song
-                console.log('error! removing song from queue ' + player.queue[0].songID);
-                callHooks('onNextSongPrepareError', [player, 0]);
-                removeFromQueue(player.queue[0].backendName, player.queue[0].songID);
-                onQueueModify();
-            });
-        } else {
-            console.log('no songs in queue to prepare');
-            callHooks('onNothingToPrepare', [player]);
-        }
-    }, function(err) {
-        // error pre-caching, get rid of this song
-        console.log('error! removing song from queue ' + player.nowPlaying.songID);
-        callHooks('onSongPrepareError', [player]);
-        removeFromQueue(player.nowPlaying.backendName, player.nowPlaying.songID);
-        onQueueModify();
-    });
+    prepareSongs();
 };
 player.onQueueModify = onQueueModify;
 

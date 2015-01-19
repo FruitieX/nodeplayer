@@ -49,9 +49,6 @@ socketio.postSongQueued = function(player) {
 };
 socketio.onNextSongPrepareError = socketio.postSongQueued;
 socketio.onSongPrepareError = socketio.postSongQueued;
-
-socketio.onEndOfQueue = function(player) {
-    socketio.io.emit('queue', [null, null]);
-};
+socketio.onEndOfQueue = socketio.postSongQueued;
 
 module.exports = socketio;

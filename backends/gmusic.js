@@ -90,22 +90,11 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
     }
 };
 
-// callbacks for in progress downloads are stored here
-// this way we can reject any possible duplicate download requests
-var pendingCallbacks = {};
-
 // cache songID to disk.
 // on success: callback must be called
 // on failure: errCallback must be called with error message
 gmusicBackend.prepareSong = function(songID, callback, errCallback) {
     var filePath = config.songCachePath + '/gmusic/' + songID + '.opus';
-
-    // song is already downloading
-    if(pendingCallbacks[songID]) {
-        pendingCallbacks[songID].successCallbacks.push(callback);
-        pendingCallbacks[songID].errorCallbacks.push(errCallback);
-        return;
-    }
 
     if(fs.existsSync(filePath)) {
         // song was found from cache
@@ -113,23 +102,7 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
             callback();
         return;
     } else {
-        // song had to be downloaded
-        pendingCallbacks[songID] = {
-            successCallbacks: [callback],
-            errorCallbacks: [errCallback]
-        }
-
-        gmusicDownload(null, songID, function() {
-            for(var i = 0; i < pendingCallbacks[songID].successCallbacks.length; i++)
-                pendingCallbacks[songID].successCallbacks[i]();
-
-            delete(pendingCallbacks[songID]);
-        }, function() {
-            for(var i = 0; i < pendingCallbacks[songID].errorCallbacks.length; i++)
-                pendingCallbacks[songID].errorCallbacks[i]();
-
-            delete(pendingCallbacks[songID]);
-        });
+        gmusicDownload(null, songID, callback, errCallback);
     }
 };
 
