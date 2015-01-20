@@ -89,6 +89,8 @@ var prepareSong = function(song, asyncCallback) {
     if(!player.songsPreparing[song.backendName])
         player.songsPreparing[song.backendName] = {};
 
+    // TODO: check for song.prepared before again asking the plugin?
+    // NOTE: in this case we MUST run asyncCallback()
     // don't run prepareSong() multiple times for the same song
     if(!player.songsPreparing[song.backendName][song.songID]) {
         console.log('DEBUG: prepareSong() ' + song.songID);
