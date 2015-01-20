@@ -54,7 +54,6 @@ var startPlayback = function() {
 
     var duration = parseInt(np.duration) + config.songDelayMs;
     if(player.songEndTimeout) {
-        // TODO: when does this happen and is it a problem?
         console.log('DEBUG: songEndTimeout was cleared');
         clearTimeout(player.songEndTimeout);
     }
@@ -63,6 +62,7 @@ var startPlayback = function() {
         callHooks('onSongEnd', [player]);
 
         player.nowPlaying = null;
+        player.songEndTimeout = null;
         onQueueModify();
     }, duration);
 };
