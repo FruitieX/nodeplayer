@@ -37,6 +37,36 @@ rest.init = function(_player, callback, errCallback) {
                 res.send('success');
         });
 
+        // TODO: maybe this functionality should be moved into index.js?
+        player.expressApp.post('/playctl', bodyParser.json(), function(req, res) {
+            var action = req.body.action;
+            if(action === 'play') {
+            } else if(action === 'pause') {
+            } else if(action === 'next') { // TODO multi-skip 'jumpto'
+                player.npIsPlaying = false;
+                player.playedQueue.push(player.nowPlaying);
+
+                player.nowPlaying = null;
+                clearTimeout(player.songEndTimeout);
+                player.songEndTimeout = null;
+                player.onQueueModify();
+            } else if(action === 'prev') {
+                player.npIsPlaying = false;
+                player.queue.unshift(player.nowPlaying);
+                player.nowPlaying = player.playedQueue.pop();
+
+                clearTimeout(player.songEndTimeout);
+                player.songEndTimeout = null;
+                player.onQueueModify();
+            } else if(action === 'restart') {
+                player.npIsPlaying = false;
+                clearTimeout(player.songEndTimeout);
+                player.songEndTimeout = null;
+                player.onQueueModify();
+            }
+            res.send('success');
+        });
+
         // search for song with given search terms
         player.expressApp.post('/search', bodyParser.json(), function(req, res) {
             console.log('got search request: ' + req.body.terms);

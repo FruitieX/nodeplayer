@@ -7,6 +7,7 @@ var config = _.defaults(userConfig, defaultConfig);
 
 var player = {
     config: config,
+    playedQueue: [],
     queue: [],
     nowPlaying: null,
     plugins: {},
@@ -48,7 +49,7 @@ var startPlayback = function() {
     console.log('playing song: ' + np.songID);
 
     np.playbackStart = new Date();
-    np.playing = true; // TODO: is there a better solution?
+    player.npIsPlaying = true; // TODO: is there a better solution?
 
     callHooks('onSongChange', [player]);
 
@@ -61,6 +62,9 @@ var startPlayback = function() {
         console.log('end of song ' + np.songID);
         callHooks('onSongEnd', [player]);
 
+        player.playedQueue.push(player.nowPlaying);
+
+        player.npIsPlaying = false;
         player.nowPlaying = null;
         player.songEndTimeout = null;
         onQueueModify();
@@ -126,7 +130,7 @@ var prepareSongs = function() {
                     // when done preparing now playing, run prepareSongs again
                     // next event loop in case now playing song has changed
                     // since we started preparing it
-                    if (!err && player.nowPlaying && player.nowPlaying.prepared && !player.nowPlaying.playing)
+                    if (!err && player.nowPlaying && player.nowPlaying.prepared && !player.npIsPlaying)
                         startPlayback();
 
                     callback(err);
@@ -213,13 +217,6 @@ var addToQueue = function(song, metadata) {
     if(!song.title || !song.songID || !song.backendName || !song.duration) {
         console.log('required song fields not provided: ' + song.songID);
         return 'required song fields not provided';
-    }
-
-    // if same song is already queued, don't create a duplicate
-    var queuedSong = searchQueue(song.backendName, song.songID);
-    if(queuedSong) {
-        console.log('not adding duplicate song to queue: ' + queuedSong.songID);
-        return 'duplicate songID';
     }
 
     var err = callHooks('preSongQueued', [player, song, metadata]);

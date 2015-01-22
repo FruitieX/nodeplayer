@@ -81,6 +81,13 @@ var checkDuration = function(song) {
 }
 
 partyplay.preSongQueued = function(player, song, metadata) {
+    // if same song is already queued, don't create a duplicate
+    var queuedSong = player.searchQueue(song.backendName, song.songID);
+    if(queuedSong) {
+        console.log('not adding duplicate song to queue: ' + queuedSong.songID);
+        return 'duplicate songID';
+    }
+
     if(checkDuration(song)) {
         return checkDuration(song);
     }
