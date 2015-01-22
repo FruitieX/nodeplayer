@@ -155,7 +155,7 @@ var prepareSongs = function() {
 // - play back the first song in the queue if no song is playing
 // - call prepareSongs()
 var onQueueModify = function() {
-    if(!player.queue.length) {
+    if(!player.queue.length && !player.nowPlaying) {
         callHooks('onEndOfQueue', [player]);
         console.log('end of queue, waiting for more songs');
         return;
