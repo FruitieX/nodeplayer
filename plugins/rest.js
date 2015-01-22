@@ -44,7 +44,8 @@ rest.init = function(_player, callback, errCallback) {
             } else if(action === 'pause') {
             } else if(action === 'next') { // TODO multi-skip 'jumpto'
                 player.npIsPlaying = false;
-                player.playedQueue.push(player.nowPlaying);
+                if(player.nowPlaying)
+                    player.playedQueue.push(player.nowPlaying);
 
                 player.nowPlaying = null;
                 clearTimeout(player.songEndTimeout);
@@ -52,7 +53,9 @@ rest.init = function(_player, callback, errCallback) {
                 player.onQueueModify();
             } else if(action === 'prev') {
                 player.npIsPlaying = false;
-                player.queue.unshift(player.nowPlaying);
+                if(player.nowPlaying)
+                    player.queue.unshift(player.nowPlaying);
+
                 player.nowPlaying = player.playedQueue.pop();
 
                 clearTimeout(player.songEndTimeout);
