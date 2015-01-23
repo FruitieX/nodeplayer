@@ -14,16 +14,16 @@ socketio.init = function(_player, callback, errCallback) {
     } else {
         socketio.io = require('socket.io')(player.expressServer);
         socketio.io.on('connection', function(socket) {
-            if(player.nowPlaying) {
+            if(player.queue[0]) {
                 socket.emit('playback', {
-                    songID: player.nowPlaying.songID,
-                    format: player.nowPlaying.format,
-                    backendName: player.nowPlaying.backendName,
-                    duration: player.nowPlaying.duration,
-                    position: new Date() - player.nowPlaying.playbackStart
+                    songID: player.queue[0].songID,
+                    format: player.queue[0].format,
+                    backendName: player.queue[0].backendName,
+                    duration: player.queue[0].duration,
+                    position: new Date() - player.queue[0].playbackStart
                 });
             }
-            socket.emit('queue', [player.nowPlaying, player.queue]);
+            socket.emit('queue', player.queue);
         });
 
         player.socketio = socketio;
@@ -36,23 +36,23 @@ socketio.init = function(_player, callback, errCallback) {
 // updates to queue
 socketio.onSongChange = function(player) {
     socketio.io.emit('playback', {
-        songID: player.nowPlaying.songID,
-        format: player.nowPlaying.format,
-        backendName: player.nowPlaying.backendName,
-        duration: player.nowPlaying.duration
+        songID: player.queue[0].songID,
+        format: player.queue[0].format,
+        backendName: player.queue[0].backendName,
+        duration: player.queue[0].duration
     });
-    socketio.io.emit('queue', [player.nowPlaying, player.queue]);
+    socketio.io.emit('queue', player.queue);
 };
 
 socketio.postSongQueued = function(player) {
-    socketio.io.emit('queue', [player.nowPlaying, player.queue]);
+    socketio.io.emit('queue', player.queue);
 };
 socketio.onNextSongPrepareError = socketio.postSongQueued;
 socketio.onSongPrepareError = socketio.postSongQueued;
 
 socketio.onEndOfQueue = function(player) {
-    socketio.io.emit('playback', {});
-    socketio.io.emit('queue', [player.nowPlaying, player.queue]);
+    socketio.io.emit('playback', null);
+    socketio.io.emit('queue', player.queue);
 };
 
 module.exports = socketio;

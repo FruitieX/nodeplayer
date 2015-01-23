@@ -16,14 +16,7 @@ rest.init = function(_player, callback, errCallback) {
         errCallback('module must be initialized after expressjs module!');
     } else {
         player.expressApp.get('/queue', function(req, res) {
-            var response = [];
-            if(player.nowPlaying) {
-                response.push(player.nowPlaying);
-            }
-            for(var i = 0; i < player.queue.length; i++) {
-                response.push(player.queue[i]);
-            }
-            res.send(JSON.stringify(response));
+            res.send(JSON.stringify(player.queue[i]));
         });
 
         // TODO: support pos
@@ -58,19 +51,19 @@ rest.init = function(_player, callback, errCallback) {
 
                 for(var i = 0; i < Math.abs(req.body.cnt); i++) {
                     if(cnt > 0) {
-                        if(player.nowPlaying)
-                            player.playedQueue.push(player.nowPlaying);
+                        if(player.queue[0])
+                            player.playedQueue.push(player.queue[0]);
 
-                        player.nowPlaying = player.queue.shift();
+                        player.queue[0] = player.queue.shift();
                     } else if(cnt < 0) {
-                        if(player.nowPlaying)
-                            player.queue.unshift(player.nowPlaying);
+                        if(player.queue[0])
+                            player.queue.unshift(player.queue[0]);
 
-                        player.nowPlaying = player.playedQueue.pop();
+                        player.queue[0] = player.playedQueue.pop();
                     }
 
                     // ran out of songs while skipping, stop
-                    if(!player.nowPlaying)
+                    if(!player.queue[0])
                         break;
                 }
 
