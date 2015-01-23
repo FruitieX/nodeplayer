@@ -26,6 +26,7 @@ rest.init = function(_player, callback, errCallback) {
             res.send(JSON.stringify(response));
         });
 
+        // TODO: support pos
         // queue song
         player.expressApp.post('/queue', bodyParser.json(), function(req, res) {
             var err = player.addToQueue(req.body.song, {
@@ -37,36 +38,47 @@ rest.init = function(_player, callback, errCallback) {
                 res.send('success');
         });
 
+        player.expressApp.delete('/queue/:pos', bodyParser.json(), function(req, res) {
+            var err = player.removeFromQueue(req.params.backendName, req.params.songID);
+            if(err)
+                res.status(404).send(err);
+            else
+                res.send('success');
+        });
+
         // TODO: maybe this functionality should be moved into index.js?
         player.expressApp.post('/playctl', bodyParser.json(), function(req, res) {
             var action = req.body.action;
+            var cnt = req.body.cnt;
+
             if(action === 'play') {
             } else if(action === 'pause') {
-            } else if(action === 'next') { // TODO multi-skip 'jumpto'
+            } else if(action === 'skip') {
                 player.npIsPlaying = false;
-                if(player.nowPlaying)
-                    player.playedQueue.push(player.nowPlaying);
 
-                player.nowPlaying = null;
-                clearTimeout(player.songEndTimeout);
-                player.songEndTimeout = null;
-                player.onQueueModify();
-            } else if(action === 'prev') {
-                player.npIsPlaying = false;
-                if(player.nowPlaying)
-                    player.queue.unshift(player.nowPlaying);
+                for(var i = 0; i < Math.abs(req.body.cnt); i++) {
+                    if(cnt > 0) {
+                        if(player.nowPlaying)
+                            player.playedQueue.push(player.nowPlaying);
 
-                player.nowPlaying = player.playedQueue.pop();
+                        player.nowPlaying = player.queue.shift();
+                    } else if(cnt < 0) {
+                        if(player.nowPlaying)
+                            player.queue.unshift(player.nowPlaying);
 
-                clearTimeout(player.songEndTimeout);
-                player.songEndTimeout = null;
-                player.onQueueModify();
-            } else if(action === 'restart') {
-                player.npIsPlaying = false;
+                        player.nowPlaying = player.playedQueue.pop();
+                    }
+
+                    // ran out of songs while skipping, stop
+                    if(!player.nowPlaying)
+                        break;
+                }
+
                 clearTimeout(player.songEndTimeout);
                 player.songEndTimeout = null;
                 player.onQueueModify();
             }
+
             res.send('success');
         });
 

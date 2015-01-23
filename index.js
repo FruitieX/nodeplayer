@@ -9,7 +9,6 @@ var player = {
     config: config,
     playedQueue: [],
     queue: [],
-    nowPlaying: null,
     plugins: {},
     backends: {}
 }
@@ -45,7 +44,7 @@ player.numHooks = numHooks;
 
 player.songEndTimeout = null;
 var startPlayback = function() {
-    var np = player.nowPlaying;
+    var np = player.queue[0];
     console.log('playing song: ' + np.songID);
 
     np.playbackStart = new Date();
@@ -62,28 +61,25 @@ var startPlayback = function() {
         console.log('end of song ' + np.songID);
         callHooks('onSongEnd', [player]);
 
-        player.playedQueue.push(player.nowPlaying);
+        player.playedQueue.push(player.queue[0]);
 
         player.npIsPlaying = false;
-        player.nowPlaying = null;
+        player.queue[0] = null;
         player.songEndTimeout = null;
         onQueueModify();
     }, duration);
 };
 
-var prepareError = function(song, err) {
+var prepareError = function(song, pos, err) {
     console.log('DEBUG: error! (' + err + ') removing song from queue: ' + song.songID);
-    removeFromQueue(song.backendName, song.songID);
-    if(player.nowPlaying.backendName === song.backendName &&
-            player.nowPlaying.songID === song.songID) {
-        player.nowPlaying = null;
-    }
+    removeFromQueue(pos);
+
     callHooks('onSongPrepareError', [player]); // TODO: consider changing player to song?
     onQueueModify(); // if this was now playing we need to find another song
 };
 
 player.songsPreparing = {};
-var prepareSong = function(song, asyncCallback) {
+var prepareSong = function(song, pos, asyncCallback) {
     if(!song) {
         console.log('DEBUG: prepareSong() without song');
         asyncCallback(true);
@@ -110,7 +106,7 @@ var prepareSong = function(song, asyncCallback) {
             asyncCallback();
         }, function(err) {
             // error while preparing
-            prepareError(song, err);
+            prepareError(song, pos, err);
 
             delete(player.songsPreparing[song.backendName][song.songID]);
             asyncCallback(true);
@@ -125,12 +121,12 @@ var prepareSongs = function() {
     async.series([
         function(callback) {
             // prepare now-playing song if it exists and if not prepared
-            if(player.nowPlaying) {
-                prepareSong(player.nowPlaying, function(err) {
+            if(player.queue[0]) {
+                prepareSong(player.queue[0], 0, function(err) {
                     // when done preparing now playing, run prepareSongs again
                     // next event loop in case now playing song has changed
                     // since we started preparing it
-                    if (!err && player.nowPlaying && player.nowPlaying.prepared && !player.npIsPlaying)
+                    if (!err && player.queue[0] && player.queue[0].prepared && !player.npIsPlaying)
                         startPlayback();
 
                     callback(err);
@@ -141,8 +137,8 @@ var prepareSongs = function() {
         },
         function(callback) {
             // prepare next song in queue if it exists and if not prepared
-            if(player.queue[0]) {
-                prepareSong(player.queue[0], callback);
+            if(player.queue[1]) {
+                prepareSong(player.queue[1], 1, callback);
             } else {
                 callback(true);
             }
@@ -155,15 +151,15 @@ var prepareSongs = function() {
 // - play back the first song in the queue if no song is playing
 // - call prepareSongs()
 var onQueueModify = function() {
-    if(!player.queue.length && !player.nowPlaying) {
+    if(!player.queue.length) {
         callHooks('onEndOfQueue', [player]);
         console.log('end of queue, waiting for more songs');
         return;
     }
 
-    // set next song as now playing
-    if(!player.nowPlaying)
-        player.nowPlaying = player.queue.shift();
+    // set next song as now playing, moves current into playedQueue
+    if(!player.queue[0])
+        player.playedQueue.push(player.queue.shift());
 
     prepareSongs();
 };
@@ -177,22 +173,16 @@ var searchQueue = function(backendName, songID) {
             return player.queue[i];
     }
 
-    if(player.nowPlaying && player.nowPlaying.songID === songID
-            && player.nowPlaying.backendName === backendName)
-        return player.nowPlaying;
-
     return null;
 };
 player.searchQueue = searchQueue;
 
-// get rid of song in queue
-var removeFromQueue = function(backendName, songID) {
-    for(var i = 0; i < player.queue.length; i++) {
-        if(player.queue[i].songID === songID && player.queue[i].backendName === backendName) {
-            player.queue.splice(i, 1);
-            return;
-        }
-    }
+// get rid of song in either queue (negative signifies playedQueue)
+var removeFromQueue = function(pos) {
+    if(pos >= 0)
+        return player.queue.splice(i, 1);
+    else
+        return player.playedQueue.splice(player.playedQueue.length + pos, 1);
 };
 player.removeFromQueue = removeFromQueue;
 
