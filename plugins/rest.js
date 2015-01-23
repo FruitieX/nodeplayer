@@ -6,6 +6,13 @@ var send = require('send');
 var rest = {};
 var config, player;
 
+var sendResponse = function(res, msg, err) {
+    if(err)
+        res.status(404).send(err);
+    else
+        res.send(msg);
+};
+
 // called when partyplay is started to initialize the backend
 // do any necessary initialization here
 rest.init = function(_player, callback, errCallback) {
@@ -25,18 +32,12 @@ rest.init = function(_player, callback, errCallback) {
             var err = player.addToQueue(req.body.song, {
                 userID: req.body.userID
             });
-            if(err)
-                res.status(404).send(err);
-            else
-                res.send('success');
+            sendResponse(res, 'success', err);
         });
 
         player.expressApp.delete('/queue/:pos', bodyParser.json(), function(req, res) {
-            var err = player.removeFromQueue(req.params.backendName, req.params.songID);
-            if(err)
-                res.status(404).send(err);
-            else
-                res.send('success');
+            var err = player.removeFromQueue(req.params.pos);
+            sendResponse(res, 'success', err);
         });
 
         // TODO: maybe this functionality should be moved into index.js?

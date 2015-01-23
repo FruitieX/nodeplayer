@@ -179,10 +179,15 @@ player.searchQueue = searchQueue;
 
 // get rid of song in either queue (negative signifies playedQueue)
 var removeFromQueue = function(pos) {
+    var retval;
+
     if(pos >= 0)
-        return player.queue.splice(i, 1);
+        retval = player.queue.splice(pos, 1);
     else
-        return player.playedQueue.splice(player.playedQueue.length + pos, 1);
+        retval = player.playedQueue.splice(player.playedQueue.length + pos, 1);
+
+    onQueueModify();
+    return retval;
 };
 player.removeFromQueue = removeFromQueue;
 
