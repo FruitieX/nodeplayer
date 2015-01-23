@@ -16,7 +16,7 @@ rest.init = function(_player, callback, errCallback) {
         errCallback('module must be initialized after expressjs module!');
     } else {
         player.expressApp.get('/queue', function(req, res) {
-            res.send(JSON.stringify(player.queue[i]));
+            res.send(JSON.stringify(player.queue));
         });
 
         // TODO: support pos
