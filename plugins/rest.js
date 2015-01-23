@@ -54,12 +54,10 @@ rest.init = function(_player, callback, errCallback) {
                         if(player.queue[0])
                             player.playedQueue.push(player.queue[0]);
 
-                        player.queue[0] = player.queue.shift();
+                        player.queue.shift();
                     } else if(cnt < 0) {
-                        if(player.queue[0])
-                            player.queue.unshift(player.queue[0]);
-
-                        player.queue[0] = player.playedQueue.pop();
+                        if(player.playedQueue.length)
+                            player.queue.unshift(player.playedQueue.pop());
                     }
 
                     // ran out of songs while skipping, stop
