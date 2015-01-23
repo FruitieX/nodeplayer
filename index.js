@@ -181,10 +181,18 @@ player.searchQueue = searchQueue;
 var removeFromQueue = function(pos) {
     var retval;
 
+    pos = parseInt(pos);
     if(pos >= 0)
         retval = player.queue.splice(pos, 1);
     else
         retval = player.playedQueue.splice(player.playedQueue.length + pos, 1);
+
+    if(pos === 0) {
+        console.log('there')
+        player.npIsPlaying = false;
+        clearTimeout(player.songEndTimeout);
+        player.songEndTimeout = null;
+    }
 
     onQueueModify();
     return retval;
