@@ -16,7 +16,7 @@ config.backends = ['youtube', 'gmusic'];
 //
 // NOTE: ordering is important here, plugins that depend on other plugins will
 // complain if order is wrong
-config.plugins = ['https', 'rest', 'ipfilter', 'engineio', 'partyplay'];
+config.plugins = ['https', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
 config.hostname = 'http://mydomain.com';
 config.port = 8080;
