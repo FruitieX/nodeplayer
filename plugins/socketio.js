@@ -3,7 +3,7 @@ var _ = require('underscore');
 var socketio = {};
 var config, player;
 
-// called when partyplay is started to initialize the plugin
+// called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
 socketio.init = function(_player, callback, errCallback) {
     player = _player;

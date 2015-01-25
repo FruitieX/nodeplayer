@@ -1,7 +1,7 @@
 {
-  "name": "partyplay",
-  "version": "0.0.2",
-  "description": "party playlist manager for google play music",
+  "name": "nodeplayer",
+  "version": "0.1.0",
+  "description": "simple, modular music player written in node.js",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,6 +16,7 @@
     "fluent-ffmpeg": "^2.0.0-rc3",
     "mkdirp": "^0.5.0",
     "node-ffprobe": "^1.2.2",
+    "nodeplayer-defaults": "^0.1.1",
     "playmusic": ">=1.1.1",
     "send": "^0.10.1",
     "socket.io": "^1.3.2",

@@ -1,8 +1,8 @@
 var _ = require('underscore');
 var async = require('async');
 
-var userConfig = require(process.env.HOME + '/.partyplayConfig.js');
-var defaultConfig = require(__dirname + '/partyplayConfigDefaults.js');
+var userConfig = require(process.env.HOME + '/.nodeplayer-config.js');
+var defaultConfig = require('nodeplayer-defaults');
 var config = _.defaults(userConfig, defaultConfig);
 
 var player = {

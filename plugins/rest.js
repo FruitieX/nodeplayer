@@ -13,7 +13,7 @@ var sendResponse = function(res, msg, err) {
         res.send(msg);
 };
 
-// called when partyplay is started to initialize the backend
+// called when nodeplayer is started to initialize the backend
 // do any necessary initialization here
 rest.init = function(_player, callback, errCallback) {
     player = _player;
