@@ -76,16 +76,17 @@ var startPlayback = function() {
 };
 
 var prepareError = function(song, err) {
-    console.log('DEBUG: error! (' + err + ') removing song from queue: ' + song.songID);
-
     // remove all instances of this song
     for(var i = player.queue.length - 1; i >= 0; i--) {
-        if(player.queue[i].songID === song.songID && player.queue[i].backendName === song.backendName)
-            removeFromQueue(i);
+        if(player.queue[i].songID === song.songID && player.queue[i].backendName === song.backendName) {
+            if(!song.beingDeleted) {
+                console.log('DEBUG: error! (' + err + ') removing song from queue: ' + song.songID);
+                removeFromQueue(i);
+            }
+        }
     }
 
     callHooks('onSongPrepareError', [player]); // TODO: consider changing player to song?
-    onQueueModify(); // if this was now playing we need to find another song
 };
 
 player.songsPreparing = {};
@@ -115,13 +116,9 @@ var prepareSong = function(song, asyncCallback) {
             song.prepared = true;
             asyncCallback();
         }, function(err) {
-            // error while preparing
+            // already got an error, don't let anything run cancelPrepare anymore
+            delete(song.cancelPrepare);
             prepareError(song, err);
-
-            // call prepare cancel function if there is one
-            if(song.cancelPrepare)
-                song.cancelPrepare(err);
-
             delete(player.songsPreparing[song.backendName][song.songID]);
 
             // report back error
@@ -214,8 +211,13 @@ var removeFromQueue = function(pos, cnt) {
         // stop preparing songs we are about to remove
         for(var i = 0; i < pos + cnt; i++) {
             var song = player.queue[i];
-            if(song.cancelPrepare)
-                song.cancelPrepare();
+
+            // signal prepareError function not to run removeFromQueue again
+            song.beingDeleted = true;
+            if(song.cancelPrepare) {
+                song.cancelPrepare('song deleted');
+                delete(song.cancelPrepare);
+            }
         }
 
         if(pos >= 0) {
