@@ -104,7 +104,7 @@ var prepareSong = function(song, asyncCallback) {
     // NOTE: in this case we MUST run asyncCallback()
     // don't run prepareSong() multiple times for the same song
     if(!player.songsPreparing[song.backendName][song.songID]) {
-        console.log('DEBUG: prepareSong() ' + song.songID);
+        //console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = song;
 
         var cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function() {
@@ -134,6 +134,13 @@ var prepareSong = function(song, asyncCallback) {
     }
 };
 
+var preparedCallback = function(err, callback) {
+    if (!err && player.queue[0] && player.queue[0].prepared && !player.npIsPlaying)
+        startPlayback();
+
+    callback(err);
+};
+
 // prepare now playing and queued songs for playback
 var prepareSongs = function() {
     async.series([
@@ -141,13 +148,7 @@ var prepareSongs = function() {
             // prepare now-playing song if it exists and if not prepared
             if(player.queue[0]) {
                 prepareSong(player.queue[0], function(err) {
-                    // when done preparing now playing, run prepareSongs again
-                    // next event loop in case now playing song has changed
-                    // since we started preparing it
-                    if (!err && player.queue[0] && player.queue[0].prepared && !player.npIsPlaying)
-                        startPlayback();
-
-                    callback(err);
+                    preparedCallback(err, callback);
                 });
             } else {
                 callback(true);
@@ -156,7 +157,9 @@ var prepareSongs = function() {
         function(callback) {
             // prepare next song in queue if it exists and if not prepared
             if(player.queue[1]) {
-                prepareSong(player.queue[1], callback);
+                prepareSong(player.queue[1], function(err) {
+                    preparedCallback(err, callback);
+                });
             } else {
                 callback(true);
             }
@@ -248,7 +251,7 @@ var addToQueue = function(songs, pos, metadata) {
     pos = Math.min(pos, player.queue.length)
 
     _.each(songs, function(song) {
-        console.log('DEBUG: addToQueue(): ' + song.songID);
+        //console.log('DEBUG: addToQueue(): ' + song.songID);
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
             console.log('required song fields not provided: ' + song.songID);

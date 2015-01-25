@@ -13,7 +13,7 @@
     "body-parser": "^1.9.2",
     "express": "^4.10.1",
     "express-ipfilter": "0.0.17",
-    "nodeplayer-defaults": "^0.1.1",
+    "nodeplayer-defaults": "*",
     "send": "^0.10.1",
     "socket.io": "^1.3.2",
     "underscore": "^1.7.0"
