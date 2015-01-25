@@ -17,7 +17,7 @@ config.backends = ['youtube', 'gmusic'];
 // complain if order is wrong
 config.plugins = ['https', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
-config.hostname = 'http://mydomain.com';
+config.hostname = 'https://mydomain.com';
 config.port = 8080;
 
 // TLS options
