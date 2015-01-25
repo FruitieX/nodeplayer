@@ -10,9 +10,9 @@ partyplay.init = function(_player, callback, errCallback) {
 
     if(!player.expressApp) {
         errCallback('module must be initialized after expressjs module!');
-    } else if(!player.engineio) {
-        // partyplay client depends on engineio module
-        errCallback('module must be initialized after engineio module!');
+    } else if(!player.socketio) {
+        // partyplay client depends on socketio module
+        errCallback('module must be initialized after socketio module!');
     } else if(!player.rest) {
         // partyplay client depends on rest module
         errCallback('module must be initialized after rest module!');
@@ -39,7 +39,7 @@ partyplay.init = function(_player, callback, errCallback) {
 
             voteSong(queuedSong, vote, userID);
             player.onQueueModify();
-            player.engineio.io.emit('queue', [player.nowPlaying, player.queue]);
+            player.socketio.io.emit('queue', [player.nowPlaying, player.queue]);
 
             console.log('got vote ' + vote + ' for song: ' + queuedSong.songID);
 
