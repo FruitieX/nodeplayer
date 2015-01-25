@@ -29,20 +29,20 @@ rest.init = function(_player, callback, errCallback) {
         // TODO: support pos
         // TODO: get rid of the partyplay specific userID here
         // queue song
-        player.expressApp.post('/queue', bodyParser.json(), function(req, res) {
+        player.expressApp.post('/queue', bodyParser.json({limit: '100mb'}), function(req, res) {
             var err = player.addToQueue(req.body.songs, req.body.pos, {
                 userID: req.body.userID
             });
             sendResponse(res, 'success', err);
         });
 
-        player.expressApp.delete('/queue/:pos', bodyParser.json(), function(req, res) {
+        player.expressApp.delete('/queue/:pos', bodyParser.json({limit: '100mb'}), function(req, res) {
             var err = player.removeFromQueue(req.params.pos, req.body.cnt);
             sendResponse(res, 'success', err);
         });
 
         // TODO: maybe this functionality should be moved into index.js?
-        player.expressApp.post('/playctl', bodyParser.json(), function(req, res) {
+        player.expressApp.post('/playctl', bodyParser.json({limit: '100mb'}), function(req, res) {
             var action = req.body.action;
             var cnt = req.body.cnt;
 
@@ -76,7 +76,7 @@ rest.init = function(_player, callback, errCallback) {
         });
 
         // search for song with given search terms
-        player.expressApp.post('/search', bodyParser.json(), function(req, res) {
+        player.expressApp.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {
             console.log('got search request: ' + req.body.terms);
 
             var resultCnt = 0;

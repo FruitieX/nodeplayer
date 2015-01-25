@@ -186,6 +186,8 @@ var removeFromQueue = function(pos, cnt) {
     pos = parseInt(pos);
     if(pos < 0)
         retval = player.playedQueue.splice(player.playedQueue.length + pos, cnt);
+
+    callHooks('preSongsRemoved', [player, pos, cnt]);
     if(pos + cnt > 0) {
         if(pos >= 0) {
             retval = player.queue.splice(pos, cnt);
@@ -203,6 +205,7 @@ var removeFromQueue = function(pos, cnt) {
     }
 
     onQueueModify();
+    callHooks('postSongsRemoved', [player, pos, cnt]);
     return retval;
 };
 player.removeFromQueue = removeFromQueue;
