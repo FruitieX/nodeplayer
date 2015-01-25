@@ -199,35 +199,32 @@ var removeFromQueue = function(pos) {
 };
 player.removeFromQueue = removeFromQueue;
 
-// TODO: partyplay specific stuff
-// initialize song object
-var initializeSong = function(song) {
-    song.playbackStart = null;
-    song.timeAdded = new Date().getTime();
-
-    player.queue.push(song);
-    return song;
-};
-player.initializeSong = initializeSong;
-
-// add a song to the queue
+// add songs to the queue, at optional position
 //
 // metadata is optional and can contain information passed between plugins
 // (e.g. which user added a song)
-var addToQueue = function(song, metadata) {
-    console.log('DEBUG: addToQueue(): ' + song.songID);
-    // check that required fields are provided
-    if(!song.title || !song.songID || !song.backendName || !song.duration) {
-        console.log('required song fields not provided: ' + song.songID);
-        return 'required song fields not provided';
-    }
+var addToQueue = function(songs, pos, metadata) {
+    if(!pos || pos < 0)
+        pos = 0;
+    pos = Math.min(pos, player.queue.length)
 
-    var err = callHooks('preSongQueued', [player, song, metadata]);
-    if(err)
-        return err;
+    _.each(songs, function(song) {
+        console.log('DEBUG: addToQueue(): ' + song.songID);
+        // check that required fields are provided
+        if(!song.title || !song.songID || !song.backendName || !song.duration) {
+            console.log('required song fields not provided: ' + song.songID);
+            return 'required song fields not provided';
+        }
 
-    // no duplicate found, initialize a few properties of song
-    queuedSong = initializeSong(song);
+        var err = callHooks('preSongQueued', [player, song, metadata]);
+        if(err)
+            return err;
+
+        song.playbackStart = null; // TODO: is this ever used...
+        song.timeAdded = new Date().getTime();
+
+        player.queue.splice(pos++, 0, song);
+    })
 
     callHooks('sortQueue', [player, metadata]);
     onQueueModify();

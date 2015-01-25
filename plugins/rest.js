@@ -27,9 +27,10 @@ rest.init = function(_player, callback, errCallback) {
         });
 
         // TODO: support pos
+        // TODO: get rid of the partyplay specific userID here
         // queue song
         player.expressApp.post('/queue', bodyParser.json(), function(req, res) {
-            var err = player.addToQueue(req.body.song, {
+            var err = player.addToQueue(req.body.songs, req.body.pos, {
                 userID: req.body.userID
             });
             sendResponse(res, 'success', err);
