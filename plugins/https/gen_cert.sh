@@ -4,10 +4,10 @@
 # Generate self signed certificate/key for SSL
 #
 
-NAME=partyplay
-KEYNAME=$NAME-key.pem
-CSRNAME=$NAME-csr.pem
-CERTNAME=$NAME-cert.pem
+PREFIX=~/.partyplay/partyplay
+KEYNAME=$PREFIX-key.pem
+CSRNAME=$PREFIX-csr.pem
+CERTNAME=$PREFIX-cert.pem
 
 openssl genrsa -out $KEYNAME 1024
 openssl req -new -key $KEYNAME -out $CSRNAME
