@@ -75,16 +75,21 @@ var startPlayback = function() {
     }, duration);
 };
 
-var prepareError = function(song, pos, err) {
+var prepareError = function(song, err) {
     console.log('DEBUG: error! (' + err + ') removing song from queue: ' + song.songID);
-    removeFromQueue(pos);
+
+    // remove all instances of this song
+    for(var i = player.queue.length - 1; i >= 0; i--) {
+        if(player.queue[i].songID === song.songID && player.queue[i].backendName === song.backendName)
+            removeFromQueue(i);
+    }
 
     callHooks('onSongPrepareError', [player]); // TODO: consider changing player to song?
     onQueueModify(); // if this was now playing we need to find another song
 };
 
 player.songsPreparing = {};
-var prepareSong = function(song, pos, asyncCallback) {
+var prepareSong = function(song, asyncCallback) {
     if(!song) {
         console.log('DEBUG: prepareSong() without song');
         asyncCallback(true);
@@ -100,9 +105,9 @@ var prepareSong = function(song, pos, asyncCallback) {
     // don't run prepareSong() multiple times for the same song
     if(!player.songsPreparing[song.backendName][song.songID]) {
         console.log('DEBUG: prepareSong() ' + song.songID);
-        player.songsPreparing[song.backendName][song.songID] = true;
+        player.songsPreparing[song.backendName][song.songID] = song;
 
-        player.backends[song.backendName].prepareSong(song.songID, function() {
+        var cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function() {
             // mark song as prepared
             callHooks('onSongPrepared', song);
 
@@ -111,11 +116,19 @@ var prepareSong = function(song, pos, asyncCallback) {
             asyncCallback();
         }, function(err) {
             // error while preparing
-            prepareError(song, pos, err);
+            prepareError(song, err);
 
-            delete(player.songsPreparing[song.backendName][song.songID]);
-            asyncCallback(true);
+            song.cancelPrepare();
         });
+
+        song.cancelPrepare = function() {
+            if(cancelPrepare)
+                cancelPrepare();
+            delete(player.songsPreparing[song.backendName][song.songID]);
+
+            // report back error
+            asyncCallback(true);
+        };
     } else {
         asyncCallback();
     }
@@ -127,7 +140,7 @@ var prepareSongs = function() {
         function(callback) {
             // prepare now-playing song if it exists and if not prepared
             if(player.queue[0]) {
-                prepareSong(player.queue[0], 0, function(err) {
+                prepareSong(player.queue[0], function(err) {
                     // when done preparing now playing, run prepareSongs again
                     // next event loop in case now playing song has changed
                     // since we started preparing it
@@ -143,7 +156,7 @@ var prepareSongs = function() {
         function(callback) {
             // prepare next song in queue if it exists and if not prepared
             if(player.queue[1]) {
-                prepareSong(player.queue[1], 1, callback);
+                prepareSong(player.queue[1], callback);
             } else {
                 callback(true);
             }
@@ -189,15 +202,25 @@ var removeFromQueue = function(pos, cnt) {
         cnt = 1;
 
     pos = parseInt(pos);
+    callHooks('preSongsRemoved', [player, pos, cnt]);
+
+    // remove songs from played queue
     if(pos < 0)
         retval = player.playedQueue.splice(player.playedQueue.length + pos, cnt);
 
-    callHooks('preSongsRemoved', [player, pos, cnt]);
+    // remove songs from queue
     if(pos + cnt > 0) {
+        // stop preparing songs we are about to remove
+        for(var i = 0; i < pos + cnt; i++) {
+            var song = player.queue[i];
+            if(song.cancelPrepare)
+                song.cancelPrepare();
+        }
+
         if(pos >= 0) {
             retval = player.queue.splice(pos, cnt);
         } else {
-            // pos is negative
+            // pos is negative: removed some from played queue, continue removing from zero
             retval = player.queue.splice(0, cnt + pos);
         }
 
