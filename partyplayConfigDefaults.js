@@ -32,7 +32,7 @@ config.requestCert = true; // TLS client authentication
 config.rejectUnauthorized = true; // Disabling leaves you vulnerable to MITM
 
 config.verifyMac = {};
-config.verifyMac.algorithm = 'aes256';
+config.verifyMac.algorithm = 'sha256';
 config.verifyMac.key = process.env.HOME + '/.partyplay/partyplay-key.pem';
 config.verifyMac.iterations = 1000;
 config.verifyMac.keyLen = 256;

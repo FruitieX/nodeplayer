@@ -12,7 +12,7 @@ verifyMac.init = function(_player, callback, errCallback) {
         errCallback('module must be initialized after rest module!');
     } else {
         var key = fs.readFileSync(config.verifyMac.key);
-        derivedKey = crypto.pbkdf2Sync(key, null, config.verifyMac.iterations, config.verifyMac.keyLen);
+        derivedKey = crypto.pbkdf2Sync(key, key, config.verifyMac.iterations, config.verifyMac.keyLen);
         callback();
     }
 };
@@ -29,14 +29,18 @@ verifyMac.verify = function(str, hmac) {
 };
 
 verifyMac.getSongHmac = function(song) {
+    song.album = (song.album || "");
+    song.artist = (song.artist || "");
+    song.title = (song.title || "");
+
     return verifyMac.calculateMac(
-        song.album.replace('|', '')       + '|' +
-        song.artist.replace('|', '')      + '|' +
-        song.title.replace('|', '')       + '|' +
-        song.backendName.replace('|', '') + '|' +
-        song.duration.replace('|', '')    + '|' +
-        song.format.replace('|', '')      + '|' +
-        song.songID.replace('|', '')      + '|'
+        song.album.replace('|', '')                  + '|' +
+        song.artist.replace('|', '')                 + '|' +
+        song.title.replace('|', '')                  + '|' +
+        song.backendName.replace('|', '')            + '|' +
+        song.duration.toString().replace('|', '')    + '|' +
+        song.format.replace('|', '')                 + '|' +
+        song.songID.replace('|', '')                 + '|'
     );
 };
 
@@ -50,7 +54,7 @@ verifyMac.preAddSearchResult = function(player, song) {
 };
 
 verifyMac.preSongQueued = function(player, song, metadata) {
-    return verifyMac.verifySong(song) ? null : "invalid hmac!";
+    return (verifyMac.verifySong(song) ? null : "invalid hmac!");
 };
 
-module.exports = ipfilter;
+module.exports = verifyMac;

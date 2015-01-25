@@ -20,11 +20,16 @@ var callHooks = function(hook, argv) {
     // _.find() used instead of _.each() because we want to break out as soon
     // as a hook returns a truthy value (used to indicate an error, e.g. in form
     // of a string)
-    return _.find(player.plugins, function(plugin) {
+    var err = null;
+
+    _.find(player.plugins, function(plugin) {
         if(plugin[hook]) {
-            return plugin[hook].apply(null, argv);
+            err = plugin[hook].apply(null, argv);
+            return err;
         }
     });
+
+    return err;
 };
 player.callHooks = callHooks;
 
