@@ -1,3 +1,4 @@
+var fs = require('fs');
 var config = {};
 
 // Default partyplay config
