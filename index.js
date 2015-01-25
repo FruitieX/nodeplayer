@@ -112,6 +112,8 @@ var prepareSong = function(song, asyncCallback) {
             // mark song as prepared
             callHooks('onSongPrepared', song);
 
+            // done preparing, can't cancel anymore
+            delete(song.cancelPrepare);
             delete(player.songsPreparing[song.backendName][song.songID]);
             song.prepared = true;
             asyncCallback();
@@ -208,30 +210,32 @@ var removeFromQueue = function(pos, cnt) {
 
     // remove songs from queue
     if(pos + cnt > 0) {
-        // stop preparing songs we are about to remove
-        for(var i = 0; i < pos + cnt; i++) {
-            var song = player.queue[i];
+        if(player.queue.length) {
+            // stop preparing songs we are about to remove
+            for(var i = 0; i < pos + cnt; i++) {
+                var song = player.queue[i];
 
-            // signal prepareError function not to run removeFromQueue again
-            song.beingDeleted = true;
-            if(song.cancelPrepare) {
-                song.cancelPrepare('song deleted');
-                delete(song.cancelPrepare);
+                // signal prepareError function not to run removeFromQueue again
+                song.beingDeleted = true;
+                if(song.cancelPrepare) {
+                    song.cancelPrepare('song deleted');
+                    delete(song.cancelPrepare);
+                }
             }
-        }
 
-        if(pos >= 0) {
-            retval = player.queue.splice(pos, cnt);
-        } else {
-            // pos is negative: removed some from played queue, continue removing from zero
-            retval = player.queue.splice(0, cnt + pos);
-        }
+            if(pos >= 0) {
+                retval = player.queue.splice(pos, cnt);
+            } else {
+                // pos is negative: removed some from played queue, continue removing from zero
+                retval = player.queue.splice(0, cnt + pos);
+            }
 
-        if(pos <= 0) {
-            // now playing was deleted
-            player.npIsPlaying = false;
-            clearTimeout(player.songEndTimeout);
-            player.songEndTimeout = null;
+            if(pos <= 0) {
+                // now playing was deleted
+                player.npIsPlaying = false;
+                clearTimeout(player.songEndTimeout);
+                player.songEndTimeout = null;
+            }
         }
     }
 
