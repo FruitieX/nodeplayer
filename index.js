@@ -178,20 +178,28 @@ var searchQueue = function(backendName, songID) {
 player.searchQueue = searchQueue;
 
 // get rid of song in either queue (negative signifies playedQueue)
-var removeFromQueue = function(pos) {
+var removeFromQueue = function(pos, cnt) {
     var retval;
+    if(!cnt)
+        cnt = 1;
 
     pos = parseInt(pos);
-    if(pos >= 0)
-        retval = player.queue.splice(pos, 1);
-    else
-        retval = player.playedQueue.splice(player.playedQueue.length + pos, 1);
+    if(pos < 0)
+        retval = player.playedQueue.splice(player.playedQueue.length + pos, cnt);
+    if(pos + cnt > 0) {
+        if(pos >= 0) {
+            retval = player.queue.splice(pos, cnt);
+        } else {
+            // pos is negative
+            retval = player.queue.splice(0, cnt + pos);
+        }
 
-    if(pos === 0) {
-        console.log('there')
-        player.npIsPlaying = false;
-        clearTimeout(player.songEndTimeout);
-        player.songEndTimeout = null;
+        if(pos <= 0) {
+            // now playing was deleted
+            player.npIsPlaying = false;
+            clearTimeout(player.songEndTimeout);
+            player.songEndTimeout = null;
+        }
     }
 
     onQueueModify();
@@ -224,13 +232,13 @@ var addToQueue = function(songs, pos, metadata) {
         song.timeAdded = new Date().getTime();
 
         player.queue.splice(pos++, 0, song);
+        console.log('added song to queue: ' + song.songID);
+        callHooks('postSongQueued', [player, song, metadata]);
     })
 
     callHooks('sortQueue', [player, metadata]);
     onQueueModify();
-
-    console.log('added song to queue: ' + queuedSong.songID);
-    callHooks('postSongQueued', [player, queuedSong, metadata]);
+    callHooks('postSongsQueued', [player, songs, metadata]);
 };
 player.addToQueue = addToQueue;
 

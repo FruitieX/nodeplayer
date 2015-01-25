@@ -37,7 +37,7 @@ rest.init = function(_player, callback, errCallback) {
         });
 
         player.expressApp.delete('/queue/:pos', bodyParser.json(), function(req, res) {
-            var err = player.removeFromQueue(req.params.pos);
+            var err = player.removeFromQueue(req.params.pos, req.body.cnt);
             sendResponse(res, 'success', err);
         });
 
