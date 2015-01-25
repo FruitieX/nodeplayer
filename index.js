@@ -216,7 +216,7 @@ player.removeFromQueue = removeFromQueue;
 // (e.g. which user added a song)
 var addToQueue = function(songs, pos, metadata) {
     if(!pos || pos < 0)
-        pos = 0;
+        pos = player.queue.length;
     pos = Math.min(pos, player.queue.length)
 
     _.each(songs, function(song) {
