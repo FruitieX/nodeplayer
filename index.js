@@ -107,7 +107,7 @@ var prepareSong = function(song, asyncCallback) {
         //console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = song;
 
-        var cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function() {
+        song.cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function() {
             // mark song as prepared
             callHooks('onSongPrepared', song);
 
@@ -118,17 +118,15 @@ var prepareSong = function(song, asyncCallback) {
             // error while preparing
             prepareError(song, err);
 
-            song.cancelPrepare();
-        });
+            // call prepare cancel function if there is one
+            if(song.cancelPrepare)
+                song.cancelPrepare(err);
 
-        song.cancelPrepare = function() {
-            if(cancelPrepare)
-                cancelPrepare();
             delete(player.songsPreparing[song.backendName][song.songID]);
 
             // report back error
             asyncCallback(true);
-        };
+        });
     } else {
         asyncCallback();
     }
