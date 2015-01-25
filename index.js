@@ -59,7 +59,7 @@ var startPlayback = function() {
 
     var duration = parseInt(np.duration) + config.songDelayMs;
     if(player.songEndTimeout) {
-        //console.log('DEBUG: songEndTimeout was cleared');
+        console.log('DEBUG: songEndTimeout was cleared');
         clearTimeout(player.songEndTimeout);
     }
     player.songEndTimeout = setTimeout(function() {
@@ -99,7 +99,7 @@ var prepareSong = function(song, pos, asyncCallback) {
     // NOTE: in this case we MUST run asyncCallback()
     // don't run prepareSong() multiple times for the same song
     if(!player.songsPreparing[song.backendName][song.songID]) {
-        console.log('DEBUG: prepareSong() ' + song.songID);
+        //console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = true;
 
         player.backends[song.backendName].prepareSong(song.songID, function() {
