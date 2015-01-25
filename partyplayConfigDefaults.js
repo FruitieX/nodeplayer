@@ -19,6 +19,14 @@ config.plugins = ['expressjs', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 
 config.hostname = 'http://mydomain.com';
 config.port = 8080;
+
+config.tls = true;
+config.tlsKey = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-key.pem');
+config.tlsCert = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-cert.pem');
+config.tlsCa = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-cert.pem');
+config.requestCert = true;
+config.rejectUnauthorized = true;
+
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
 config.searchResultCnt = 10;
 //config.badVotePercent = 0.67;
