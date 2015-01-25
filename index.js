@@ -121,6 +121,13 @@ var prepareSong = function(song, pos, asyncCallback) {
     }
 };
 
+var preparedCallback = function(err, callback) {
+    if (!err && player.queue[0] && player.queue[0].prepared && !player.npIsPlaying)
+        startPlayback();
+
+    callback(err);
+};
+
 // prepare now playing and queued songs for playback
 var prepareSongs = function() {
     async.series([
@@ -128,13 +135,7 @@ var prepareSongs = function() {
             // prepare now-playing song if it exists and if not prepared
             if(player.queue[0]) {
                 prepareSong(player.queue[0], 0, function(err) {
-                    // when done preparing now playing, run prepareSongs again
-                    // next event loop in case now playing song has changed
-                    // since we started preparing it
-                    if (!err && player.queue[0] && player.queue[0].prepared && !player.npIsPlaying)
-                        startPlayback();
-
-                    callback(err);
+                    preparedCallback(err, callback);
                 });
             } else {
                 callback(true);
@@ -143,7 +144,9 @@ var prepareSongs = function() {
         function(callback) {
             // prepare next song in queue if it exists and if not prepared
             if(player.queue[1]) {
-                prepareSong(player.queue[1], 1, callback);
+                prepareSong(player.queue[1], 1, function(err) {
+                    preparedCallback(err, callback);
+                });
             } else {
                 callback(true);
             }
