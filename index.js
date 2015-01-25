@@ -228,15 +228,16 @@ var addToQueue = function(songs, pos, metadata) {
         }
 
         var err = callHooks('preSongQueued', [player, song, metadata]);
-        if(err)
-            return err;
+        if(err) {
+            console.log('ERROR: not adding song to queue: ' + err);
+        } else {
+            song.playbackStart = null; // TODO: is this ever used...
+            song.timeAdded = new Date().getTime();
 
-        song.playbackStart = null; // TODO: is this ever used...
-        song.timeAdded = new Date().getTime();
-
-        player.queue.splice(pos++, 0, song);
-        console.log('added song to queue: ' + song.songID);
-        callHooks('postSongQueued', [player, song, metadata]);
+            player.queue.splice(pos++, 0, song);
+            console.log('added song to queue: ' + song.songID);
+            callHooks('postSongQueued', [player, song, metadata]);
+        }
     })
 
     callHooks('sortQueue', [player, metadata]);
