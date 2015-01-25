@@ -59,7 +59,7 @@ var startPlayback = function() {
 
     var duration = parseInt(np.duration) + config.songDelayMs;
     if(player.songEndTimeout) {
-        console.log('DEBUG: songEndTimeout was cleared');
+        //console.log('DEBUG: songEndTimeout was cleared');
         clearTimeout(player.songEndTimeout);
     }
     player.songEndTimeout = setTimeout(function() {
@@ -228,7 +228,7 @@ var addToQueue = function(songs, pos, metadata) {
     pos = Math.min(pos, player.queue.length)
 
     _.each(songs, function(song) {
-        console.log('DEBUG: addToQueue(): ' + song.songID);
+        //console.log('DEBUG: addToQueue(): ' + song.songID);
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
             console.log('required song fields not provided: ' + song.songID);
