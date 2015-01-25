@@ -1,19 +1,20 @@
 var _ = require('underscore');
 
-var socketio = {};
+var engineio = {};
 var config, player;
 
 // called when partyplay is started to initialize the plugin
 // do any necessary initialization here
-socketio.init = function(_player, callback, errCallback) {
+engineio.init = function(_player, callback, errCallback) {
     player = _player;
     config = _player.config;
 
     if(!player.expressServer) {
         errCallback('module must be initialized after expressjs module!');
     } else {
-        socketio.io = require('socket.io')(player.expressServer);
-        socketio.io.on('connection', function(socket) {
+        engineio.io = require('engine.io').attach(player.expressServer);
+        engineio.io.on('connection', function(socket) {
+            console.log('connected');
             if(player.queue[0]) {
                 socket.emit('playback', {
                     songID: player.queue[0].songID,
@@ -26,7 +27,7 @@ socketio.init = function(_player, callback, errCallback) {
             socket.emit('queue', player.queue);
         });
 
-        player.socketio = socketio;
+        player.engineio = engineio;
 
         console.log('listening on port ' + (process.env.PORT || config.port));
         callback();
@@ -34,25 +35,25 @@ socketio.init = function(_player, callback, errCallback) {
 };
 
 // updates to queue
-socketio.onSongChange = function(player) {
-    socketio.io.emit('playback', {
+engineio.onSongChange = function(player) {
+    engineio.io.emit('playback', {
         songID: player.queue[0].songID,
         format: player.queue[0].format,
         backendName: player.queue[0].backendName,
         duration: player.queue[0].duration
     });
-    socketio.io.emit('queue', player.queue);
+    engineio.io.emit('queue', player.queue);
 };
 
-socketio.postSongQueued = function(player) {
-    socketio.io.emit('queue', player.queue);
+engineio.postSongQueued = function(player) {
+    engineio.io.emit('queue', player.queue);
 };
-socketio.onNextSongPrepareError = socketio.postSongQueued;
-socketio.onSongPrepareError = socketio.postSongQueued;
+engineio.onNextSongPrepareError = engineio.postSongQueued;
+engineio.onSongPrepareError = engineio.postSongQueued;
 
-socketio.onEndOfQueue = function(player) {
-    socketio.io.emit('playback', null);
-    socketio.io.emit('queue', player.queue);
+engineio.onEndOfQueue = function(player) {
+    engineio.io.emit('playback', null);
+    engineio.io.emit('queue', player.queue);
 };
 
-module.exports = socketio;
+module.exports = engineio;
