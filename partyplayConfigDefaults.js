@@ -20,12 +20,16 @@ config.plugins = ['https', 'rest', 'ipfilter', 'socketio', 'partyplay'];
 config.hostname = 'http://mydomain.com';
 config.port = 8080;
 
+// TLS options
+// By default we use the same TLS key/cert as CA, and on clients/server. We use
+// TLS client authentication for restricting access to authorized clients.
+// You may want to disable it if you want public access to parts of your server.
 config.tls = true;
 config.tlsKey = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-key.pem');
 config.tlsCert = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-cert.pem');
 config.tlsCa = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-cert.pem');
-config.requestCert = true;
-config.rejectUnauthorized = true;
+config.requestCert = true; // TLS client authentication
+config.rejectUnauthorized = true; // Disabling leaves you vulnerable to MITM
 
 config.songCachePath = process.env.HOME + '/.partyplay/songCache';
 config.searchResultCnt = 10;
