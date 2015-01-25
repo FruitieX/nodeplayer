@@ -270,9 +270,9 @@ callHooks('onPluginsInitialized', [player]);
 
 // init backends
 _.each(config.backends, function(backendName) {
-    // TODO: put backend modules into npm
+    // TODO: backends that are not in npmjs
     // must implement .search, .prepareSong, .init
-    var backend = require('./backends/' + backendName);
+    var backend = require('nodeplayer-' + backendName);
 
     backend.init(player, function() {
         player.backends[backendName] = backend;
