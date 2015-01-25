@@ -1,4 +1,3 @@
-var fs = require('fs');
 var config = {};
 
 // Default partyplay config
@@ -26,9 +25,9 @@ config.port = 8080;
 // TLS client authentication for restricting access to authorized clients.
 // You may want to disable it if you want public access to parts of your server.
 config.tls = true;
-config.tlsKey = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-key.pem');
-config.tlsCert = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-cert.pem');
-config.tlsCa = fs.readFileSync(process.env.HOME + '/.partyplay/partyplay-cert.pem');
+config.tlsKey = process.env.HOME + '/.partyplay/partyplay-key.pem';
+config.tlsCert = process.env.HOME + '/.partyplay/partyplay-cert.pem';
+config.tlsCa = process.env.HOME + '/.partyplay/partyplay-cert.pem';
 config.requestCert = true; // TLS client authentication
 config.rejectUnauthorized = true; // Disabling leaves you vulnerable to MITM
 

@@ -13,9 +13,9 @@ expressjs.init = function(_player, callback, errCallback) {
 
     var options = {
         tls: config.tls,
-        key: config.tlsKey,
-        cert: config.tlsCert,
-        ca: config.tlsCa,
+        key: fs.readFileSync(config.tlsKey),
+        cert: fs.readFileSync(config.tlsCert),
+        ca: fs.readFileSync(config.tlsCa),
         requestCert: config.requestCert,
         rejectUnauthorized: config.rejectUnauthorized
     };
