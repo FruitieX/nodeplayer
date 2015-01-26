@@ -70,6 +70,13 @@ rest.init = function(_player, callback, errCallback) {
                 clearTimeout(player.songEndTimeout);
                 player.songEndTimeout = null;
                 player.onQueueModify();
+            } else if(action === 'shuffle') {
+                // don't change now playing
+                var temp = player.queue.shift();
+                player.queue = _.shuffle(player.queue);
+                player.queue.unshift(temp);
+
+                player.onQueueModify();
             }
 
             res.send('success');
