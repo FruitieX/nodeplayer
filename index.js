@@ -180,6 +180,7 @@ var onQueueModify = function() {
         player.playedQueue.push(player.queue.shift());
 
     prepareSongs();
+    callHooks('onQueueModify', [player]);
 };
 player.onQueueModify = onQueueModify;
 

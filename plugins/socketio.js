@@ -44,12 +44,9 @@ socketio.onSongChange = function(player) {
     socketio.io.emit('queue', player.queue);
 };
 
-socketio.postSongsQueued = function(player) {
+socketio.onQueueModify = function(player) {
     socketio.io.emit('queue', player.queue);
 };
-socketio.onNextSongPrepareError = socketio.postSongsQueued;
-socketio.onSongPrepareError = socketio.postSongsQueued;
-socketio.postSongsRemoved = socketio.postSongsQueued;
 
 socketio.onEndOfQueue = function(player) {
     socketio.io.emit('playback', null);
