@@ -45,7 +45,7 @@ socketio.onSongChange = function(player) {
 };
 
 socketio.onSongPause = function(player) {
-    socketio.io.emit('playback', null);,
+    socketio.io.emit('playback', null);
 };
 
 socketio.onQueueModify = function(player) {
@@ -53,7 +53,7 @@ socketio.onQueueModify = function(player) {
 };
 
 socketio.onEndOfQueue = function(player) {
-    socketio.io.emit('playback', null);,
+    socketio.io.emit('playback', null);
     socketio.io.emit('queue', player.queue);
 };
 
