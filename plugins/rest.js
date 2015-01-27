@@ -47,9 +47,9 @@ rest.init = function(_player, callback, errCallback) {
             var cnt = req.body.cnt;
 
             if(action === 'play') {
-                startPlayback(req.body.position);
+                player.startPlayback(req.body.position);
             } else if(action === 'pause') {
-                pausePlayback();
+                player.pausePlayback();
             } else if(action === 'skip') {
                 player.npIsPlaying = false;
 
