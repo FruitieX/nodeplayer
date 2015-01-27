@@ -20,7 +20,7 @@ socketio.init = function(_player, callback, errCallback) {
                     format: player.queue[0].format,
                     backendName: player.queue[0].backendName,
                     duration: player.queue[0].duration,
-                    position: new Date() - player.queue[0].playbackStart
+                    position: player.playbackPosition
                 });
             }
             socket.emit('queue', player.queue);
@@ -33,15 +33,19 @@ socketio.init = function(_player, callback, errCallback) {
     }
 };
 
-// updates to queue
 socketio.onSongChange = function(player) {
     socketio.io.emit('playback', {
         songID: player.queue[0].songID,
         format: player.queue[0].format,
         backendName: player.queue[0].backendName,
-        duration: player.queue[0].duration
+        duration: player.queue[0].duration,
+        position: player.playbackPosition
     });
     socketio.io.emit('queue', player.queue);
+};
+
+socketio.onSongPause = function(player) {
+    socketio.io.emit('playback', null);,
 };
 
 socketio.onQueueModify = function(player) {
@@ -49,7 +53,7 @@ socketio.onQueueModify = function(player) {
 };
 
 socketio.onEndOfQueue = function(player) {
-    socketio.io.emit('playback', null);
+    socketio.io.emit('playback', null);,
     socketio.io.emit('queue', player.queue);
 };
 

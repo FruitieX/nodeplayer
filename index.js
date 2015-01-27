@@ -47,17 +47,22 @@ var numHooks = function(hook) {
 };
 player.numHooks = numHooks;
 
+// start or resume playback of now playing song.
+// if pos is undefined, playback continues (or starts from 0 if !playbackPosition)
 player.songEndTimeout = null;
-var startPlayback = function() {
+var startPlayback = function(pos) {
     var np = player.queue[0];
-    console.log('playing song: ' + np.songID);
+    console.log('playing song: ' + np.songID + ', from pos: ' + pos);
 
-    np.playbackStart = new Date();
-    player.npIsPlaying = true; // TODO: is there a better solution?
+    player.playbackStart = new Date(); // song is playing while this is truthy
+    if(!_.isUndefined(pos))
+        player.playbackPosition = pos;
+    else if(!player.playbackPosition)
+        player.playbackPosition = 0;
 
     callHooks('onSongChange', [player]);
 
-    var duration = parseInt(np.duration) + config.songDelayMs;
+    var durationLeft = parseInt(np.duration) - player.playbackPosition + config.songDelayMs;
     if(player.songEndTimeout) {
         console.log('DEBUG: songEndTimeout was cleared');
         clearTimeout(player.songEndTimeout);
@@ -68,12 +73,24 @@ var startPlayback = function() {
 
         player.playedQueue.push(player.queue[0]);
 
-        player.npIsPlaying = false;
+        player.playbackStart = null;
         player.queue[0] = null;
         player.songEndTimeout = null;
         onQueueModify();
-    }, duration);
+    }, durationLeft);
 };
+player.startPlayback = startPlayback;
+
+var pausePlayback = function() {
+    // update position
+    player.playbackPosition += new Date() - player.playbackStart;
+    player.playbackStart = null;
+
+    clearTimeout(player.songEndTimeout);
+    player.songEndTimeout = null;
+    callHooks('onSongPause', [player]);
+};
+player.pausePlayback = pausePlayback;
 
 var prepareError = function(song, err) {
     // remove all instances of this song
@@ -132,7 +149,7 @@ var prepareSong = function(song, asyncCallback) {
 };
 
 var preparedCallback = function(err, callback) {
-    if (!err && player.queue[0] && player.queue[0].prepared && !player.npIsPlaying)
+    if (!err && player.queue[0] && player.queue[0].prepared && !player.playbackStart)
         startPlayback();
 
     callback(err);
@@ -233,7 +250,7 @@ var removeFromQueue = function(pos, cnt) {
 
             if(pos <= 0) {
                 // now playing was deleted
-                player.npIsPlaying = false;
+                player.playbackStart = null;
                 clearTimeout(player.songEndTimeout);
                 player.songEndTimeout = null;
             }
@@ -267,7 +284,6 @@ var addToQueue = function(songs, pos, metadata) {
         if(err) {
             console.log('ERROR: not adding song to queue: ' + err);
         } else {
-            song.playbackStart = null; // TODO: is this ever used...
             song.timeAdded = new Date().getTime();
 
             player.queue.splice(pos++, 0, song);
