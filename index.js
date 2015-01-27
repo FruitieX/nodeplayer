@@ -52,7 +52,10 @@ player.numHooks = numHooks;
 player.songEndTimeout = null;
 var startPlayback = function(pos) {
     var np = player.queue[0];
-    console.log('playing song: ' + np.songID + ', from pos: ' + pos);
+    if(pos)
+        console.log('playing song: ' + np.songID + ', from pos: ' + pos);
+    else
+        console.log('playing song: ' + np.songID);
 
     player.playbackStart = new Date(); // song is playing while this is truthy
     if(!_.isUndefined(pos))
