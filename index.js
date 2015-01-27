@@ -73,6 +73,7 @@ var startPlayback = function(pos) {
 
         player.playedQueue.push(player.queue[0]);
 
+        player.playbackPosition = null;
         player.playbackStart = null;
         player.queue[0] = null;
         player.songEndTimeout = null;
@@ -250,6 +251,7 @@ var removeFromQueue = function(pos, cnt) {
 
             if(pos <= 0) {
                 // now playing was deleted
+                player.playbackPosition = null;
                 player.playbackStart = null;
                 clearTimeout(player.songEndTimeout);
                 player.songEndTimeout = null;

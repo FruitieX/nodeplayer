@@ -69,6 +69,8 @@ rest.init = function(_player, callback, errCallback) {
                         break;
                 }
 
+                player.playbackPosition = null;
+                player.playbackStart = null;
                 clearTimeout(player.songEndTimeout);
                 player.songEndTimeout = null;
                 player.onQueueModify();
