@@ -64,9 +64,9 @@ var search = function() {
     });
 };
 
-var vote = function(backendName, songID, vote) {
-    var upArrow = $("#uparrow" + backendName + songID);
-    var downArrow = $("#downarrow" + backendName + songID);
+var vote = function(pos, vote) {
+    var upArrow = $("#uparrow" + pos);
+    var downArrow = $("#downarrow" + pos);
     if(vote > 0) {
         // is already upvoted: remove upvote
         if(upArrow.hasClass("active")) {
@@ -95,16 +95,13 @@ var vote = function(backendName, songID, vote) {
         data: JSON.stringify({
             vote: vote,
             userID: $.cookie('userID'),
-            songID: songID,
-            backendName: backendName
+            pos: pos
         }),
         contentType: 'application/json'
     });
 };
 
 var appendQueue = function(backendName, songID) {
-    console.log(backendName, songID);
-    console.log(searchResults[backendName]);
     if (songID !== 0 && !songID) return;
     if (!backendName) return;
     $.ajax({
@@ -148,6 +145,7 @@ var updateQueue = function() {
     $("#queue").empty();
 
     if(queue) {
+        console.log(queue);
         // now playing
         if(queue[0]) {
             queue[0].duration = durationToString(queue[0].duration / 1000);
@@ -187,9 +185,9 @@ var updateQueue = function() {
         // update votes
         for(var i = 1; i < queue.length; i++) {
             if(queue[i].upVotes[userID]) {
-                $("#uparrow" + queue[i].backendName + queue[i].songID).addClass("active");
+                $("#uparrow" + i).addClass("active");
             } else if(queue[i].downVotes[userID]) {
-                $("#downarrow" + queue[i].backendName + queue[i].songID).addClass("active");
+                $("#downarrow" + i).addClass("active");
             }
         }
     }

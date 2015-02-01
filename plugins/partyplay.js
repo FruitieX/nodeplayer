@@ -22,26 +22,28 @@ partyplay.init = function(_player, callback, errCallback) {
         player.expressApp.post('/vote', bodyParser.json(), function(req, res) {
             var userID = req.body.userID;
             var vote = req.body.vote;
-            var songID = req.body.songID;
-            var backendName = req.body.backendName;
-            if(!userID || vote === undefined || !songID || !backendName) {
+            var pos = req.body.pos;
+            if(!userID || vote === undefined || !pos) {
                 console.log('invalid vote rejected: missing fields');
-                res.status(404).send('please provide userID, songID, backendName and vote in the body');
+                res.status(404).send('please provide userID, pos and vote in the body');
+                return;
+            } else if (pos <= 0) {
+                console.log('invalid vote rejected: pos <= 0');
+                res.status(404).send('please provide pos > 0');
                 return;
             }
 
-            var queuedSong = player.searchQueue(backendName, songID);
-            if(!queuedSong) {
+            var song = player.queue[pos];
+            if(!song) {
                 console.log('invalid vote rejected: song not found');
                 res.status(404).send('song not found');
                 return;
             }
 
-            voteSong(queuedSong, vote, userID);
+            voteSong(song, vote, userID);
             player.onQueueModify();
-            player.socketio.io.emit('queue', [player.nowPlaying, player.queue]);
 
-            console.log('got vote ' + vote + ' for song: ' + queuedSong.songID);
+            console.log('got vote ' + vote + ' for song: ' + song.songID);
 
             res.send('success');
 
@@ -116,6 +118,10 @@ partyplay.preAddSearchResult = function(player, song) {
 
 // sort queue according to votes
 partyplay.sortQueue = function(player) {
+    var np;
+    if(player.queue.length)
+        np = player.queue.shift();
+
     player.queue.sort(function(a, b) {
         var aVotes = a.oldness + Object.keys(a.upVotes).length - Object.keys(a.downVotes).length;
         var bVotes = b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length;
@@ -126,6 +132,8 @@ partyplay.sortQueue = function(player) {
             // if votes equal, prioritize song that has waited longer
             return a.timeAdded - b.timeAdded;
     });
+    if(np)
+        player.queue.unshift(np);
 };
 
 var voteSong = function(song, vote, userID) {
@@ -147,9 +155,16 @@ var voteSong = function(song, vote, userID) {
         delete(song.upVotes[userID]);
         // TODO: more downvotes than only one?
         // users only have one downvote to prevent abuse
+        var np;
+        if(player.queue.length)
+            np = player.queue.shift();
+
         _.each(player.queue, function(queueSong) {
             delete(queueSong.downVotes[userID]);
         });
+
+        if(np)
+            player.queue.unshift(np);
         song.downVotes[userID] = true;
     }
 
