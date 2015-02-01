@@ -44,8 +44,11 @@ partyplay.init = function(_player, callback, errCallback) {
             console.log('got vote ' + vote + ' for song: ' + queuedSong.songID);
 
             res.send('success');
+
         });
 
+        // so other modules can easily see that this module is loaded
+        player.partyplay = true;
         callback();
     }
 };

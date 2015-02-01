@@ -1,6 +1,6 @@
 var express = require('express');
 var https = require('https');
-var http = require('https');
+var http = require('http');
 var fs = require('fs');
 
 var expressjs = {};
@@ -27,7 +27,7 @@ expressjs.init = function(_player, callback, errCallback) {
         player.expressTls = true;
         player.expressServer = https.createServer(options, player.expressApp).listen(process.env.PORT || config.port);
     } else {
-        player.expressServer = http.createServer(options, player.expressApp).listen(process.env.PORT || config.port);
+        player.expressServer = http.createServer(player.expressApp).listen(process.env.PORT || config.port);
     }
 
     callback();
