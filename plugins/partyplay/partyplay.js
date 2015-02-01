@@ -156,6 +156,7 @@ var updateQueue = function() {
         // rest of queue
         for(var i = 1; i < queue.length; i++) {
             queue[i].duration = durationToString(queue[i].duration / 1000);
+            queue[i].pos = i;
             $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
             var numUpVotes = Object.keys(queue[i].upVotes).length;
             var numDownVotes = Object.keys(queue[i].downVotes).length;
@@ -229,8 +230,8 @@ $(document).ready(function() {
         $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
         var queueMarkup = '<li class="list-group-item" id="${backendName}${songID}">'
-            + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${backendName}${songID}"  onclick="vote(\'${backendName}\', \'${songID}\', -1);"></div>'
-            + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${backendName}${songID}" onclick="vote(\'${backendName}\', \'${songID}\', 1);"></div>'
+            + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${pos}"  onclick="vote(\'${pos}\', -1);"></div>'
+            + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${pos}" onclick="vote(\'${pos}\', 1);"></div>'
             + '<div class="songinfo">'
             + '<div class="big"><b>${title}</b> - ${duration}</div>'
             + '<div class="small"><b>${artist}</b> (${album})</div>'
