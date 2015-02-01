@@ -111,7 +111,7 @@ var appendQueue = function(backendName, songID) {
         type: 'POST',
         url: '/queue',
         data: JSON.stringify({
-            song: searchResults[backendName].songs[songID],
+            songs: [searchResults[backendName].songs[songID]],
             userID: $.cookie('userID')
         }),
         contentType: 'application/json'
@@ -156,11 +156,11 @@ var updateQueue = function() {
         }
 
         // rest of queue
-        for(var i = 0; i < queue[1].length; i++) {
-            queue[1][i].duration = durationToString(queue[1][i].duration / 1000);
-            $.tmpl( "queueTemplate", queue[1][i]).appendTo("#queue");
-            var numUpVotes = Object.keys(queue[1][i].upVotes).length;
-            var numDownVotes = Object.keys(queue[1][i].downVotes).length;
+        for(var i = 1; i < queue.length; i++) {
+            queue[i].duration = durationToString(queue[i].duration / 1000);
+            $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
+            var numUpVotes = Object.keys(queue[i].upVotes).length;
+            var numDownVotes = Object.keys(queue[i].downVotes).length;
             var totalVotes = numUpVotes + numDownVotes;
 
             var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
@@ -180,16 +180,16 @@ var updateQueue = function() {
 
             var color = "#" + r + g + b;
 
-            $("#" + queue[1][i].backendName + queue[1][i].songID).css('background-color', color);
+            $("#" + queue[i].backendName + queue[i].songID).css('background-color', color);
         }
 
         var userID = $.cookie('userID');
         // update votes
-        for(var i = 0; i < queue[1].length; i++) {
-            if(queue[1][i].upVotes[userID]) {
-                $("#uparrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
-            } else if(queue[1][i].downVotes[userID]) {
-                $("#downarrow" + queue[1][i].backendName + queue[1][i].songID).addClass("active");
+        for(var i = 1; i < queue.length; i++) {
+            if(queue[i].upVotes[userID]) {
+                $("#uparrow" + queue[i].backendName + queue[i].songID).addClass("active");
+            } else if(queue[i].downVotes[userID]) {
+                $("#downarrow" + queue[i].backendName + queue[i].songID).addClass("active");
             }
         }
     }
@@ -266,6 +266,7 @@ $(document).ready(function() {
         });
 
         socket.on('playback', function(data) {
+            console.log(data);
             var currentProgress = (data.position || 0);
             progress.started = new Date() - currentProgress;
             progress.duration = data.duration;

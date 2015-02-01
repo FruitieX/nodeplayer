@@ -20,7 +20,8 @@ socketio.init = function(_player, callback, errCallback) {
                     format: player.queue[0].format,
                     backendName: player.queue[0].backendName,
                     duration: player.queue[0].duration,
-                    position: player.playbackPosition
+                    position: player.playbackPosition + (new Date() - player.playbackStart),
+                    playbackStart: player.playbackStart
                 });
             }
             socket.emit('queue', player.queue);
@@ -39,7 +40,8 @@ socketio.onSongChange = function(player) {
         format: player.queue[0].format,
         backendName: player.queue[0].backendName,
         duration: player.queue[0].duration,
-        position: player.playbackPosition
+        position: player.playbackPosition + (new Date() - player.playbackStart),
+        playbackStart: player.playbackStart
     });
     socketio.io.emit('queue', player.queue);
 };
