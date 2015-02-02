@@ -58,6 +58,8 @@ var startPlayback = function(pos) {
         console.log('playing song: ' + np.songID);
 
     player.playbackStart = new Date(); // song is playing while this is truthy
+
+    // where did the song start playing from at playbackStart?
     if(!_.isUndefined(pos))
         player.playbackPosition = pos;
     else if(!player.playbackPosition)
