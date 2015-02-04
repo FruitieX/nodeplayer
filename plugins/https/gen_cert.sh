@@ -4,7 +4,7 @@
 # Generate self signed certificate/key for SSL
 #
 
-PREFIX=~/.partyplay/partyplay
+PREFIX=~/.nodeplayer/nodeplayer
 KEYNAME=$PREFIX-key.pem
 CSRNAME=$PREFIX-csr.pem
 CERTNAME=$PREFIX-cert.pem
