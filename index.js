@@ -236,7 +236,8 @@ var removeFromQueue = function(pos, cnt) {
     if(pos + cnt > 0) {
         if(player.queue.length) {
             // stop preparing songs we are about to remove
-            for(var i = 0; i < Math.min(player.queue.length - 1, pos + cnt); i++) {
+            // we want to limit this to player.queue.length if cnt is very large
+            for(var i = 0; i < Math.min(player.queue.length, pos + cnt); i++) {
                 var song = player.queue[i];
 
                 // signal prepareError function not to run removeFromQueue again
