@@ -47,7 +47,14 @@ socketio.onSongChange = function(player) {
 };
 
 socketio.onSongPause = function(player) {
-    socketio.io.emit('playback', null);
+    socketio.io.emit('playback', {
+        songID: player.queue[0].songID,
+        format: player.queue[0].format,
+        backendName: player.queue[0].backendName,
+        duration: player.queue[0].duration,
+        position: player.playbackPosition + (new Date() - player.playbackStart),
+        playbackStart: null
+    });
 };
 
 socketio.onQueueModify = function(player) {
