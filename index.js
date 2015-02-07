@@ -112,6 +112,7 @@ var prepareError = function(song, err) {
     callHooks('onSongPrepareError', [player]); // TODO: consider changing player to song?
 };
 
+// TODO: get rid of the callback hell, use promises?
 player.songsPreparing = {};
 var prepareSong = function(song, asyncCallback) {
     if(!song) {
@@ -124,25 +125,44 @@ var prepareSong = function(song, asyncCallback) {
     if(!player.songsPreparing[song.backendName])
         player.songsPreparing[song.backendName] = {};
 
-    // TODO: check for song.prepared before again asking the plugin?
-    // NOTE: in this case we MUST run asyncCallback()
     // don't run prepareSong() multiple times for the same song
     if(!player.songsPreparing[song.backendName][song.songID]) {
         //console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = song;
 
         song.cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function() {
+            /* done callback */
+
             // mark song as prepared
             callHooks('onSongPrepared', song);
 
             // done preparing, can't cancel anymore
             delete(song.cancelPrepare);
             delete(player.songsPreparing[song.backendName][song.songID]);
-            song.prepared = true;
+
             asyncCallback();
+        }, function(done) {
+            /* progress callback
+             * when this is called, new song data has been flushed to disk */
+
+            // tell plugins that new data is available for this song, and
+            // whether the song is now fully written to disk or not
+            callHooks('onPrepareProgress', song, done);
+
+            // start playback if it hasn't been started yet
+            if (player.queue[0]
+                && player.queue[0].backendName === song.backendName
+                && player.queue[0].songID === song.songID
+                && !player.playbackStart)
+            {
+                startPlayback();
+            }
         }, function(err) {
-            // already got an error, don't let anything run cancelPrepare anymore
+            /* error callback */
+
+            // don't let anything run cancelPrepare anymore
             delete(song.cancelPrepare);
+
             prepareError(song, err);
             delete(player.songsPreparing[song.backendName][song.songID]);
 
@@ -150,15 +170,9 @@ var prepareSong = function(song, asyncCallback) {
             asyncCallback(true);
         });
     } else {
+        preparedCallback(err, callback);
         asyncCallback();
     }
-};
-
-var preparedCallback = function(err, callback) {
-    if (!err && player.queue[0] && player.queue[0].prepared && !player.playbackStart)
-        startPlayback();
-
-    callback(err);
 };
 
 // prepare now playing and queued songs for playback
@@ -167,9 +181,7 @@ var prepareSongs = function() {
         function(callback) {
             // prepare now-playing song if it exists and if not prepared
             if(player.queue[0]) {
-                prepareSong(player.queue[0], function(err) {
-                    preparedCallback(err, callback);
-                });
+                prepareSong(player.queue[0], callback);
             } else {
                 callback(true);
             }
@@ -177,9 +189,7 @@ var prepareSongs = function() {
         function(callback) {
             // prepare next song in queue if it exists and if not prepared
             if(player.queue[1]) {
-                prepareSong(player.queue[1], function(err) {
-                    preparedCallback(err, callback);
-                });
+                prepareSong(player.queue[1], callback);
             } else {
                 callback(true);
             }
@@ -220,6 +230,7 @@ var searchQueue = function(backendName, songID) {
 player.searchQueue = searchQueue;
 
 // get rid of song in either queue (negative signifies playedQueue)
+// cnt can be left out for deleting only one song
 var removeFromQueue = function(pos, cnt) {
     var retval;
     if(!cnt)
