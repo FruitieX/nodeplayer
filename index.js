@@ -130,24 +130,13 @@ var prepareSong = function(song, asyncCallback) {
         //console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = song;
 
-        song.cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function() {
-            /* done callback */
-
-            // mark song as prepared
-            callHooks('onSongPrepared', song);
-
-            // done preparing, can't cancel anymore
-            delete(song.cancelPrepare);
-            delete(player.songsPreparing[song.backendName][song.songID]);
-
-            asyncCallback();
-        }, function(done) {
+        song.cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function(dataSize, done) {
             /* progress callback
              * when this is called, new song data has been flushed to disk */
 
             // tell plugins that new data is available for this song, and
             // whether the song is now fully written to disk or not
-            callHooks('onPrepareProgress', song, done);
+            callHooks('onPrepareProgress', song, dataSize, done);
 
             // start playback if it hasn't been started yet
             if (player.queue[0]
@@ -156,6 +145,17 @@ var prepareSong = function(song, asyncCallback) {
                 && !player.playbackStart)
             {
                 startPlayback();
+            }
+
+            if (done) {
+                // mark song as prepared
+                callHooks('onSongPrepared', song);
+
+                // done preparing, can't cancel anymore
+                delete(song.cancelPrepare);
+                delete(player.songsPreparing[song.backendName][song.songID]);
+
+                asyncCallback();
             }
         }, function(err) {
             /* error callback */
