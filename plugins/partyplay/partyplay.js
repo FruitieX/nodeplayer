@@ -271,9 +271,11 @@ $(document).ready(function() {
             progress.duration = data.duration;
 
             clearInterval(progress.interval);
-            progress.interval = setInterval(function() {
-                updateProgress(100);
-            }, 100);
+            if(data.playbackStart) {
+                progress.interval = setInterval(function() {
+                    updateProgress(100);
+                }, 100);
+            }
         });
     });
 });

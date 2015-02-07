@@ -27,9 +27,11 @@ socket.on('playback', function(data) {
     progress.duration = data.duration;
 
     clearInterval(progress.interval);
-    progress.interval = setInterval(function() {
-        updateProgress(100);
-    }, 100);
+    if(data.playbackStart) {
+        progress.interval = setInterval(function() {
+            updateProgress(100);
+        }, 100);
+    }
 });
 
 var pad = function(number, length) {
