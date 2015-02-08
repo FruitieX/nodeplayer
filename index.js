@@ -136,7 +136,7 @@ var prepareSong = function(song, asyncCallback) {
 
             // tell plugins that new data is available for this song, and
             // whether the song is now fully written to disk or not
-            callHooks('onPrepareProgress', song, dataSize, done);
+            callHooks('onPrepareProgress', [song, dataSize, done]);
 
             // start playback if it hasn't been started yet
             if (player.queue[0]
@@ -149,7 +149,7 @@ var prepareSong = function(song, asyncCallback) {
 
             if (done) {
                 // mark song as prepared
-                callHooks('onSongPrepared', song);
+                callHooks('onSongPrepared', [song]);
 
                 // done preparing, can't cancel anymore
                 delete(song.cancelPrepare);
