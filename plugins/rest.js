@@ -5,6 +5,7 @@ var send = require('send');
 var fs = require('fs');
 var mime = require('mime');
 var parseRange = require('range-parser');
+var meter = require('stream-meter');
 
 var rest = {};
 var config, player;
@@ -133,35 +134,65 @@ rest.init = function(_player, callback, errCallback) {
     }
 };
 
+var pendingReqHandlers = [];
+rest.onPrepareProgress = function(song, dataSize, done) {
+    console.log('onPrepareProgress: ' + song.songID + ', done: ' + done);
+    for(var i = pendingReqHandlers.length - 1; i >= 0; i--) {
+        pendingReqHandlers.pop()();
+    };
+};
+
 rest.onBackendInit = function(playerState, backend) {
-    var pendingRequests = [];
 
     // expressjs middleware for requesting music data
     // must support ranges in the req, and send the data to res
     player.expressApp.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
+        var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
+        var m = meter();
+
+        var doSend = function(path, offset) {
+            var sendStream = send(req, path, {
+                dotfiles: 'allow',
+                root: config.songCachePath + '/' + backend.name,
+                offset: offset
+            });
+            sendStream.on('end', function() {
+                if(player.songsPreparing[backend.name] &&
+                   player.songsPreparing[backend.name][songID]) {
+                    // song is still preparing, there is more data to come
+                    pendingReqHandlers.push(function() {
+                        doSend(path, m.bytes);
+                    });
+                }
+            });
+            sendStream.pipe(m, {end: false}).pipe(res, {end: false});
+        };
+
+        doSend(req.params.fileName, 0);
         /*
-        send(req, req.params.fileName, {
-            dotfiles: 'allow',
-            root: config.songCachePath + '/' + backend.name
-        }).pipe(res);
-        */
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
+        var range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
+
+        res.on('drain', function() {
+            console.log('drained');
+        });
+
+        var path;
+
+        if(player.songsPreparing[backend.name] &&
+           player.songsPreparing[backend.name][songID]) {
+            console.log('got request for song in preparation: ' + songID);
+            var path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
+            isPreparing = true;
+        } else {
+            console.log('got request for song in cache: ' + songID);
+            var path = config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat;
+        }
+        var fileStream = fs.createReadStream(path);
 
         var sendFile = function(path) {
-            var range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
             var isPreparing = false;
-            var path;
-
-            if(player.songsPreparing[backend.name] &&
-               player.songsPreparing[backend.name][songID]) {
-                console.log('got request for song in preparation: ' + songID);
-                var path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
-                isPreparing = true;
-            } else {
-                console.log('got request for song in cache: ' + songID);
-                var path = config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat;
-            }
 
             if(fs.existsSync(path)) {
                 var type = mime.lookup(path);
@@ -194,6 +225,7 @@ rest.onBackendInit = function(playerState, backend) {
             }
         } else {
         }
+        */
     });
 };
 
