@@ -3,6 +3,8 @@ var _ = require('underscore');
 var url = require('url');
 var send = require('send');
 var fs = require('fs');
+var mime = require('mime');
+var parseRange = require('range-parser');
 
 var rest = {};
 var config, player;
@@ -138,7 +140,7 @@ rest.onBackendInit = function(playerState, backend) {
     // must support ranges in the req, and send the data to res
     player.expressApp.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
         /*
-        send(req, url.parse(req.url).pathname, {
+        send(req, req.params.fileName, {
             dotfiles: 'allow',
             root: config.songCachePath + '/' + backend.name
         }).pipe(res);
@@ -146,18 +148,51 @@ rest.onBackendInit = function(playerState, backend) {
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
 
-        if(player.songsPreparing[backend.name] &&
-           player.songsPreparing[backend.name][songID]) {
-            console.log('got request for song in preparation: ' + songID);
-            // send partial response, if request was beyond file size put it in pendingRequests
-            // come up with some way of checking through pendingRequests to see if more data can
-            // be sent to fullfill more of a request
-        } else {
-            console.log('got request for song in cache: ' + songID);
-            if(fs.existsSync(config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat)) {
+        var sendFile = function(path) {
+            var range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
+            var isPreparing = false;
+            var path;
+
+            if(player.songsPreparing[backend.name] &&
+               player.songsPreparing[backend.name][songID]) {
+                console.log('got request for song in preparation: ' + songID);
+                var path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
+                isPreparing = true;
+            } else {
+                console.log('got request for song in cache: ' + songID);
+                var path = config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat;
+            }
+
+            if(fs.existsSync(path)) {
+                var type = mime.lookup(path);
+                var charset = mime.charsets.lookup(type);
+                res.setHeader('Content-Type', type + (charset ? '; charset=' + charset : ''));
+                res.setHeader('Accept-Ranges', 'bytes');
+                res.setHeader('Connection', 'keep-alive');
+                res.setHeader('Transfer-Encoding', 'chunked');
+
+                var fileStream = fs.createReadStream(path);
+                fileStream.on('data', function(data) {
+                    res.write(data);
+                });
+                fileStream.on('close', function() {
+                    res.end();
+                });
             } else {
                 res.status(404).send('file not found');
             }
+        }
+
+            console.log('got request for song in preparation: ' + songID);
+            var path = fs.existsSync(config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat);
+            if(fs.existsSync(path)) {
+                // send partial response, if request was beyond file size put it in pendingRequests
+                // come up with some way of checking through pendingRequests to see if more data can
+                // be sent to fullfill more of a request
+            } else {
+                res.status(404).send('file not found');
+            }
+        } else {
         }
     });
 };
