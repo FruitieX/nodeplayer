@@ -136,11 +136,17 @@ rest.init = function(_player, callback, errCallback) {
 
 var pendingReqHandlers = [];
 rest.onPrepareProgress = function(song, dataSize, done) {
-    console.log('onPrepareProgress: ' + song.songID + ', done: ' + done);
+    //console.log('onPrepareProgress: ' + song.songID + ', done: ' + done);
     for(var i = pendingReqHandlers.length - 1; i >= 0; i--) {
         pendingReqHandlers.pop()();
     };
 };
+
+var getFilesizeInBytes = function(filename) {
+    var stats = fs.statSync(filename);
+    var fileSizeInBytes = stats["size"];
+    return fileSizeInBytes;
+}
 
 rest.onBackendInit = function(playerState, backend) {
 
@@ -148,59 +154,91 @@ rest.onBackendInit = function(playerState, backend) {
     // must support ranges in the req, and send the data to res
     player.expressApp.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
+        var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
         var m = meter();
+        var range = [0];
+        if(req.headers.range)
+            range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
 
-        var doSend = function(path, offset) {
-            var sendStream = send(req, path, {
-                dotfiles: 'allow',
-                root: config.songCachePath + '/' + backend.name,
-                offset: offset
-            });
-            sendStream.on('end', function() {
-                if(player.songsPreparing[backend.name] &&
-                   player.songsPreparing[backend.name][songID]) {
-                    // song is still preparing, there is more data to come
-                    pendingReqHandlers.push(function() {
-                        doSend(path, m.bytes);
+        res.statusCode = 206;
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        console.log('got streaming request for song: ' + songID + ', range: ' + range);
+
+        var doSend = function(offset) {
+            var path;
+
+            if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
+                path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
+            } else {
+                path = config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat;
+            }
+
+            if(fs.existsSync(path)) {
+                var start = offset;
+                var end = getFilesizeInBytes(path);
+                console.log('size: ' + getFilesizeInBytes(path));
+
+                if(start > end) {
+                    // not enough data available: request can not be fulfilled (yet?)
+                    if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
+                        // song is still preparing, there is more data to come
+                        pendingReqHandlers.push(function() {
+                            doSend(m.bytes + parseInt(range[0]));
+                        });
+                    } else {
+                        // bad range
+                        res.status(416).end();
+                    }
+                } else {
+                    // data is available, let's send as much as we can
+                    var sendStream = fs.createReadStream(path, {
+                        start: start,
+                        end: end
                     });
+                    sendStream.on('end', function() {
+                        // enough data no longer available
+
+                        //console.log('sendStream end');
+
+                        // close old pipes
+                        sendStream.unpipe();
+                        m.unpipe();
+
+                        if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
+                            // song is still preparing, there is more data to come
+                            pendingReqHandlers.push(function() {
+                                doSend(m.bytes + parseInt(range[0]));
+                            });
+                        } else {
+                            // end of file hit and song no longer preparing
+                            res.end();
+                        }
+                    });
+                    sendStream.pipe(m, {end: false}).pipe(res, {end: false});
                 }
-            });
-            sendStream.pipe(m, {end: false}).pipe(res, {end: false});
+            } else {
+                console.log('file not found: ' + path);
+                res.status(404).end();
+            }
         };
 
-        doSend(req.params.fileName, 0);
+        doSend(parseInt(range[0]));
         /*
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
-        var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
-        var range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
 
         res.on('drain', function() {
             console.log('drained');
         });
 
-        var path;
-
-        if(player.songsPreparing[backend.name] &&
-           player.songsPreparing[backend.name][songID]) {
-            console.log('got request for song in preparation: ' + songID);
-            var path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
-            isPreparing = true;
-        } else {
-            console.log('got request for song in cache: ' + songID);
-            var path = config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat;
-        }
-        var fileStream = fs.createReadStream(path);
 
         var sendFile = function(path) {
             var isPreparing = false;
 
             if(fs.existsSync(path)) {
-                var type = mime.lookup(path);
-                var charset = mime.charsets.lookup(type);
-                res.setHeader('Content-Type', type + (charset ? '; charset=' + charset : ''));
-                res.setHeader('Accept-Ranges', 'bytes');
-                res.setHeader('Connection', 'keep-alive');
-                res.setHeader('Transfer-Encoding', 'chunked');
 
                 var fileStream = fs.createReadStream(path);
                 fileStream.on('data', function(data) {
