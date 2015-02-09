@@ -180,9 +180,10 @@ rest.onBackendInit = function(playerState, backend) {
             if(fs.existsSync(path)) {
                 var start = offset;
                 var end = getFilesizeInBytes(path);
-                console.log('size: ' + getFilesizeInBytes(path));
+                console.log('offset: ' + start + ', end: ' + end);
 
                 if(start > end) {
+                    console.log('start > end');
                     // not enough data available: request can not be fulfilled (yet?)
                     if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
                         // song is still preparing, there is more data to come
