@@ -178,7 +178,7 @@ rest.onBackendInit = function(playerState, backend) {
                 res.statusCode = 206;
                 var path = getPath(player, songID, backend.name, songFormat);
                 var end = getFilesizeInBytes(path);
-                res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + '/*');
+                res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + end);
             }
         }
 
