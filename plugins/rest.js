@@ -158,10 +158,12 @@ rest.onBackendInit = function(playerState, backend) {
             range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
 
         res.statusCode = 206;
-        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
         res.setHeader('Accept-Ranges', 'bytes');
         res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Transfer-Encoding', 'chunked');
+        //res.setHeader('Content-Range', 'bytes ' + range[0] + '-400000');
+        //res.setHeader('Content-Range', 'bytes 0-5190255/5190256');
 
         console.log('got streaming request for song: ' + songID + ', range: ' + range);
 
