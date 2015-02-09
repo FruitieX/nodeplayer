@@ -170,7 +170,6 @@ var prepareSong = function(song, asyncCallback) {
             asyncCallback(true);
         });
     } else {
-        preparedCallback(err, callback);
         asyncCallback();
     }
 };
