@@ -163,14 +163,15 @@ var prepareSong = function(song, asyncCallback) {
             // don't let anything run cancelPrepare anymore
             delete(song.cancelPrepare);
 
+            // abort preparing more songs
+            asyncCallback(true);
+
             prepareError(song, err);
             delete(player.songsPreparing[song.backendName][song.songID]);
-
-            // report back error
-            asyncCallback(true);
         });
     } else {
-        asyncCallback();
+        // this song is already preparing, so don't yet prepare next song
+        asyncCallback(true);
     }
 };
 
