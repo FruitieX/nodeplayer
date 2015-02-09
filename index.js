@@ -142,7 +142,8 @@ var prepareSong = function(song, asyncCallback) {
             if (player.queue[0]
                 && player.queue[0].backendName === song.backendName
                 && player.queue[0].songID === song.songID
-                && !player.playbackStart)
+                && !player.playbackStart
+                && dataSize)
             {
                 startPlayback();
             }
