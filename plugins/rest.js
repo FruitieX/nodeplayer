@@ -165,19 +165,20 @@ rest.onBackendInit = function(playerState, backend) {
     player.expressApp.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
-        var range = [0];
-        if(req.headers.range)
-            range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
-
-        res.statusCode = 206;
         res.setHeader('Transfer-Encoding', 'chunked');
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
         res.setHeader('Accept-Ranges', 'bytes');
         res.setHeader('Connection', 'keep-alive');
-        // try guessing at least some length for the song to keep chromium happy
-        var path = getPath(player, songID, backend.name, songFormat);
-        var end = getFilesizeInBytes(path);
-        res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + '/*');
+
+        var range = [0];
+        if(req.headers.range) {
+            range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
+            // try guessing at least some length for the song to keep chromium happy
+            res.statusCode = 206;
+            var path = getPath(player, songID, backend.name, songFormat);
+            var end = getFilesizeInBytes(path);
+            res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + '/*');
+        }
 
         console.log('got streaming request for song: ' + songID + ', range: ' + range);
 
