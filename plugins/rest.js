@@ -169,6 +169,7 @@ rest.onBackendInit = function(playerState, backend) {
             var m = meter();
             var path;
 
+            // TODO: this may have race condition issues causing the end of a song to be cut out
             if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
                 path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
             } else {
@@ -225,43 +226,6 @@ rest.onBackendInit = function(playerState, backend) {
         };
 
         doSend(parseInt(range[0]));
-        /*
-        var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
-
-        res.on('drain', function() {
-            console.log('drained');
-        });
-
-
-        var sendFile = function(path) {
-            var isPreparing = false;
-
-            if(fs.existsSync(path)) {
-
-                var fileStream = fs.createReadStream(path);
-                fileStream.on('data', function(data) {
-                    res.write(data);
-                });
-                fileStream.on('close', function() {
-                    res.end();
-                });
-            } else {
-                res.status(404).send('file not found');
-            }
-        }
-
-            console.log('got request for song in preparation: ' + songID);
-            var path = fs.existsSync(config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat);
-            if(fs.existsSync(path)) {
-                // send partial response, if request was beyond file size put it in pendingRequests
-                // come up with some way of checking through pendingRequests to see if more data can
-                // be sent to fullfill more of a request
-            } else {
-                res.status(404).send('file not found');
-            }
-        } else {
-        }
-        */
     });
 };
 
