@@ -141,10 +141,22 @@ rest.onPrepareProgress = function(song, dataSize, done) {
 };
 
 var getFilesizeInBytes = function(filename) {
-    var stats = fs.statSync(filename);
-    var fileSizeInBytes = stats["size"];
-    return fileSizeInBytes;
+    if(fs.existsSync(filename)) {
+        var stats = fs.statSync(filename);
+        var fileSizeInBytes = stats["size"];
+        return fileSizeInBytes;
+    } else {
+        return -1;
+    }
 }
+
+var getPath = function(player, songID, backendName, songFormat) {
+    if(player.songsPreparing[backendName] && player.songsPreparing[backendName][songID]) {
+        return config.songCachePath + '/' + backendName + '/incomplete/' + songID + '.' + songFormat;
+    } else {
+        return config.songCachePath + '/' + backendName + '/' + songID + '.' + songFormat;
+    }
+};
 
 rest.onBackendInit = function(playerState, backend) {
 
@@ -162,21 +174,18 @@ rest.onBackendInit = function(playerState, backend) {
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
         res.setHeader('Accept-Ranges', 'bytes');
         res.setHeader('Connection', 'keep-alive');
-        //res.setHeader('Content-Range', 'bytes ' + range[0] + '-400000');
-        //res.setHeader('Content-Range', 'bytes 0-5190255/5190256');
+        // try guessing at least some length for the song to keep chromium happy
+        var path = getPath(player, songID, backend.name, songFormat);
+        var end = getFilesizeInBytes(path);
+        res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + '/*');
 
         console.log('got streaming request for song: ' + songID + ', range: ' + range);
 
         var doSend = function(offset) {
             var m = meter();
-            var path;
 
             // TODO: this may have race condition issues causing the end of a song to be cut out
-            if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
-                path = config.songCachePath + '/' + backend.name + '/incomplete/' + songID + '.' + songFormat;
-            } else {
-                path = config.songCachePath + '/' + backend.name + '/' + songID + '.' + songFormat;
-            }
+            var path = getPath(player, songID, backend.name, songFormat);
 
             if(fs.existsSync(path)) {
                 var start = offset;

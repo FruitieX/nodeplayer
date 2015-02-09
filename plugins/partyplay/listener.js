@@ -18,9 +18,9 @@ socket.on('playback', function(data) {
         } else {
             audio.currentTime = 0;
         }
-        audio.removeEventListener('canplaythrough', setPos, false);
+        audio.removeEventListener('canplay', setPos, false);
     }
-    audio.addEventListener('canplaythrough', setPos, false);
+    audio.addEventListener('canplay', setPos, false);
 
     var currentProgress = (data.position || 0);
     progress.started = new Date() - currentProgress;
