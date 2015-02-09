@@ -173,11 +173,13 @@ rest.onBackendInit = function(playerState, backend) {
         var range = [0];
         if(req.headers.range) {
             range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
-            // try guessing at least some length for the song to keep chromium happy
-            res.statusCode = 206;
-            var path = getPath(player, songID, backend.name, songFormat);
-            var end = getFilesizeInBytes(path);
-            res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + '/*');
+            if(range[0] != 0 || range[1]) {
+                // try guessing at least some length for the song to keep chromium happy
+                res.statusCode = 206;
+                var path = getPath(player, songID, backend.name, songFormat);
+                var end = getFilesizeInBytes(path);
+                res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + '/*');
+            }
         }
 
         console.log('got streaming request for song: ' + songID + ', range: ' + range);
