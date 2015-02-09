@@ -134,10 +134,6 @@ var prepareSong = function(song, asyncCallback) {
             /* progress callback
              * when this is called, new song data has been flushed to disk */
 
-            // tell plugins that new data is available for this song, and
-            // whether the song is now fully written to disk or not
-            callHooks('onPrepareProgress', [song, dataSize, done]);
-
             // start playback if it hasn't been started yet
             if (player.queue[0]
                 && player.queue[0].backendName === song.backendName
@@ -158,6 +154,11 @@ var prepareSong = function(song, asyncCallback) {
 
                 asyncCallback();
             }
+
+            // tell plugins that new data is available for this song, and
+            // whether the song is now fully written to disk or not.
+            callHooks('onPrepareProgress', [song, dataSize, done]);
+
         }, function(err) {
             /* error callback */
 
