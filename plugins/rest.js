@@ -167,42 +167,66 @@ rest.onBackendInit = function(playerState, backend) {
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
         res.setHeader('Transfer-Encoding', 'chunked');
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
+        res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Accept-Ranges', 'bytes');
         res.setHeader('Connection', 'keep-alive');
 
         var range = [0];
         if(req.headers.range) {
             range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
-            if(range[0] != 0 || range[1]) {
-                // try guessing at least some length for the song to keep chromium happy
-                res.statusCode = 206;
-                var path = getPath(player, songID, backend.name, songFormat);
-                var end = getFilesizeInBytes(path);
-                res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + (end - 1) + end);
+            // TODO: only 206 used right now
+            //if(range[0] != 0 || range[1]) {
+            // try guessing at least some length for the song to keep chromium happy
+            res.statusCode = 206;
+            var path = getPath(player, songID, backend.name, songFormat);
+
+            // a best guess for the header
+            var end;
+            if(range[1]) {
+                end = Math.min(range[1], getFilesizeInBytes(path) - 1);
+            } else {
+                end = getFilesizeInBytes(path) - 1;
             }
+
+            // total file size, if known
+            var outOf = '*';
+            if(!player.songsPreparing[backend.name] || !player.songsPreparing[backend.name][songID]) {
+                outOf = end + 1;
+            }
+            res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + end + '/' + outOf);
+            //}
         }
 
         console.log('got streaming request for song: ' + songID + ', range: ' + range);
 
         var doSend = function(offset) {
+            //console.log('doSend(' + offset + ')');
             var m = meter();
 
             // TODO: this may have race condition issues causing the end of a song to be cut out
             var path = getPath(player, songID, backend.name, songFormat);
 
             if(fs.existsSync(path)) {
-                var start = offset;
-                var end = getFilesizeInBytes(path);
-                //console.log('offset: ' + start + ', end: ' + end);
+                var end;
+                if(range[1]) {
+                    end = Math.min(range[1], getFilesizeInBytes(path) - 1);
+                } else {
+                    end = getFilesizeInBytes(path) - 1;
+                }
 
-                if(start > end) {
-                    console.log('start > end');
-                    // not enough data available: request can not be fulfilled (yet?)
-                    if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
+                if(offset > end) {
+                    if(range[1] && range[1] <= offset) {
+                        // range request was fullfilled
+                        res.end();
+                    } else if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
                         // song is still preparing, there is more data to come
+                        //console.log('enough data not yet available');
                         pendingReqHandlers.push(function() {
                             doSend(offset);
                         });
+                    } else if ((getFilesizeInBytes(path) - 1) <= offset){
+                        // song fully prepared and sent
+                        res.end();
                     } else {
                         // bad range
                         res.status(416).end();
@@ -210,27 +234,18 @@ rest.onBackendInit = function(playerState, backend) {
                 } else {
                     // data is available, let's send as much as we can
                     var sendStream = fs.createReadStream(path, {
-                        start: start,
+                        start: offset,
                         end: end
                     });
                     sendStream.pipe(m).pipe(res, {end: false});
 
+                    // end of file hit, run doSend again with new offset
                     m.on('end', function() {
                         // close old pipes
                         sendStream.unpipe();
                         m.unpipe();
 
-                        //console.log('m end');
-
-                        if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
-                            // song is still preparing, there is more data to come
-                            pendingReqHandlers.push(function() {
-                                doSend(m.bytes + offset);
-                            });
-                        } else {
-                            // end of file hit and song no longer preparing
-                            res.end();
-                        }
+                        doSend(m.bytes + offset);
                     });
                 }
             } else {
