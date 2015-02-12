@@ -29,7 +29,6 @@ rest.init = function(_player, callback, errCallback) {
             res.send(JSON.stringify(player.queue));
         });
 
-        // TODO: support pos
         // TODO: get rid of the partyplay specific userID here
         // queue song
         player.expressApp.post('/queue', bodyParser.json({limit: '100mb'}), function(req, res) {
@@ -40,8 +39,8 @@ rest.init = function(_player, callback, errCallback) {
         });
 
         player.expressApp.delete('/queue/:pos', bodyParser.json({limit: '100mb'}), function(req, res) {
-            var err = player.removeFromQueue(req.params.pos, req.body.cnt);
-            sendResponse(res, 'success', err);
+            var songs = player.removeFromQueue(req.params.pos, req.body.cnt);
+            sendResponse(res, songs, null);
         });
 
         // TODO: maybe this functionality should be moved into index.js?
