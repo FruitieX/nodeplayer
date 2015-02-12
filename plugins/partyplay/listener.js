@@ -13,14 +13,15 @@ socket.on('playback', function(data) {
     var audio = document.getElementById('audio');
 
     var setPos = function() {
+        console.log('ondurationchange');
         if(data.position) {
             audio.currentTime = data.position / 1000;
         } else {
             audio.currentTime = 0;
         }
-        audio.removeEventListener('canplay', setPos, false);
+        audio.removeEventListener('durationchange', setPos, false);
     }
-    audio.addEventListener('canplay', setPos, false);
+    audio.addEventListener('durationchange', setPos, false);
 
     var currentProgress = (data.position || 0);
     progress.started = new Date() - currentProgress;

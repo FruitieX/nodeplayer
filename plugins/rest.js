@@ -167,9 +167,9 @@ rest.onBackendInit = function(playerState, backend) {
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
         res.setHeader('Transfer-Encoding', 'chunked');
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
-        res.setHeader('Cache-Control', 'no-cache');
+        //res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Accept-Ranges', 'bytes');
-        res.setHeader('Connection', 'keep-alive');
+        //res.setHeader('Connection', 'keep-alive');
 
         var range = [0];
         if(req.headers.range) {
