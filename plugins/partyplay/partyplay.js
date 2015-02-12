@@ -179,7 +179,7 @@ var updateQueue = function() {
 
             var color = "#" + r + g + b;
 
-            $("#" + queue[i].backendName + queue[i].songID).css('background-color', color);
+            document.getElementById(queue[i].backendName + queue[i].songID).style['background-color'] = color;
         }
 
         var userID = $.cookie('userID');
