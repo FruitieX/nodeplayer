@@ -3,6 +3,21 @@ var _ = require('underscore');
 var socketio = {};
 var config, player;
 
+var playbackEvent = function(socket) {
+    socket.emit('playback', player.queue[0] ? {
+        songID: player.queue[0].songID,
+        format: player.queue[0].format,
+        backendName: player.queue[0].backendName,
+        duration: player.queue[0].duration,
+        position: player.playbackPosition + (new Date() - player.playbackStart),
+        playbackStart: player.playbackStart
+    } : null);
+};
+
+var queueEvent = function(socket) {
+    socket.emit('queue', player.queue);
+};
+
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
 socketio.init = function(_player, callback, errCallback) {
@@ -23,21 +38,6 @@ socketio.init = function(_player, callback, errCallback) {
         console.log('listening on port ' + (process.env.PORT || config.port));
         callback();
     }
-};
-
-var playbackEvent = function(socket) {
-    socket.emit('playback', player.queue[0] ? {
-        songID: player.queue[0].songID,
-        format: player.queue[0].format,
-        backendName: player.queue[0].backendName,
-        duration: player.queue[0].duration,
-        position: player.playbackPosition + (new Date() - player.playbackStart),
-        playbackStart: player.playbackStart
-    } : null);
-};
-
-var queueEvent = function(socket) {
-    socket.emit('queue', player.queue);
 };
 
 socketio.onSongChange = function() {
