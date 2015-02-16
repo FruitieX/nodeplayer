@@ -14,17 +14,8 @@ socketio.init = function(_player, callback, errCallback) {
     } else {
         socketio.io = require('socket.io')(player.expressServer);
         socketio.io.on('connection', function(socket) {
-            if(player.queue[0]) {
-                socket.emit('playback', {
-                    songID: player.queue[0].songID,
-                    format: player.queue[0].format,
-                    backendName: player.queue[0].backendName,
-                    duration: player.queue[0].duration,
-                    position: player.playbackPosition + (new Date() - player.playbackStart),
-                    playbackStart: player.playbackStart
-                });
-            }
-            socket.emit('queue', player.queue);
+            playbackEvent(socket);
+            queueEvent(socket);
         });
 
         player.socketio = socketio;
@@ -34,36 +25,36 @@ socketio.init = function(_player, callback, errCallback) {
     }
 };
 
-socketio.onSongChange = function(player) {
-    socketio.io.emit('playback', {
+var playbackEvent = function(socket) {
+    socket.emit('playback', player.queue[0] ? {
         songID: player.queue[0].songID,
         format: player.queue[0].format,
         backendName: player.queue[0].backendName,
         duration: player.queue[0].duration,
         position: player.playbackPosition + (new Date() - player.playbackStart),
         playbackStart: player.playbackStart
-    });
-    socketio.io.emit('queue', player.queue);
+    } : null);
 };
 
-socketio.onSongPause = function(player) {
-    socketio.io.emit('playback', {
-        songID: player.queue[0].songID,
-        format: player.queue[0].format,
-        backendName: player.queue[0].backendName,
-        duration: player.queue[0].duration,
-        position: player.playbackPosition + (new Date() - player.playbackStart),
-        playbackStart: null
-    });
+var queueEvent = function(socket) {
+    socket.emit('queue', player.queue);
+};
+
+socketio.onSongChange = function() {
+    playbackEvent(socketio.io);
+};
+
+socketio.onSongPause = function() {
+    playbackEvent(socketio.io);
 };
 
 socketio.onQueueModify = function(player) {
-    socketio.io.emit('queue', player.queue);
+    queueEvent(socketio.io);
 };
 
 socketio.onEndOfQueue = function(player) {
-    socketio.io.emit('playback', null);
-    socketio.io.emit('queue', player.queue);
+    playbackEvent(socketio.io);
+    queueEvent(socketio.io);
 };
 
 module.exports = socketio;
