@@ -16,6 +16,10 @@ storeQueue.init = function(_player, callback, errCallback) {
     callback();
 };
 
+storeQueue.onBackendsInitialized = function(player) {
+    player.prepareSongs();
+};
+
 storeQueue.onQueueModify = function() {
     fs.writeFileSync(storeQueue.path, JSON.stringify(player.queue, undefined, 4));
 };

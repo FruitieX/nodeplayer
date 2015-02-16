@@ -198,6 +198,7 @@ var prepareSongs = function() {
         }
     ]);
 };
+player.prepareSongs = prepareSongs;
 
 // to be called whenever the queue has been modified
 // this function will:
@@ -319,42 +320,44 @@ var addToQueue = function(songs, pos, metadata) {
 };
 player.addToQueue = addToQueue;
 
-_.each(config.plugins, function(pluginName) {
+// init plugins
+async.each(config.plugins, function(pluginName, callback) {
     // TODO: put plugin modules into npm
     // must implement .init, can implement hooks
     var plugin = require('./plugins/' + pluginName);
 
+    // TODO: why have a separate errCallback, not just callback(err) or (null)?
     plugin.init(player, function() {
         player.plugins[pluginName] = plugin;
         console.log('plugin ' + pluginName + ' initialized');
+        callback(null);
     }, function(err) {
         console.log('error in ' + pluginName + ': ' + err);
         callHooks('onPluginInitError', [player, plugin]);
+        callback(err || true);
     });
+}, function(err) {
+    callHooks('onPluginsInitialized', [player]);
 });
 
-// TODO: maybe wait for callbacks before this?
-callHooks('onPluginsInitialized', [player]);
-
 // init backends
-_.each(config.backends, function(backendName) {
-    // TODO: backends that are not in npmjs
-    // must implement .search, .prepareSong, .init
+async.each(config.backends, function(backendName, callback) {
     var backend = require('nodeplayer-' + backendName);
 
+    // TODO: why have a separate errCallback, not just callback(err) or (null)?
     backend.init(player, function() {
         player.backends[backendName] = backend;
-
         console.log('backend ' + backendName + ' initialized');
         callHooks('onBackendInit', [player, backend]);
+        callback(null);
     }, function(err) {
         console.log('error in ' + backendName + ': ' + err);
         callHooks('onBackendInitError', [player, backend]);
+        callback(err || true);
     });
+}, function(err) {
+    callHooks('onBackendsInitialized', [player]);
 });
-
-// TODO: maybe wait for callbacks before this?
-callHooks('onBackendsInitialized', [player]);
 
 process.on('uncaughtException', function (err) {
     console.error(err.stack);
