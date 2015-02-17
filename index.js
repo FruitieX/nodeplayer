@@ -328,6 +328,7 @@ async.each(config.plugins, function(pluginName, callback) {
         if(!err) {
             player.plugins[pluginName] = plugin;
             console.log('plugin ' + pluginName + ' initialized');
+            callHooks('onPluginInitialized', [plugin]);
         } else {
             console.log('error in ' + pluginName + ': ' + err);
             callHooks('onPluginInitError', [plugin]);
@@ -342,16 +343,16 @@ async.each(config.plugins, function(pluginName, callback) {
 async.each(config.backends, function(backendName, callback) {
     var backend = require('nodeplayer-' + backendName);
 
-    // TODO: why have a separate errCallback, not just callback(err) or (null)?
-    backend.init(player, function() {
-        player.backends[backendName] = backend;
-        console.log('backend ' + backendName + ' initialized');
-        callHooks('onBackendInit', [backend]);
-        callback(null);
-    }, function(err) {
-        console.log('error in ' + backendName + ': ' + err);
-        callHooks('onBackendInitError', [backend]);
-        callback(err || true);
+    backend.init(player, function(err) {
+        if(!err) {
+            player.backends[backendName] = backend;
+            console.log('backend ' + backendName + ' initialized');
+            callHooks('onBackendInitialized', [backend]);
+        } else {
+            console.log('error in ' + backendName + ': ' + err);
+            callHooks('onBackendInitError', [backend]);
+        }
+        callback(err);
     });
 }, function(err) {
     callHooks('onBackendsInitialized');
