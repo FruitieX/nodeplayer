@@ -105,6 +105,13 @@ rest.onBackendInitialized = function(backend) {
     player.app.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
+
+        // try finding out length of song
+        var song = player.searchQueue(backend.name, songID);
+        if(song) {
+            res.setHeader('X-Content-Duration', song.duration / 1000);
+        }
+
         res.setHeader('Transfer-Encoding', 'chunked');
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
         //res.setHeader('Cache-Control', 'no-cache');
@@ -119,19 +126,20 @@ rest.onBackendInitialized = function(backend) {
             // try guessing at least some length for the song to keep chromium happy
             res.statusCode = 206;
             var path = getPath(player, songID, backend.name, songFormat);
+            var fileSize = getFilesizeInBytes(path);
 
             // a best guess for the header
             var end;
             if(range[1]) {
-                end = Math.min(range[1], getFilesizeInBytes(path) - 1);
+                end = Math.min(range[1], fileSize - 1);
             } else {
-                end = getFilesizeInBytes(path) - 1;
+                end = fileSize - 1;
             }
 
             // total file size, if known
             var outOf = '*';
             if(!player.songsPreparing[backend.name] || !player.songsPreparing[backend.name][songID]) {
-                outOf = end + 1;
+                outOf = fileSize;
             }
             res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + end + '/' + outOf);
             //}
