@@ -24,10 +24,10 @@ socketio.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
-    if(!player.expressServer) {
+    if(!player.httpServer) {
         callback('module must be initialized after expressjs module!');
     } else {
-        socketio.io = require('socket.io')(player.expressServer);
+        socketio.io = require('socket.io')(player.httpServer);
         socketio.io.on('connection', function(socket) {
             playbackEvent(socket);
             queueEvent(socket);

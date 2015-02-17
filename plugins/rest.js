@@ -22,27 +22,27 @@ rest.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
-    if(!player.expressApp) {
+    if(!player.app) {
         callback('module must be initialized after expressjs module!');
     } else {
-        player.expressApp.get('/queue', function(req, res) {
+        player.app.get('/queue', function(req, res) {
             res.send(JSON.stringify(player.queue));
         });
 
         // TODO: get rid of the partyplay specific userID here
         // queue song
-        player.expressApp.post('/queue', bodyParser.json({limit: '100mb'}), function(req, res) {
+        player.app.post('/queue', bodyParser.json({limit: '100mb'}), function(req, res) {
             var err = player.addToQueue(req.body.songs, req.body.pos);
             sendResponse(res, 'success', err);
         });
 
-        player.expressApp.delete('/queue/:pos', bodyParser.json({limit: '100mb'}), function(req, res) {
+        player.app.delete('/queue/:pos', bodyParser.json({limit: '100mb'}), function(req, res) {
             var songs = player.removeFromQueue(req.params.pos, req.body.cnt);
             sendResponse(res, songs, null);
         });
 
         // TODO: maybe this functionality should be moved into index.js?
-        player.expressApp.post('/playctl', bodyParser.json({limit: '100mb'}), function(req, res) {
+        player.app.post('/playctl', bodyParser.json({limit: '100mb'}), function(req, res) {
             var action = req.body.action;
             var cnt = req.body.cnt;
 
@@ -87,7 +87,7 @@ rest.init = function(_player, callback) {
         });
 
         // search for song with given search terms
-        player.expressApp.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {
+        player.app.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {
             console.log('got search request: ' + req.body.terms);
 
             var resultCnt = 0;
@@ -159,7 +159,7 @@ rest.onBackendInit = function(backend) {
 
     // expressjs middleware for requesting music data
     // must support ranges in the req, and send the data to res
-    player.expressApp.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
+    player.app.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
         var songID = req.params.fileName.substring(0, req.params.fileName.lastIndexOf('.'));
         var songFormat = req.params.fileName.substring(req.params.fileName.lastIndexOf('.') + 1);
         res.setHeader('Transfer-Encoding', 'chunked');

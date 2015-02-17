@@ -8,7 +8,7 @@ partyplay.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
-    if(!player.expressApp) {
+    if(!player.app) {
         callback('module must be initialized after expressjs module!');
     } else if(!player.socketio) {
         // partyplay client depends on socketio module
@@ -17,9 +17,9 @@ partyplay.init = function(_player, callback) {
         // partyplay client depends on rest module
         callback('module must be initialized after rest module!');
     } else {
-        player.expressApp.use(express.static(__dirname + '/partyplay'));
+        player.app.use(express.static(__dirname + '/partyplay'));
 
-        player.expressApp.post('/vote', bodyParser.json(), function(req, res) {
+        player.app.post('/vote', bodyParser.json(), function(req, res) {
             var userID = req.body.userID;
             var vote = req.body.vote;
             var pos = req.body.pos;

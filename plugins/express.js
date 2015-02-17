@@ -12,7 +12,7 @@ expressjs.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
-    player.expressApp = express();
+    player.app = express();
 
     var options = {};
     if(config.tls) {
@@ -24,10 +24,10 @@ expressjs.init = function(_player, callback) {
             requestCert: config.requestCert,
             rejectUnauthorized: config.rejectUnauthorized
         };
-        player.expressTls = true;
-        player.expressServer = https.createServer(options, player.expressApp).listen(process.env.PORT || config.port);
+        player.app.set('tls', true);
+        player.httpServer = https.createServer(options, player.app).listen(process.env.PORT || config.port);
     } else {
-        player.expressServer = http.createServer(player.expressApp).listen(process.env.PORT || config.port);
+        player.httpServer = http.createServer(player.app).listen(process.env.PORT || config.port);
     }
 
     callback();
