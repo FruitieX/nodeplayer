@@ -158,8 +158,8 @@ var updateQueue = function() {
             queue[i].duration = durationToString(queue[i].duration / 1000);
             queue[i].pos = i;
             $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
-            var numUpVotes = Object.keys(queue[i].upVotes).length;
-            var numDownVotes = Object.keys(queue[i].downVotes).length;
+            var numUpVotes = Object.keys(queue[i].upVotes || {}).length;
+            var numDownVotes = Object.keys(queue[i].downVotes || {}).length;
             var totalVotes = numUpVotes + numDownVotes;
 
             var weightedUp = 1 - (totalVotes - numUpVotes) / totalVotes;
@@ -185,9 +185,9 @@ var updateQueue = function() {
         var userID = $.cookie('userID');
         // update votes
         for(var i = 1; i < queue.length; i++) {
-            if(queue[i].upVotes[userID]) {
+            if(queue[i].upVotes && queue[i].upVotes[userID]) {
                 $("#uparrow" + i).addClass("active");
-            } else if(queue[i].downVotes[userID]) {
+            } else if(queue[i].downVotes && queue[i].downVotes[userID]) {
                 $("#downarrow" + i).addClass("active");
             }
         }
