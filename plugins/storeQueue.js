@@ -4,7 +4,7 @@ var mkdirp = require('mkdirp');
 
 storeQueue.path = process.env.HOME + '/.nodeplayer/stored-queue.json';
 
-storeQueue.init = function(_player, callback, errCallback) {
+storeQueue.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 

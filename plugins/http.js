@@ -8,7 +8,7 @@ var config, player;
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-expressjs.init = function(_player, callback, errCallback) {
+expressjs.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 

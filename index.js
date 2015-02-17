@@ -324,15 +324,15 @@ async.each(config.plugins, function(pluginName, callback) {
     // must implement .init, can implement hooks
     var plugin = require('./plugins/' + pluginName);
 
-    // TODO: why have a separate errCallback, not just callback(err) or (null)?
-    plugin.init(player, function() {
-        player.plugins[pluginName] = plugin;
-        console.log('plugin ' + pluginName + ' initialized');
-        callback(null);
-    }, function(err) {
-        console.log('error in ' + pluginName + ': ' + err);
-        callHooks('onPluginInitError', [plugin]);
-        callback(err || true);
+    plugin.init(player, function(err) {
+        if(!err) {
+            player.plugins[pluginName] = plugin;
+            console.log('plugin ' + pluginName + ' initialized');
+        } else {
+            console.log('error in ' + pluginName + ': ' + err);
+            callHooks('onPluginInitError', [plugin]);
+        }
+        callback(err);
     });
 }, function(err) {
     callHooks('onPluginsInitialized');

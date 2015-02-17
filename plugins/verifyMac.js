@@ -2,14 +2,14 @@ var verifyMac = {};
 var crypto = require('crypto');
 var fs = require('fs');
 
-verifyMac.init = function(_player, callback, errCallback) {
+verifyMac.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
     verifyMac.derivedKey;
 
     if(!player.rest) {
-        errCallback('module must be initialized after rest module!');
+        callback('module must be initialized after rest module!');
     } else {
         var key = fs.readFileSync(config.verifyMac.key);
         derivedKey = crypto.pbkdf2Sync(key, key, config.verifyMac.iterations, config.verifyMac.keyLen);

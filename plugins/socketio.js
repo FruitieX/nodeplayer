@@ -20,12 +20,12 @@ var queueEvent = function(socket) {
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-socketio.init = function(_player, callback, errCallback) {
+socketio.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
     if(!player.expressServer) {
-        errCallback('module must be initialized after expressjs module!');
+        callback('module must be initialized after expressjs module!');
     } else {
         socketio.io = require('socket.io')(player.expressServer);
         socketio.io.on('connection', function(socket) {

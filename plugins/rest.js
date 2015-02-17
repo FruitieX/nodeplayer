@@ -18,12 +18,12 @@ var sendResponse = function(res, msg, err) {
 
 // called when nodeplayer is started to initialize the backend
 // do any necessary initialization here
-rest.init = function(_player, callback, errCallback) {
+rest.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
     if(!player.expressApp) {
-        errCallback('module must be initialized after expressjs module!');
+        callback('module must be initialized after expressjs module!');
     } else {
         player.expressApp.get('/queue', function(req, res) {
             res.send(JSON.stringify(player.queue));
