@@ -62,7 +62,7 @@ rest.init = function(_player, callback) {
         player.app.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {
             console.log('got search request: ' + req.body.terms);
 
-            player.searchBackends(req.body.terms, function(results) {
+            player.searchBackends(req.body, function(results) {
                 res.send(JSON.stringify(results));
             });
         });
