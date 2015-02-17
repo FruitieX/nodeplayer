@@ -94,7 +94,6 @@ $(document).ready(function() {
         + '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
-    $("#domain").html('queue songs at: <a>http://' + location.host + '</a>');
 
     var preMuteVolume;
     var setVolumeIcon = function() {

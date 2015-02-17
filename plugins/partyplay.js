@@ -17,7 +17,7 @@ partyplay.init = function(_player, callback) {
         // partyplay client depends on rest module
         callback('module must be initialized after rest module!');
     } else {
-        player.app.use(express.static(__dirname + '/partyplay'));
+        player.app.use('/partyplay', express.static(__dirname + '/partyplay'));
 
         player.app.post('/vote', bodyParser.json(), function(req, res) {
             var userID = req.body.userID;
