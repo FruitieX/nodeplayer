@@ -17,6 +17,8 @@ httpAuth.init = function(_player, callback) {
         }
     );
 
+    // put /song/* behind authentication for now
+    // TODO: configurable which paths require authentication?
     player.app.use('/song/*', auth.connect(basic));
     callback();
 };
