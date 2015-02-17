@@ -232,6 +232,41 @@ var searchQueue = function(backendName, songID) {
 };
 player.searchQueue = searchQueue;
 
+// make a search query to backends
+var searchBackends = function(query, callback) {
+    var resultCnt = 0;
+    var allResults = {};
+
+    _.each(player.backends, function(backend) {
+        backend.search(query, function(results) {
+            resultCnt++;
+
+            // make a temporary copy of songlist, clear songlist, check
+            // each song and add them again if they are ok
+            var tempSongs = _.clone(results.songs);
+            allResults[backend.name] = results;
+            allResults[backend.name].songs = {};
+
+            _.each(tempSongs, function(song) {
+                var err = player.callHooks('preAddSearchResult', [player, song]);
+                if(!err)
+                    allResults[backend.name].songs[song.songID] = song;
+            });
+
+            // got results from all services?
+            if(resultCnt >= Object.keys(player.backends).length)
+                callback(allResults);
+        }, function(err) {
+            resultCnt++;
+            console.log(err);
+
+            // got results from all services?
+            if(resultCnt >= Object.keys(player.backends).length)
+                callback(allResults);
+        });
+    });
+};
+
 // get rid of song in either queue (negative signifies playedQueue)
 // cnt can be left out for deleting only one song
 var removeFromQueue = function(pos, cnt) {
@@ -317,6 +352,43 @@ var addToQueue = function(songs, pos) {
     callHooks('postSongsQueued', [songs]);
 };
 player.addToQueue = addToQueue;
+
+var shuffleQueue = function() {
+    // don't change now playing
+    var temp = player.queue.shift();
+    player.queue = _.shuffle(player.queue);
+    player.queue.unshift(temp);
+
+    player.onQueueModify();
+};
+player.shuffleQueue = shuffleQueue;
+
+// cnt can be negative to go back or zero to restart current song
+var skipSongs = function(cnt) {
+    player.npIsPlaying = false;
+
+    for(var i = 0; i < Math.abs(cnt); i++) {
+        if(cnt > 0) {
+            if(player.queue[0])
+                player.playedQueue.push(player.queue[0]);
+
+            player.queue.shift();
+        } else if(cnt < 0) {
+            if(player.playedQueue.length)
+                player.queue.unshift(player.playedQueue.pop());
+        }
+
+        // ran out of songs while skipping, stop
+        if(!player.queue[0])
+            break;
+    }
+
+    player.playbackPosition = null;
+    player.playbackStart = null;
+    clearTimeout(player.songEndTimeout);
+    player.songEndTimeout = null;
+    player.onQueueModify();
+};
 
 // init plugins
 async.each(config.plugins, function(pluginName, callback) {

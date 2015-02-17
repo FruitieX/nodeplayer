@@ -41,7 +41,6 @@ rest.init = function(_player, callback) {
             sendResponse(res, songs, null);
         });
 
-        // TODO: maybe this functionality should be moved into index.js?
         player.app.post('/playctl', bodyParser.json({limit: '100mb'}), function(req, res) {
             var action = req.body.action;
             var cnt = req.body.cnt;
@@ -51,36 +50,9 @@ rest.init = function(_player, callback) {
             } else if(action === 'pause') {
                 player.pausePlayback();
             } else if(action === 'skip') {
-                player.npIsPlaying = false;
-
-                for(var i = 0; i < Math.abs(req.body.cnt); i++) {
-                    if(cnt > 0) {
-                        if(player.queue[0])
-                            player.playedQueue.push(player.queue[0]);
-
-                        player.queue.shift();
-                    } else if(cnt < 0) {
-                        if(player.playedQueue.length)
-                            player.queue.unshift(player.playedQueue.pop());
-                    }
-
-                    // ran out of songs while skipping, stop
-                    if(!player.queue[0])
-                        break;
-                }
-
-                player.playbackPosition = null;
-                player.playbackStart = null;
-                clearTimeout(player.songEndTimeout);
-                player.songEndTimeout = null;
-                player.onQueueModify();
+                player.skipSongs(cnt);
             } else if(action === 'shuffle') {
-                // don't change now playing
-                var temp = player.queue.shift();
-                player.queue = _.shuffle(player.queue);
-                player.queue.unshift(temp);
-
-                player.onQueueModify();
+                player.shuffleQueue();
             }
 
             res.send('success');
@@ -90,36 +62,8 @@ rest.init = function(_player, callback) {
         player.app.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {
             console.log('got search request: ' + req.body.terms);
 
-            var resultCnt = 0;
-            var allResults = {};
-
-            _.each(player.backends, function(backend) {
-                backend.search(req.body, function(results) {
-                    resultCnt++;
-
-                    // make a temporary copy of songlist, clear songlist, check
-                    // each song and add them again if they are ok
-                    var tempSongs = _.clone(results.songs);
-                    allResults[backend.name] = results;
-                    allResults[backend.name].songs = {};
-
-                    _.each(tempSongs, function(song) {
-                        var err = player.callHooks('preAddSearchResult', [player, song]);
-                        if(!err)
-                            allResults[backend.name].songs[song.songID] = song;
-                    });
-
-                    // got results from all services?
-                    if(resultCnt >= Object.keys(player.backends).length)
-                        res.send(JSON.stringify(allResults));
-                }, function(err) {
-                    resultCnt++;
-                    console.log(err);
-
-                    // got results from all services?
-                    if(resultCnt >= Object.keys(player.backends).length)
-                        res.send(JSON.stringify(allResults));
-                });
+            player.searchBackends(req.body.terms, function(results) {
+                res.send(JSON.stringify(results));
             });
         });
 
