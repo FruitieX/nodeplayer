@@ -400,6 +400,7 @@ async.each(config.plugins, function(pluginName, callback) {
 
     plugin.init(player, function(err) {
         if(!err) {
+            // TODO: some plugins set player.plugin = blah; now, and we do this here.
             player.plugins[pluginName] = plugin;
             console.log('plugin ' + pluginName + ' initialized');
             callHooks('onPluginInitialized', [plugin]);
