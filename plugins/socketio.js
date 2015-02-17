@@ -40,19 +40,19 @@ socketio.init = function(_player, callback, errCallback) {
     }
 };
 
-socketio.onSongChange = function() {
+socketio.onSongChange = function(song) {
     playbackEvent(socketio.io);
 };
 
-socketio.onSongPause = function() {
+socketio.onSongPause = function(song) {
     playbackEvent(socketio.io);
 };
 
-socketio.onQueueModify = function(player) {
+socketio.onQueueModify = function(queue) {
     queueEvent(socketio.io);
 };
 
-socketio.onEndOfQueue = function(player) {
+socketio.onEndOfQueue = function() {
     playbackEvent(socketio.io);
     queueEvent(socketio.io);
 };

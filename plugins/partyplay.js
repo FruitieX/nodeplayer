@@ -55,7 +55,7 @@ partyplay.init = function(_player, callback, errCallback) {
     }
 };
 
-partyplay.onPluginsInitialized = function(player) {
+partyplay.onPluginsInitialized = function() {
     // sortQueue should only be hooked to from one plugin at a time
     if(player.numHooks('sortQueue') > 1)
         console.log('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
@@ -63,7 +63,7 @@ partyplay.onPluginsInitialized = function(player) {
 
 
 // remove extremely downvoted (bad) songs
-partyplay.onSongEnd = function(player) {
+partyplay.onSongEnd = function(nowPlaying) {
     for (var i = player.queue.length - 1; i >= 0; i--) {
         // bump oldness parameter for all queued songs at song switch
         player.queue[i].oldness++;
@@ -85,7 +85,7 @@ var checkDuration = function(song) {
     }
 }
 
-partyplay.preSongQueued = function(player, song, metadata) {
+partyplay.preSongQueued = function(song, metadata) {
     // if same song is already queued, don't create a duplicate
     var queuedSong = player.searchQueue(song.backendName, song.songID);
     if(queuedSong) {
@@ -117,7 +117,7 @@ partyplay.preAddSearchResult = function(player, song) {
 };
 
 // sort queue according to votes
-partyplay.sortQueue = function(player) {
+partyplay.sortQueue = function() {
     var np;
     if(player.queue.length)
         np = player.queue.shift();
@@ -168,7 +168,7 @@ var voteSong = function(song, vote, userID) {
         song.downVotes[userID] = true;
     }
 
-    player.callHooks('sortQueue', [player]);
+    player.callHooks('sortQueue');
 };
 
 module.exports = partyplay;

@@ -16,11 +16,11 @@ storeQueue.init = function(_player, callback, errCallback) {
     callback();
 };
 
-storeQueue.onBackendsInitialized = function(player) {
+storeQueue.onBackendsInitialized = function() {
     player.prepareSongs();
 };
 
-storeQueue.onQueueModify = function() {
+storeQueue.onQueueModify = function(queue) {
     fs.writeFileSync(storeQueue.path, JSON.stringify(player.queue, undefined, 4));
 };
 

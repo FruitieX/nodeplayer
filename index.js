@@ -65,7 +65,7 @@ var startPlayback = function(pos) {
     else if(!player.playbackPosition)
         player.playbackPosition = 0;
 
-    callHooks('onSongChange', [player]);
+    callHooks('onSongChange', [np]);
 
     var durationLeft = parseInt(np.duration) - player.playbackPosition + config.songDelayMs;
     if(player.songEndTimeout) {
@@ -74,7 +74,7 @@ var startPlayback = function(pos) {
     }
     player.songEndTimeout = setTimeout(function() {
         console.log('end of song ' + np.songID);
-        callHooks('onSongEnd', [player]);
+        callHooks('onSongEnd', [np]);
 
         player.playedQueue.push(player.queue[0]);
 
@@ -94,7 +94,7 @@ var pausePlayback = function() {
 
     clearTimeout(player.songEndTimeout);
     player.songEndTimeout = null;
-    callHooks('onSongPause', [player]);
+    callHooks('onSongPause', [player.nowPlaying]);
 };
 player.pausePlayback = pausePlayback;
 
@@ -109,7 +109,7 @@ var prepareError = function(song, err) {
         }
     }
 
-    callHooks('onSongPrepareError', [player]); // TODO: consider changing player to song?
+    callHooks('onSongPrepareError', [song]);
 };
 
 // TODO: get rid of the callback hell, use promises?
@@ -206,7 +206,7 @@ player.prepareSongs = prepareSongs;
 // - call prepareSongs()
 var onQueueModify = function() {
     if(!player.queue.length) {
-        callHooks('onEndOfQueue', [player]);
+        callHooks('onEndOfQueue');
         console.log('end of queue, waiting for more songs');
         return;
     }
@@ -216,7 +216,7 @@ var onQueueModify = function() {
         player.playedQueue.push(player.queue.shift());
 
     prepareSongs();
-    callHooks('onQueueModify', [player]);
+    callHooks('onQueueModify', [player.queue]);
 };
 player.onQueueModify = onQueueModify;
 
@@ -240,7 +240,7 @@ var removeFromQueue = function(pos, cnt) {
         cnt = 1;
 
     pos = parseInt(pos);
-    callHooks('preSongsRemoved', [player, pos, cnt]);
+    callHooks('preSongsRemoved', [pos, cnt]);
 
     // remove songs from played queue
     if(pos < 0)
@@ -280,7 +280,7 @@ var removeFromQueue = function(pos, cnt) {
     }
 
     onQueueModify();
-    callHooks('postSongsRemoved', [player, pos, cnt]);
+    callHooks('postSongsRemoved', [pos, cnt]);
     return retval;
 };
 player.removeFromQueue = removeFromQueue;
@@ -294,6 +294,7 @@ var addToQueue = function(songs, pos, metadata) {
         pos = player.queue.length;
     pos = Math.min(pos, player.queue.length)
 
+    callHooks('preSongsQueued', [songs, pos]);
     _.each(songs, function(song) {
         //console.log('DEBUG: addToQueue(): ' + song.songID);
         // check that required fields are provided
@@ -302,7 +303,7 @@ var addToQueue = function(songs, pos, metadata) {
             return 'required song fields not provided';
         }
 
-        var err = callHooks('preSongQueued', [player, song, metadata]);
+        var err = callHooks('preSongQueued', [song]);
         if(err) {
             console.log('ERROR: not adding song to queue: ' + err);
         } else {
@@ -310,13 +311,13 @@ var addToQueue = function(songs, pos, metadata) {
 
             player.queue.splice(pos++, 0, song);
             console.log('added song to queue: ' + song.songID);
-            callHooks('postSongQueued', [player, song, metadata]);
+            callHooks('postSongQueued', [song]);
         }
     })
 
-    callHooks('sortQueue', [player, metadata]);
+    callHooks('sortQueue');
     onQueueModify();
-    callHooks('postSongsQueued', [player, songs, metadata]);
+    callHooks('postSongsQueued', [songs]);
 };
 player.addToQueue = addToQueue;
 
@@ -333,11 +334,11 @@ async.each(config.plugins, function(pluginName, callback) {
         callback(null);
     }, function(err) {
         console.log('error in ' + pluginName + ': ' + err);
-        callHooks('onPluginInitError', [player, plugin]);
+        callHooks('onPluginInitError', [plugin]);
         callback(err || true);
     });
 }, function(err) {
-    callHooks('onPluginsInitialized', [player]);
+    callHooks('onPluginsInitialized');
 });
 
 // init backends
@@ -348,15 +349,15 @@ async.each(config.backends, function(backendName, callback) {
     backend.init(player, function() {
         player.backends[backendName] = backend;
         console.log('backend ' + backendName + ' initialized');
-        callHooks('onBackendInit', [player, backend]);
+        callHooks('onBackendInit', [backend]);
         callback(null);
     }, function(err) {
         console.log('error in ' + backendName + ': ' + err);
-        callHooks('onBackendInitError', [player, backend]);
+        callHooks('onBackendInitError', [backend]);
         callback(err || true);
     });
 }, function(err) {
-    callHooks('onBackendsInitialized', [player]);
+    callHooks('onBackendsInitialized');
 });
 
 process.on('uncaughtException', function (err) {

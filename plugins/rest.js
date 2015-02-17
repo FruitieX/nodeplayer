@@ -157,7 +157,7 @@ var getPath = function(player, songID, backendName, songFormat) {
     }
 };
 
-rest.onBackendInit = function(playerState, backend) {
+rest.onBackendInit = function(backend) {
 
     // expressjs middleware for requesting music data
     // must support ranges in the req, and send the data to res
