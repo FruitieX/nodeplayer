@@ -9,7 +9,7 @@ var playbackEvent = function(socket) {
         format: player.queue[0].format,
         backendName: player.queue[0].backendName,
         duration: player.queue[0].duration,
-        position: player.playbackPosition + (new Date() - player.playbackStart),
+        position: player.playbackStart ? player.playbackPosition + (new Date() - player.playbackStart) : player.playbackPosition,
         playbackStart: player.playbackStart
     } : null);
 };

@@ -57,7 +57,7 @@ var startPlayback = function(pos) {
     else
         console.log('playing song: ' + np.songID);
 
-    player.playbackStart = new Date(); // song is playing while this is truthy
+    player.playbackStart = new Date().getTime(); // song is playing while this is truthy
 
     // where did the song start playing from at playbackStart?
     if(!_.isUndefined(pos))
@@ -89,7 +89,7 @@ player.startPlayback = startPlayback;
 
 var pausePlayback = function() {
     // update position
-    player.playbackPosition += new Date() - player.playbackStart;
+    player.playbackPosition += new Date().getTime() - player.playbackStart;
     player.playbackStart = null;
 
     clearTimeout(player.songEndTimeout);
