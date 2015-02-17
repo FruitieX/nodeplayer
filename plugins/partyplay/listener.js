@@ -10,30 +10,34 @@ socket.on('queue', function(data) {
 socket.on('playback', function(data) {
     console.log(data);
     var msgTime = new Date().getTime();
-    $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
-    var audio = document.getElementById('audio');
+    if(!data) {
+        $("#audio").attr('src', '');
+    } else {
+        $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
+        var audio = document.getElementById('audio');
 
-    // TODO: even better sync using NTP
-    var setPos = function() {
-        var pos = 0;
-        if(data.position)
-            pos = data.position / 1000 + (new Date().getTime() - msgTime) / 1000;
+        // TODO: even better sync using NTP
+        var setPos = function() {
+            var pos = 0;
+            if(data.position)
+                pos = data.position / 1000 + (new Date().getTime() - msgTime) / 1000;
 
-        console.log('loadedmetadata, starting playback from ' + pos);
-        audio.currentTime = pos;
-    }
-    audio.removeEventListener('loadedmetadata', setPos, false);
-    audio.addEventListener('loadedmetadata', setPos, false);
+            console.log('loadedmetadata, starting playback from ' + pos);
+            audio.currentTime = pos;
+        }
+        audio.removeEventListener('loadedmetadata', setPos, false);
+        audio.addEventListener('loadedmetadata', setPos, false);
 
-    var currentProgress = (data.position || 0);
-    progress.started = new Date() - currentProgress;
-    progress.duration = data.duration;
+        var currentProgress = (data.position || 0);
+        progress.started = new Date() - currentProgress;
+        progress.duration = data.duration;
 
-    clearInterval(progress.interval);
-    if(data.playbackStart) {
-        progress.interval = setInterval(function() {
-            updateProgress(100);
-        }, 100);
+        clearInterval(progress.interval);
+        if(data.playbackStart) {
+            progress.interval = setInterval(function() {
+                updateProgress(100);
+            }, 100);
+        }
     }
 });
 
