@@ -266,6 +266,7 @@ var searchBackends = function(query, callback) {
         });
     });
 };
+player.searchBackends = searchBackends;
 
 // get rid of song in either queue (negative signifies playedQueue)
 // cnt can be left out for deleting only one song
@@ -389,6 +390,7 @@ var skipSongs = function(cnt) {
     player.songEndTimeout = null;
     player.onQueueModify();
 };
+player.skipSongs = skipSongs;
 
 // init plugins
 async.each(config.plugins, function(pluginName, callback) {
