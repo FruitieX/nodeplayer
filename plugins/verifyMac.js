@@ -53,7 +53,7 @@ verifyMac.preAddSearchResult = function(player, song) {
     song.hmac = verifyMac.getSongHmac(song);
 };
 
-verifyMac.preSongQueued = function(song, metadata) {
+verifyMac.preSongQueued = function(song) {
     return (verifyMac.verifySong(song) ? null : "invalid hmac!");
 };
 

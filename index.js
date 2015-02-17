@@ -286,10 +286,7 @@ var removeFromQueue = function(pos, cnt) {
 player.removeFromQueue = removeFromQueue;
 
 // add songs to the queue, at optional position
-//
-// metadata is optional and can contain information passed between plugins
-// (e.g. which user added a song)
-var addToQueue = function(songs, pos, metadata) {
+var addToQueue = function(songs, pos) {
     if(!pos || pos < 0)
         pos = player.queue.length;
     pos = Math.min(pos, player.queue.length)

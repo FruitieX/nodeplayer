@@ -85,7 +85,7 @@ var checkDuration = function(song) {
     }
 }
 
-partyplay.preSongQueued = function(song, metadata) {
+partyplay.preSongQueued = function(song) {
     // if same song is already queued, don't create a duplicate
     var queuedSong = player.searchQueue(song.backendName, song.songID);
     if(queuedSong) {
@@ -96,7 +96,7 @@ partyplay.preSongQueued = function(song, metadata) {
     if(checkDuration(song)) {
         return checkDuration(song);
     }
-    else if(!metadata.userID) {
+    else if(!song.userID) {
         // TODO: actually validate the ID?
         // check valid ID
         return 'invalid userID';
@@ -107,7 +107,7 @@ partyplay.preSongQueued = function(song, metadata) {
         song.oldness = 0; // favor old songs
 
         // automatically add an upvote after user has added a song
-        voteSong(song, +1, metadata.userID);
+        voteSong(song, +1, song.userID);
     }
 };
 partyplay.preAddSearchResult = function(player, song) {
