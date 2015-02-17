@@ -23,5 +23,6 @@ storeQueue.onBackendsInitialized = function() {
 storeQueue.onQueueModify = function(queue) {
     fs.writeFileSync(storeQueue.path, JSON.stringify(player.queue, undefined, 4));
 };
+storeQueue.postSongsRemoved = storeQueue.onQueueModify;
 
 module.exports = storeQueue;
