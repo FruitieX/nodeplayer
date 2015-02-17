@@ -68,8 +68,8 @@ partyplay.onSongEnd = function(nowPlaying) {
         // bump oldness parameter for all queued songs at song switch
         player.queue[i].oldness++;
 
-        var numDownVotes = Object.keys(player.queue[i].downVotes).length;
-        var numUpVotes = Object.keys(player.queue[i].upVotes).length;
+        var numDownVotes = Object.keys(player.queue[i].downVotes || {}).length;
+        var numUpVotes = Object.keys(player.queue[i].upVotes || {}).length;
         var totalVotes = numDownVotes + numUpVotes;
         if(numDownVotes / totalVotes >= config.badVotePercent) {
             console.log('song ' + player.queue[i].songID + ' removed due to downvotes');
@@ -123,8 +123,8 @@ partyplay.sortQueue = function() {
         np = player.queue.shift();
 
     player.queue.sort(function(a, b) {
-        var aVotes = a.oldness + Object.keys(a.upVotes).length - Object.keys(a.downVotes).length;
-        var bVotes = b.oldness + Object.keys(b.upVotes).length - Object.keys(b.downVotes).length;
+        var aVotes = a.oldness + Object.keys(a.upVotes || {}).length - Object.keys(a.downVotes || {}).length;
+        var bVotes = b.oldness + Object.keys(b.upVotes || {}).length - Object.keys(b.downVotes || {}).length;
         if(aVotes !== bVotes)
             // ordering first determined by votes + oldness
             return (bVotes - aVotes);
@@ -144,6 +144,11 @@ var voteSong = function(song, vote, userID) {
         vote = vote / Math.abs(vote);
     else
         vote = 0;
+
+    if(!song.upVotes)
+        song.upVotes = {};
+    if(!song.downVotes)
+        song.downVotes = {};
 
     if(!vote) {
         delete(song.upVotes[userID]);
