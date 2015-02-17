@@ -104,12 +104,12 @@ var vote = function(pos, vote) {
 var appendQueue = function(backendName, songID) {
     if (songID !== 0 && !songID) return;
     if (!backendName) return;
+    searchResults[backendName].songs[songID].userID = $.cookie('userID');
     $.ajax({
         type: 'POST',
         url: '/queue',
         data: JSON.stringify({
-            songs: [searchResults[backendName].songs[songID]],
-            userID: $.cookie('userID')
+            songs: [searchResults[backendName].songs[songID]]
         }),
         contentType: 'application/json'
     });
