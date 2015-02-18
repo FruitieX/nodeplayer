@@ -109,7 +109,7 @@ var prepareError = function(song, err) {
         }
     }
 
-    callHooks('onSongPrepareError', [song]);
+    callHooks('onSongPrepareError', [song, err]);
 };
 
 // TODO: get rid of the callback hell, use promises?
@@ -248,7 +248,7 @@ var searchBackends = function(query, callback) {
             allResults[backend.name].songs = {};
 
             _.each(tempSongs, function(song) {
-                var err = player.callHooks('preAddSearchResult', [player, song]);
+                var err = player.callHooks('preAddSearchResult', [song]);
                 if(!err)
                     allResults[backend.name].songs[song.songID] = song;
             });
@@ -350,7 +350,7 @@ var addToQueue = function(songs, pos) {
 
     callHooks('sortQueue');
     onQueueModify();
-    callHooks('postSongsQueued', [songs]);
+    callHooks('postSongsQueued', [songs, pos]);
 };
 player.addToQueue = addToQueue;
 
@@ -406,7 +406,7 @@ async.each(config.plugins, function(pluginName, callback) {
             callHooks('onPluginInitialized', [plugin]);
         } else {
             console.log('error in ' + pluginName + ': ' + err);
-            callHooks('onPluginInitError', [plugin]);
+            callHooks('onPluginInitError', [plugin, err]);
         }
         callback(err);
     });
@@ -425,7 +425,7 @@ async.each(config.backends, function(backendName, callback) {
             callHooks('onBackendInitialized', [backend]);
         } else {
             console.log('error in ' + backendName + ': ' + err);
-            callHooks('onBackendInitError', [backend]);
+            callHooks('onBackendInitError', [backend, err]);
         }
         callback(err);
     });

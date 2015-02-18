@@ -49,7 +49,7 @@ verifyMac.verifySong = function(song) {
     return (song.hmac === calculatedHmac);
 };
 
-verifyMac.preAddSearchResult = function(player, song) {
+verifyMac.preAddSearchResult = function(song) {
     song.hmac = verifyMac.getSongHmac(song);
 };
 

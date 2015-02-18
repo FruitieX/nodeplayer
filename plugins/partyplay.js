@@ -110,7 +110,7 @@ partyplay.preSongQueued = function(song) {
         voteSong(song, +1, song.userID);
     }
 };
-partyplay.preAddSearchResult = function(player, song) {
+partyplay.preAddSearchResult = function(song) {
     if(checkDuration(song)) {
         return checkDuration(song);
     }
