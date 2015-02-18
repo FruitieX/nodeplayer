@@ -90,7 +90,7 @@ If any hook returns a truthy value it is an error that will also be returned by
 * `onEndOfQueue()` - queue ended
 * `onQueueModify(queue)` - queue was potentially modified
 * `preAddSearchResult(song)` - about to add search result `song`, returning a truthy value rejects search result
-* `preSongsRemoved(pos, cnt)` - about to remove `cnt` amount of songs starting at `pos`
+* `preSongsRemoved(pos, cnt)` - about to remove `cnt` amount of songs starting at `pos`. TODO: these should probably be possible to reject
 * `postSongsRemoved(pos, cnt)` - removed `cnt` amount of songs starting at `pos`
 * `preSongsQueued(songs, pos)` - about to queue `songs` to `pos`
 * `postSongsQueued(songs, pos)` - queued `songs` to `pos`
