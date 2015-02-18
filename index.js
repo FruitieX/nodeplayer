@@ -7,7 +7,7 @@ var config = _.defaults(userConfig, defaultConfig);
 
 var player = {
     config: config,
-    playedQueue: [],
+    playedQueue: [], // TODO: don't let this grow to infinity
     queue: [],
     plugins: {},
     backends: {}
