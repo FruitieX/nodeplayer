@@ -431,6 +431,7 @@ async.each(config.backends, function(backendName, callback) {
     });
 }, function(err) {
     callHooks('onBackendsInitialized');
+    console.log('ready');
 });
 
 process.on('uncaughtException', function (err) {

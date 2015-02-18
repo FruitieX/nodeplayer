@@ -1,8 +1,6 @@
 var express = require('express');
 
-var weblistener = {};
-
-weblistener.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
@@ -20,5 +18,3 @@ weblistener.init = function(_player, callback) {
         callback();
     }
 };
-
-module.exports = weblistener;
