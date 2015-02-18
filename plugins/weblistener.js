@@ -6,10 +6,10 @@ exports.init = function(_player, callback) {
 
     if(!player.app) {
         callback('module must be initialized after expressjs module!');
-    } else if(!player.socketio) {
+    } else if(!player.plugins.socketio) {
         // weblistener client depends on socketio module
         callback('module must be initialized after socketio module!');
-    } else if(!player.rest) {
+    } else if(!player.plugins.rest) {
         // weblistener client depends on rest module
         callback('module must be initialized after rest module!');
     } else {

@@ -3,12 +3,11 @@ var https = require('https');
 var http = require('http');
 var fs = require('fs');
 
-var expressjs = {};
 var config, player;
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-expressjs.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
@@ -32,5 +31,3 @@ expressjs.init = function(_player, callback) {
 
     callback();
 };
-
-module.exports = expressjs;
