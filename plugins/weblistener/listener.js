@@ -10,8 +10,14 @@ socket.on('queue', function(data) {
 socket.on('playback', function(data) {
     console.log(data);
     var msgTime = new Date().getTime();
-    if(!data) {
-        $("#audio").attr('src', '');
+    if(!data || !data.playbackStart) {
+        $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
+        $("#audio").trigger('pause');
+
+        clearInterval(progress.interval);
+        var currentProgress = (data.position || 0);
+        progress.started = new Date().getTime() - currentProgress;
+        progress.duration = data.duration;
     } else {
         $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
         var audio = document.getElementById('audio');
