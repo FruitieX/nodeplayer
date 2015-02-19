@@ -90,7 +90,24 @@ var updateQueue = function() {
             updateProgress(0);
             $("#nowplaying").click(function(e) {
                 var posX = e.pageX - $(this).offset().left;
-                socket.emit('startPlayback', (posX / $(this).width()) * queue[0].duration);
+                socket.emit('startPlayback', (posX / $(this).outerWidth()) * queue[0].duration);
+            });
+            $("#nowplaying").mousemove(function(e) {
+                var posX = e.pageX - $(this).offset().left;
+                $("#progressmouseover").css('width', 100 * (posX / $(this).outerWidth()) + '%');
+            });
+            $("#nowplaying").hover(function(e) {
+                $("#progressmouseover").css('visibility', 'visible');
+            }, function(e) {
+                $("#progressmouseover").css('visibility', 'hidden');
+            });
+            $("#remove0").mousemove(function(e) {
+                $("#progressmouseover").css('visibility', 'hidden');
+                e.stopPropagation();
+            });
+            $("#remove0").hover(function(e) {
+                // TODO: this is a bit stupid?
+                $("#progressmouseover").css('visibility', 'visible');
             });
         }
 
@@ -126,8 +143,9 @@ var skipSongs = function(cnt) {
 
 $(document).ready(function() {
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="nowplaying">'
+        + '<div id="progressmouseover"></div>'
         + '<div id="progress"></div>'
-        + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(0, \'${backendName}${songID}\');"></div>'
+        + '<div class="remove glyphicon glyphicon-remove" id="remove0" onclick="removeFromQueue(0, \'${backendName}${songID}\');"></div>'
         + '<div class="np-songinfo">'
         + '<div class="big"><b>${title}</b> - ${durationString}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
