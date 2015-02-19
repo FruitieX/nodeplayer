@@ -23,11 +23,27 @@
 
             <div class="row">
                 <div class="col-lg-6">
+                    <div id="controls" class="btn-group" role="group" aria-label="...">
+                        <button id="previous" type="button" class="btn btn-default" aria-label="Previous">
+                            <span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>
+                        </button>
+                        <button id="playpause" type="button" class="btn btn-default" aria-label="Play/Pause">
+                            <span id="playpauseicon" class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                        </button>
+                        <button id="next" type="button" class="btn btn-default" aria-label="Next">
+                            <span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span>
+                        </button>
+                    </div>
+
+                    <button id="mute" type="button" class="btn btn-default" aria-label="Mute">
+                        <span id="muteicon" class="glyphicon glyphicon-volume-up" aria-hidden="true"></span>
+                    </button>
+                    <input id="volume" type="range" min="0" max="1" step="0.01" value="1" />
+
                     <!-- List group -->
                     <ul class="list-group" id="queue">
                     </ul>
-                    <div class="glyphicon glyphicon-volume-up" id="mute"></div>
-                    <input id="volume" type="range" min="0" max="1" step="0.01" value="1" />
+
                     <div id="windowdisclaimer">
                         Note: run this app in a separate browser window to prevent music playback from stopping!
                     </div>

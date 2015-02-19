@@ -1,5 +1,6 @@
 var queue = [];
 var progress = {progress: 0, interval: null};
+var paused = true;
 
 var socket = io();
 socket.on('queue', function(data) {
@@ -13,6 +14,9 @@ socket.on('playback', function(data) {
     if(!data || !data.playbackStart) {
         $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
         $("#audio").trigger('pause');
+        paused = true;
+        $("#playpauseicon").removeClass("glyphicon-pause glyphicon-play");
+        $("#playpauseicon").addClass("glyphicon-play");
 
         clearInterval(progress.interval);
         var currentProgress = (data.position || 0);
@@ -21,6 +25,9 @@ socket.on('playback', function(data) {
     } else {
         $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
         var audio = document.getElementById('audio');
+        paused = false;
+        $("#playpauseicon").removeClass("glyphicon-pause glyphicon-play");
+        $("#playpauseicon").addClass("glyphicon-pause");
 
         // TODO: even better sync using NTP
         var setPos = function() {
@@ -104,13 +111,13 @@ $(document).ready(function() {
     var preMuteVolume;
     var setVolumeIcon = function() {
         var volume = $("#audio")[0].volume;
-        $("#mute").removeClass("glyphicon-volume-off glyphicon-volume-down glyphicon-volume-up");
+        $("#muteicon").removeClass("glyphicon-volume-off glyphicon-volume-down glyphicon-volume-up");
         if (volume >= 0.5) {
-            $("#mute").addClass("glyphicon-volume-up");
+            $("#muteicon").addClass("glyphicon-volume-up");
         } else if (volume > 0) {
-            $("#mute").addClass("glyphicon-volume-down");
+            $("#muteicon").addClass("glyphicon-volume-down");
         } else {
-            $("#mute").addClass("glyphicon-volume-off");
+            $("#muteicon").addClass("glyphicon-volume-off");
         }
     }
     $("#volume").change(function(event) {
@@ -127,5 +134,17 @@ $(document).ready(function() {
             $("#volume").val(0);
         }
         setVolumeIcon();
+    });
+    $("#previous").click(function(event) {
+        socket.emit('skipSongs', -1);
+    });
+    $("#next").click(function(event) {
+        socket.emit('skipSongs', 1);
+    });
+    $("#playpause").click(function(event) {
+        if(paused)
+            socket.emit('startPlayback');
+        else
+            socket.emit('pausePlayback');
     });
 });

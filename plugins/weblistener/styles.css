@@ -73,20 +73,25 @@
     z-index: -1;
 }
 
-#mute {
-    font-size:40px;
-    padding:5px;
-    float:left;
-    cursor:pointer;
+#controls {
+    float: left;
 }
-#mute:hover {
-    color: #777;
+#mute {
+    margin-left: 10px;
+    float: left;
 }
 #volume{
     width:200px;
-    height:50px;
+    height: 35px;
+    margin-left: 10px;
+    float: left;
+}
+#queue {
+    padding-top:10px;
+    clear: both;
 }
 #windowdisclaimer {
+    clear: both;
     margin-top:50px;
     text-overflow:ellipsis;
     color: #666;
