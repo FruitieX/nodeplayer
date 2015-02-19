@@ -107,3 +107,15 @@ If any hook returns a truthy value it is an error that will also be returned by
 ### backend modules
 
 TODO
+
+### The nodeplayer project
+* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
+* [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
+* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audo playback client
+* [nodeplayer-defaults](https://github.com/FruitieX/nodeplayer-defaults) Default configuration file
+
+#### Backend modules
+* [nodeplayer-gmusic](https://github.com/FruitieX/nodeplayer-gmusic)
+* [nodeplayer-youtube](https://github.com/FruitieX/nodeplayer-youtube)
+* [nodeplayer-spotify](https://github.com/FruitieX/nodeplayer-spotify)
+* [nodeplayer-file](https://github.com/FruitieX/nodeplayer-file)
