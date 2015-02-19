@@ -189,6 +189,8 @@ exports.onBackendInitialized = function(backend) {
                         sendStream.unpipe();
                         m.unpipe();
 
+                        sendStream.close();
+
                         doSend(m.bytes + offset);
                     });
                 }
