@@ -12,16 +12,17 @@ socket.on('playback', function(data) {
     console.log(data);
     var msgTime = new Date().getTime();
     if(!data || !data.playbackStart) {
-        $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
         $("#audio").trigger('pause');
         paused = true;
         $("#playpauseicon").removeClass("glyphicon-pause glyphicon-play");
         $("#playpauseicon").addClass("glyphicon-play");
 
         clearInterval(progress.interval);
-        var currentProgress = (data.position || 0);
-        progress.started = new Date().getTime() - currentProgress;
-        progress.duration = data.duration;
+        if(data) {
+            var currentProgress = (data.position || 0);
+            progress.started = new Date().getTime() - currentProgress;
+            progress.duration = data.duration;
+        }
     } else {
         $("#audio").attr('src', '/song/' + data.backendName + '/' + data.songID + '.' + data.format);
         var audio = document.getElementById('audio');
