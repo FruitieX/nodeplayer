@@ -1,15 +1,6 @@
 var _ = require('underscore');
 var async = require('async');
 
-var player = {
-    config: config,
-    playedQueue: [], // TODO: don't let this grow to infinity
-    queue: [],
-    plugins: {},
-    backends: {},
-    songsPreparing: {}
-}
-
 var checkModule = function(module) {
 	try {
 		require.resolve(module);
@@ -23,7 +14,7 @@ var getConfigPath = function(config) {
 	if (process.platform == 'win32')
 		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
 	else
-		return process.env.HOME, '/.' + config;
+		return process.env.HOME + '/.' + config;
 }
 
 checkModule('nodeplayer-defaults');
@@ -36,6 +27,15 @@ try {
 } catch(e) {
 	console.warn("Warning! Using default configurations: " + require.resolve('nodeplayer-defaults'));
 	console.warn("Couldn't find user configurations: " + userConfigFile);
+}
+
+var player = {
+    config: config,
+    playedQueue: [], // TODO: don't let this grow to infinity
+    queue: [],
+    plugins: {},
+    backends: {},
+    songsPreparing: {}
 }
 
 // call hook function in all modules
