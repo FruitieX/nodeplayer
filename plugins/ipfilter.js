@@ -1,8 +1,6 @@
 var filter = require('express-ipfilter');
 
-var ipfilter = {};
-
-ipfilter.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
@@ -16,5 +14,3 @@ ipfilter.init = function(_player, callback) {
         callback();
     }
 };
-
-module.exports = ipfilter;

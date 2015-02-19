@@ -1,12 +1,11 @@
 var auth = require('http-auth');
 var fs = require('fs');
 
-var httpAuth = {};
 var config, player;
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-httpAuth.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
@@ -27,5 +26,3 @@ httpAuth.init = function(_player, callback) {
         callback();
     }
 };
-
-module.exports = httpAuth;

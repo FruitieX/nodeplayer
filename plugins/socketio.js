@@ -1,6 +1,5 @@
 var _ = require('underscore');
 
-var socketio = {};
 var config, player;
 
 var playbackEvent = function(socket) {
@@ -20,15 +19,15 @@ var queueEvent = function(socket) {
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-socketio.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
     if(!player.httpServer) {
         callback('module must be initialized after expressjs module!');
     } else {
-        socketio.io = require('socket.io')(player.httpServer);
-        socketio.io.on('connection', function(socket) {
+        player.socketio = require('socket.io')(player.httpServer);
+        player.socketio.on('connection', function(socket) {
             socket.on('addToQueue', function(data) {
                 var err = player.addToQueue(data.songs, data.pos);
                 socket.emit('addToQueueResult', err);
@@ -51,28 +50,24 @@ socketio.init = function(_player, callback) {
             queueEvent(socket);
         });
 
-        player.socketio = socketio;
-
         console.log('listening on port ' + (process.env.PORT || config.port));
         callback();
     }
 };
 
-socketio.onSongChange = function(song) {
-    playbackEvent(socketio.io);
+exports.onSongChange = function(song) {
+    playbackEvent(player.socketio);
 };
 
-socketio.onSongPause = function(song) {
-    playbackEvent(socketio.io);
+exports.onSongPause = function(song) {
+    playbackEvent(player.socketio);
 };
 
-socketio.onQueueModify = function(queue) {
-    queueEvent(socketio.io);
+exports.onQueueModify = function(queue) {
+    queueEvent(player.socketio);
 };
 
-socketio.onEndOfQueue = function() {
-    playbackEvent(socketio.io);
-    queueEvent(socketio.io);
+exports.onEndOfQueue = function() {
+    playbackEvent(player.socketio);
+    queueEvent(player.socketio);
 };
-
-module.exports = socketio;

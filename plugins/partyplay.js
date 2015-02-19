@@ -2,18 +2,16 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 
-var partyplay = {};
-
-partyplay.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
     if(!player.app) {
         callback('module must be initialized after expressjs module!');
-    } else if(!player.socketio) {
+    } else if(!player.plugins.socketio) {
         // partyplay client depends on socketio module
         callback('module must be initialized after socketio module!');
-    } else if(!player.rest) {
+    } else if(!player.plugins.rest) {
         // partyplay client depends on rest module
         callback('module must be initialized after rest module!');
     } else {
@@ -49,13 +47,11 @@ partyplay.init = function(_player, callback) {
 
         });
 
-        // so other modules can easily see that this module is loaded
-        player.partyplay = true;
         callback();
     }
 };
 
-partyplay.onPluginsInitialized = function() {
+exports.onPluginsInitialized = function() {
     // sortQueue should only be hooked to from one plugin at a time
     if(player.numHooks('sortQueue') > 1)
         console.log('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
@@ -63,7 +59,7 @@ partyplay.onPluginsInitialized = function() {
 
 
 // remove extremely downvoted (bad) songs
-partyplay.onSongEnd = function(nowPlaying) {
+exports.onSongEnd = function(nowPlaying) {
     for (var i = player.queue.length - 1; i >= 0; i--) {
         // bump oldness parameter for all queued songs at song switch
         player.queue[i].oldness++;
@@ -85,7 +81,7 @@ var checkDuration = function(song) {
     }
 }
 
-partyplay.preSongQueued = function(song) {
+exports.preSongQueued = function(song) {
     // if same song is already queued, don't create a duplicate
     var queuedSong = player.searchQueue(song.backendName, song.songID);
     if(queuedSong) {
@@ -110,14 +106,14 @@ partyplay.preSongQueued = function(song) {
         voteSong(song, +1, song.userID);
     }
 };
-partyplay.preAddSearchResult = function(player, song) {
+exports.preAddSearchResult = function(song) {
     if(checkDuration(song)) {
         return checkDuration(song);
     }
 };
 
 // sort queue according to votes
-partyplay.sortQueue = function() {
+exports.sortQueue = function() {
     var np;
     if(player.queue.length)
         np = player.queue.shift();
@@ -175,5 +171,3 @@ var voteSong = function(song, vote, userID) {
 
     player.callHooks('sortQueue');
 };
-
-module.exports = partyplay;

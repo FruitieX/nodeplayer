@@ -6,7 +6,6 @@ var fs = require('fs');
 var mime = require('mime');
 var meter = require('stream-meter');
 
-var rest = {};
 var config, player;
 
 var sendResponse = function(res, msg, err) {
@@ -18,7 +17,7 @@ var sendResponse = function(res, msg, err) {
 
 // called when nodeplayer is started to initialize the backend
 // do any necessary initialization here
-rest.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
@@ -67,15 +66,12 @@ rest.init = function(_player, callback) {
             });
         });
 
-        // so other modules can easily see that this module is loaded
-        player.rest = true;
-
         callback();
     }
 };
 
 var pendingReqHandlers = [];
-rest.onPrepareProgress = function(song, dataSize, done) {
+exports.onPrepareProgress = function(song, dataSize, done) {
     for(var i = pendingReqHandlers.length - 1; i >= 0; i--) {
         pendingReqHandlers.pop()();
     };
@@ -99,7 +95,7 @@ var getPath = function(player, songID, backendName, songFormat) {
     }
 };
 
-rest.onBackendInitialized = function(backend) {
+exports.onBackendInitialized = function(backend) {
     // expressjs middleware for requesting music data
     // must support ranges in the req, and send the data to res
     player.app.get('/song/' + backend.name + '/:fileName', function(req, res, next) {
@@ -205,5 +201,3 @@ rest.onBackendInitialized = function(backend) {
         doSend(parseInt(range[0]));
     });
 };
-
-module.exports = rest;

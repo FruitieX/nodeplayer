@@ -7,10 +7,11 @@ var config = _.defaults(userConfig, defaultConfig);
 
 var player = {
     config: config,
-    playedQueue: [],
+    playedQueue: [], // TODO: don't let this grow to infinity
     queue: [],
     plugins: {},
-    backends: {}
+    backends: {},
+    songsPreparing: {}
 }
 
 // call hook function in all modules
@@ -109,11 +110,10 @@ var prepareError = function(song, err) {
         }
     }
 
-    callHooks('onSongPrepareError', [song]);
+    callHooks('onSongPrepareError', [song, err]);
 };
 
 // TODO: get rid of the callback hell, use promises?
-player.songsPreparing = {};
 var prepareSong = function(song, asyncCallback) {
     if(!song) {
         console.log('DEBUG: prepareSong() without song');
@@ -121,12 +121,23 @@ var prepareSong = function(song, asyncCallback) {
         return;
     }
 
-    // create songsPreparing for current backend if one does not exist
-    if(!player.songsPreparing[song.backendName])
-        player.songsPreparing[song.backendName] = {};
+    if(player.backends[song.backendName].isPrepared(song.songID)) {
+        // start playback if it hasn't been started yet
+        if (player.queue[0]
+            && player.queue[0].backendName === song.backendName
+            && player.queue[0].songID === song.songID
+            && !player.playbackStart)
+        {
+            startPlayback();
+        }
 
-    // don't run prepareSong() multiple times for the same song
-    if(!player.songsPreparing[song.backendName][song.songID]) {
+        // song is already prepared, ok to prepare more songs
+        asyncCallback();
+    } else if(player.songsPreparing[song.backendName][song.songID]) {
+        // this song is already preparing, so don't yet prepare next song
+        asyncCallback(true);
+    } else {
+        // song is not prepared and not currently preparing: let backend prepare it
         //console.log('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = song;
 
@@ -165,15 +176,13 @@ var prepareSong = function(song, asyncCallback) {
             // don't let anything run cancelPrepare anymore
             delete(song.cancelPrepare);
 
-            // abort preparing more songs
+            // abort preparing more songs; current song will be deleted ->
+            // onQueueModified is called -> song preparation is triggered again
             asyncCallback(true);
 
             prepareError(song, err);
             delete(player.songsPreparing[song.backendName][song.songID]);
         });
-    } else {
-        // this song is already preparing, so don't yet prepare next song
-        asyncCallback(true);
     }
 };
 
@@ -248,7 +257,7 @@ var searchBackends = function(query, callback) {
             allResults[backend.name].songs = {};
 
             _.each(tempSongs, function(song) {
-                var err = player.callHooks('preAddSearchResult', [player, song]);
+                var err = player.callHooks('preAddSearchResult', [song]);
                 if(!err)
                     allResults[backend.name].songs[song.songID] = song;
             });
@@ -350,7 +359,7 @@ var addToQueue = function(songs, pos) {
 
     callHooks('sortQueue');
     onQueueModify();
-    callHooks('postSongsQueued', [songs]);
+    callHooks('postSongsQueued', [songs, pos]);
 };
 player.addToQueue = addToQueue;
 
@@ -406,7 +415,7 @@ async.each(config.plugins, function(pluginName, callback) {
             callHooks('onPluginInitialized', [plugin]);
         } else {
             console.log('error in ' + pluginName + ': ' + err);
-            callHooks('onPluginInitError', [plugin]);
+            callHooks('onPluginInitError', [plugin, err]);
         }
         callback(err);
     });
@@ -421,16 +430,19 @@ async.each(config.backends, function(backendName, callback) {
     backend.init(player, function(err) {
         if(!err) {
             player.backends[backendName] = backend;
+            player.songsPreparing[backendName] = {};
+
             console.log('backend ' + backendName + ' initialized');
             callHooks('onBackendInitialized', [backend]);
         } else {
             console.log('error in ' + backendName + ': ' + err);
-            callHooks('onBackendInitError', [backend]);
+            callHooks('onBackendInitError', [backend, err]);
         }
         callback(err);
     });
 }, function(err) {
     callHooks('onBackendsInitialized');
+    console.log('ready');
 });
 
 process.on('uncaughtException', function (err) {

@@ -1,28 +1,25 @@
-var storeQueue = {};
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 
-storeQueue.path = process.env.HOME + '/.nodeplayer/stored-queue.json';
+var path = process.env.HOME + '/.nodeplayer/stored-queue.json';
 
-storeQueue.init = function(_player, callback) {
+exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
 
     mkdirp(process.env.HOME + '/.nodeplayer');
-    if(fs.existsSync(storeQueue.path)) {
-        player.queue = JSON.parse(fs.readFileSync(storeQueue.path));
+    if(fs.existsSync(path)) {
+        player.queue = JSON.parse(fs.readFileSync(path));
     }
 
     callback();
 };
 
-storeQueue.onBackendsInitialized = function() {
+exports.onBackendsInitialized = function() {
     player.prepareSongs();
 };
 
-storeQueue.onQueueModify = function(queue) {
-    fs.writeFileSync(storeQueue.path, JSON.stringify(player.queue, undefined, 4));
+exports.onQueueModify = function(queue) {
+    fs.writeFileSync(path, JSON.stringify(player.queue, undefined, 4));
 };
-storeQueue.postSongsRemoved = storeQueue.onQueueModify;
-
-module.exports = storeQueue;
+exports.postSongsRemoved = exports.onQueueModify;
