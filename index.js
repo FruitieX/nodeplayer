@@ -1,9 +1,17 @@
 var _ = require('underscore');
 var async = require('async');
 
-var userConfig = require(process.env.HOME + '/.nodeplayer-config.js');
+checkModule('nodeplayer-defaults');
 var defaultConfig = require('nodeplayer-defaults');
-var config = _.defaults(userConfig, defaultConfig);
+var userConfigFile = getConfigPath('nodeplayer-config.js');
+var config = defaultConfig;
+try {
+	var userConfig = require(userConfigFile);
+	config = _.defaults(userConfig, defaultConfig);
+} catch(e) {
+	console.warn("Warning! Using default configurations: " + require.resolve('nodeplayer-defaults'));
+	console.warn("Couldn't find user configurations: " + userConfigFile);
+}
 
 var player = {
     config: config,
@@ -12,6 +20,22 @@ var player = {
     plugins: {},
     backends: {},
     songsPreparing: {}
+}
+
+function getConfigPath(config) {
+	if (process.platform == 'win32')
+		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
+	else
+		return process.env.HOME, '/.' + config;
+}
+
+function checkModule(module) {
+	try {
+		require.resolve(module);
+	} catch(e) {
+		console.error('Cannot find module: ' + module);
+		process.exit(e.code);
+	}
 }
 
 // call hook function in all modules
@@ -405,6 +429,8 @@ player.skipSongs = skipSongs;
 async.each(config.plugins, function(pluginName, callback) {
     // TODO: put plugin modules into npm
     // must implement .init, can implement hooks
+	var pluginFile = './plugins/' + pluginName;
+	checkModule(pluginFile);
     var plugin = require('./plugins/' + pluginName);
 
     plugin.init(player, function(err) {
@@ -425,6 +451,8 @@ async.each(config.plugins, function(pluginName, callback) {
 
 // init backends
 async.each(config.backends, function(backendName, callback) {
+    var backendFile = 'nodeplayer-' + backendName;
+	checkModule(backendFile);
     var backend = require('nodeplayer-' + backendName);
 
     backend.init(player, function(err) {
