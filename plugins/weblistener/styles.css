@@ -70,7 +70,21 @@
     margin: -10px -10px -10px -15px;
     height: 100%;
     background-color:#eee;
+    z-index: -2;
+}
+
+#progressmouseover {
+    position: absolute;
+    margin: -10px -10px -10px -15px;
+    height: 100%;
+    background-color:#bbb;
+    background-blend-mode: darken;
+    opacity: 0.5;
     z-index: -1;
+    visibility: hidden;
+}
+#progressmouseover.mouseover {
+    visibility: visible;
 }
 
 #controls {
