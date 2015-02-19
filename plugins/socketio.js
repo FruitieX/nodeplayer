@@ -29,6 +29,24 @@ socketio.init = function(_player, callback) {
     } else {
         socketio.io = require('socket.io')(player.httpServer);
         socketio.io.on('connection', function(socket) {
+            socket.on('addToQueue', function(data) {
+                var err = player.addToQueue(data.songs, data.pos);
+                socket.emit('addToQueueResult', err);
+            });
+            socket.on('removeFromQueue', function(data) {
+                var err = player.removeFromQueue(data.pos, data.cnt);
+                socket.emit('removeFromQueueResult', err);
+            });
+            socket.on('searchBackends', function(query) {
+                player.searchBackends(query, function(results) {
+                    socket.emit('searchBackendsResult', results);
+                });
+            });
+            socket.on('startPlayback', player.startPlayback);
+            socket.on('pausePlayback', player.pausePlayback);
+            socket.on('skipSongs', player.skipSongs);
+            socket.on('shuffleQueue', player.shuffleQueue);
+
             playbackEvent(socket);
             queueEvent(socket);
         });
