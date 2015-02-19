@@ -16,17 +16,17 @@
     font-size: 15px;
     text-align:center;
 }
-.arrows {
+.remove {
+    float:right;
+    margin-left:5px;
     color: #aaa;
     font-size:30px;
     width:30px;
     height:100%;
     cursor:pointer;
 }
-
-.uparrow {
-    float:right;
-    margin-left:5px;
+.remove:hover {
+    color: #c77;
 }
 .downarrow {
     float:left;
@@ -98,4 +98,7 @@
     height:20px;
     font-size: 15px;
     text-align:center;
+}
+.queue-item:hover {
+    background-color: #eee;
 }

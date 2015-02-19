@@ -88,6 +88,17 @@ var updateQueue = function() {
             $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
             updateProgress(0);
         }
+
+        // rest of queue
+        for(var i = 1; i < queue.length; i++) {
+            queue[i].duration = durationToString(queue[i].duration / 1000);
+            queue[i].pos = i;
+            $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
+            $("#remove" + i).click(function(e) {
+                removeFromQueue(i, queue.backendName + queue.songID);
+                e.stopPropagation();
+            });
+        }
     }
 };
 
@@ -97,9 +108,21 @@ var durationToString = function(seconds) {
     return durationString;
 }
 
+var removeFromQueue = function(pos, id) {
+    socket.emit('removeFromQueue', {
+        pos: pos
+    });
+    $(document.getElementById(id)).css('background-color', "#fee");
+}
+
+var skipSongs = function(cnt) {
+    socket.emit('skipSongs', cnt);
+}
+
 $(document).ready(function() {
-    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${id}">'
+    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">'
         + '<div id="progress"></div>'
+        + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(0, \'${backendName}${songID}\');"></div>'
         + '<div class="np-songinfo">'
         + '<div class="big"><b>${title}</b> - ${duration}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
@@ -107,6 +130,16 @@ $(document).ready(function() {
         + '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
+
+    var queueMarkup = '<li class="list-group-item queue-item" id="${backendName}${songID}" onclick="skipSongs(\'${pos}\');">'
+    + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(\'${pos}\', \'${backendName}${songID}\'); return false;"></div>'
+    + '<div class="songinfo">'
+    + '<div class="big"><b>${title}</b> - ${duration}</div>'
+    + '<div class="small"><b>${artist}</b> (${album})</div>'
+    + '</div>'
+    + '</li>';
+
+    $.template( "queueTemplate", queueMarkup );
 
     var preMuteVolume;
     var setVolumeIcon = function() {
