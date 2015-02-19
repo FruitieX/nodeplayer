@@ -121,7 +121,16 @@ var prepareSong = function(song, asyncCallback) {
         return;
     }
 
-    if(player.songsPreparing[song.backendName].isPrepared(song.songID)) {
+    if(player.backends[song.backendName].isPrepared(song.songID)) {
+        // start playback if it hasn't been started yet
+        if (player.queue[0]
+            && player.queue[0].backendName === song.backendName
+            && player.queue[0].songID === song.songID
+            && !player.playbackStart)
+        {
+            startPlayback();
+        }
+
         // song is already prepared, ok to prepare more songs
         asyncCallback();
     } else if(player.songsPreparing[song.backendName][song.songID]) {
