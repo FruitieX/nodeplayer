@@ -26,7 +26,7 @@ function getConfigPath(config) {
 	if (process.platform == 'win32')
 		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
 	else
-		return process.env.HOME, '/.' + config;
+		return process.env.HOME + '/.' + config;
 }
 
 function checkModule(module) {
