@@ -85,14 +85,18 @@ var updateQueue = function() {
     if(queue) {
         // now playing
         if(queue[0]) {
-            queue[0].duration = durationToString(queue[0].duration / 1000);
+            queue[0].durationString = durationToString(queue[0].duration / 1000);
             $.tmpl( "nowPlayingTemplate", queue[0]).appendTo("#queue");
             updateProgress(0);
+            $("#nowplaying").click(function(e) {
+                var posX = e.pageX - $(this).offset().left;
+                socket.emit('startPlayback', (posX / $(this).width()) * queue[0].duration);
+            });
         }
 
         // rest of queue
         for(var i = 1; i < queue.length; i++) {
-            queue[i].duration = durationToString(queue[i].duration / 1000);
+            queue[i].durationString = durationToString(queue[i].duration / 1000);
             queue[i].pos = i;
             $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
             $("#remove" + i).click(function(e) {
@@ -121,11 +125,11 @@ var skipSongs = function(cnt) {
 }
 
 $(document).ready(function() {
-    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">'
+    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="nowplaying">'
         + '<div id="progress"></div>'
         + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(0, \'${backendName}${songID}\');"></div>'
         + '<div class="np-songinfo">'
-        + '<div class="big"><b>${title}</b> - ${duration}</div>'
+        + '<div class="big"><b>${title}</b> - ${durationString}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
         + '</div>'
         + '</li>';
@@ -135,7 +139,7 @@ $(document).ready(function() {
     var queueMarkup = '<li class="list-group-item queue-item" id="${backendName}${songID}" onclick="skipSongs(\'${pos}\');">'
     + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(\'${pos}\', \'${backendName}${songID}\'); return false;"></div>'
     + '<div class="songinfo">'
-    + '<div class="big"><b>${title}</b> - ${duration}</div>'
+    + '<div class="big"><b>${title}</b> - ${durationString}</div>'
     + '<div class="small"><b>${artist}</b> (${album})</div>'
     + '</div>'
     + '</li>';
