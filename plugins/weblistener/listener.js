@@ -203,4 +203,7 @@ $(document).ready(function() {
         else
             socket.emit('pausePlayback');
     });
+    $("#shuffle").click(function(event) {
+        socket.emit('shuffleQueue');
+    });
 });

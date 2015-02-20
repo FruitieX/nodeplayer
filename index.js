@@ -377,6 +377,7 @@ var shuffleQueue = player.shuffleQueue = function() {
     player.queue = _.shuffle(player.queue);
     player.queue.unshift(temp);
 
+    callHooks('onQueueShuffled', [player.queue]);
     player.onQueueModify();
 };
 

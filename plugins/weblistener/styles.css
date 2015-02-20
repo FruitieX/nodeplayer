@@ -87,6 +87,9 @@
     visibility: visible;
 }
 
+#shuffle {
+    float: right;
+}
 #controls {
     float: left;
 }
