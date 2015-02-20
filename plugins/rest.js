@@ -147,7 +147,6 @@ exports.onBackendInitialized = function(backend) {
         logger.verbose('got streaming request for song: ' + songID + ', range: ' + range);
 
         var doSend = function(offset) {
-            logger.debug('doSend(' + offset + ')');
             var m = meter();
 
             // TODO: this may have race condition issues causing the end of a song to be cut out
@@ -195,6 +194,10 @@ exports.onBackendInitialized = function(backend) {
                         sendStream.close();
 
                         doSend(m.bytes + offset);
+                    });
+                    // client disconnected before end of file, close file
+                    res.on('close', function() {
+                        sendStream.close();
                     });
                 }
             } else {
