@@ -225,7 +225,6 @@ $(document).ready(function() {
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="nowplaying">'
         + '<div id="progressmouseover"></div>'
         + '<div id="progress"></div>'
-        + '<div class="remove glyphicon glyphicon-remove" id="remove0" onclick="removeFromQueue(0, \'${backendName}${songID}\');"></div>'
         + '<div class="np-songinfo">'
         + '<div class="big"><b>${title}</b> - ${durationString}</div>'
         + '<div class="small"><b>${artist}</b> (${album})</div>'
