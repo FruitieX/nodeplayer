@@ -4,9 +4,12 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 
+var player, config, logger
+
 exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
+    logger = _player.logger;
 
     if(!player.app) {
         callback('module must be initialized after expressjs module!');
@@ -24,18 +27,18 @@ exports.init = function(_player, callback) {
             var vote = req.body.vote;
             var pos = req.body.pos;
             if(!userID || vote === undefined || !pos) {
-                console.log('invalid vote rejected: missing fields');
+                logger.info('invalid vote rejected: missing fields');
                 res.status(404).send('please provide userID, pos and vote in the body');
                 return;
             } else if (pos <= 0) {
-                console.log('invalid vote rejected: pos <= 0');
+                logger.info('invalid vote rejected: pos <= 0');
                 res.status(404).send('please provide pos > 0');
                 return;
             }
 
             var song = player.queue[pos];
             if(!song) {
-                console.log('invalid vote rejected: song not found');
+                logger.info('invalid vote rejected: song not found');
                 res.status(404).send('song not found');
                 return;
             }
@@ -43,7 +46,7 @@ exports.init = function(_player, callback) {
             voteSong(song, vote, userID);
             player.onQueueModify();
 
-            console.log('got vote ' + vote + ' for song: ' + song.songID);
+            logger.info('got vote ' + vote + ' for song: ' + song.songID);
 
             res.send('success');
 
@@ -56,7 +59,7 @@ exports.init = function(_player, callback) {
 exports.onPluginsInitialized = function() {
     // sortQueue should only be hooked to from one plugin at a time
     if(player.numHooks('sortQueue') > 1)
-        console.log('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
+        logger.warn('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
 };
 
 
@@ -70,7 +73,7 @@ exports.onSongEnd = function(nowPlaying) {
         var numUpVotes = Object.keys(player.queue[i].upVotes || {}).length;
         var totalVotes = numDownVotes + numUpVotes;
         if(numDownVotes / totalVotes >= config.badVotePercent) {
-            console.log('song ' + player.queue[i].songID + ' removed due to downvotes');
+            logger.info('song ' + player.queue[i].songID + ' removed due to downvotes');
             player.removeFromQueue(player.queue[i].backendName, player.queue[i].songID);
         }
     }
@@ -87,7 +90,7 @@ exports.preSongQueued = function(song) {
     // if same song is already queued, don't create a duplicate
     var queuedSong = player.searchQueue(song.backendName, song.songID);
     if(queuedSong) {
-        console.log('not adding duplicate song to queue: ' + queuedSong.songID);
+        logger.info('not adding duplicate song to queue: ' + queuedSong.songID);
         return 'duplicate songID';
     }
 

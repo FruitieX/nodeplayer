@@ -2,7 +2,7 @@
 
 var _ = require('underscore');
 
-var config, player;
+var config, player, logger;
 
 var playbackEvent = function(socket) {
     socket.emit('playback', player.queue[0] ? {
@@ -24,6 +24,7 @@ var queueEvent = function(socket) {
 exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
+    logger = _player.logger;
 
     if(!player.httpServer) {
         callback('module must be initialized after expressjs module!');
@@ -52,7 +53,7 @@ exports.init = function(_player, callback) {
             queueEvent(socket);
         });
 
-        console.log('listening on port ' + (process.env.PORT || config.port));
+        logger.info('listening on port ' + (process.env.PORT || config.port));
         callback();
     }
 };

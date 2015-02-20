@@ -8,7 +8,7 @@ var fs = require('fs');
 var mime = require('mime');
 var meter = require('stream-meter');
 
-var config, player;
+var config, player, logger;
 
 var sendResponse = function(res, msg, err) {
     if(err)
@@ -22,6 +22,7 @@ var sendResponse = function(res, msg, err) {
 exports.init = function(_player, callback) {
     player = _player;
     config = _player.config;
+    logger = _player.logger;
 
     if(!player.app) {
         callback('module must be initialized after expressjs module!');
@@ -61,7 +62,7 @@ exports.init = function(_player, callback) {
 
         // search for song with given search terms
         player.app.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {
-            console.log('got search request: ' + req.body.terms);
+            logger.verbose('got search request: ' + req.body.terms);
 
             player.searchBackends(req.body, function(results) {
                 res.send(JSON.stringify(results));
@@ -143,10 +144,10 @@ exports.onBackendInitialized = function(backend) {
             //}
         }
 
-        console.log('got streaming request for song: ' + songID + ', range: ' + range);
+        logger.verbose('got streaming request for song: ' + songID + ', range: ' + range);
 
         var doSend = function(offset) {
-            //console.log('doSend(' + offset + ')');
+            logger.debug('doSend(' + offset + ')');
             var m = meter();
 
             // TODO: this may have race condition issues causing the end of a song to be cut out
@@ -166,7 +167,7 @@ exports.onBackendInitialized = function(backend) {
                         res.end();
                     } else if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
                         // song is still preparing, there is more data to come
-                        //console.log('enough data not yet available');
+                        logger.debug('enough data not yet available at: ' + path);
                         pendingReqHandlers.push(function() {
                             doSend(offset);
                         });
@@ -197,7 +198,7 @@ exports.onBackendInitialized = function(backend) {
                     });
                 }
             } else {
-                console.log('file not found: ' + path);
+                logger.verbose('file not found: ' + path);
                 res.status(404).end();
             }
         };

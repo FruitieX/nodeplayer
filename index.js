@@ -2,37 +2,32 @@
 
 var _ = require('underscore');
 var async = require('async');
+var winston = require('winston');
+var config = require('nodeplayer-defaults')(console);
+
+var logger = new (winston.Logger)({
+    transports: [
+        new (winston.transports.Console)({
+            level: config.loglevel,
+            colorize: config.logColorize,
+            handleExceptions: config.logExceptions,
+            json: config.logJson
+        })
+    ]
+});
 
 var checkModule = function(module) {
 	try {
 		require.resolve(module);
 	} catch(e) {
-		console.error('Cannot find module: ' + module);
+		logger.error('Cannot find module: ' + module);
 		process.exit(e.code);
 	}
 };
 
-var getConfigPath = function(config) {
-	if (process.platform == 'win32')
-		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
-	else
-		return process.env.HOME + '/.' + config;
-};
-
-checkModule('nodeplayer-defaults');
-var defaultConfig = require('nodeplayer-defaults');
-var userConfigFile = getConfigPath('nodeplayer-config.js');
-var config = defaultConfig;
-try {
-	var userConfig = require(userConfigFile);
-	config = _.defaults(userConfig, defaultConfig);
-} catch(e) {
-	console.warn("Warning! Using default configurations: " + require.resolve('nodeplayer-defaults'));
-	console.warn("Couldn't find user configurations: " + userConfigFile);
-}
-
 var player = {
     config: config,
+    logger: logger,
     playedQueue: [], // TODO: don't let this grow to infinity
     queue: [],
     plugins: {},
@@ -80,9 +75,9 @@ player.songEndTimeout = null;
 var startPlayback = function(pos) {
     var np = player.queue[0];
     if(pos)
-        console.log('playing song: ' + np.songID + ', from pos: ' + pos);
+        logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
     else
-        console.log('playing song: ' + np.songID);
+        logger.info('playing song: ' + np.songID);
 
     player.playbackStart = new Date().getTime(); // song is playing while this is truthy
 
@@ -96,11 +91,11 @@ var startPlayback = function(pos) {
 
     var durationLeft = parseInt(np.duration) - player.playbackPosition + config.songDelayMs;
     if(player.songEndTimeout) {
-        console.log('DEBUG: songEndTimeout was cleared');
+        logger.debug('songEndTimeout was cleared');
         clearTimeout(player.songEndTimeout);
     }
     player.songEndTimeout = setTimeout(function() {
-        console.log('end of song ' + np.songID);
+        logger.info('end of song ' + np.songID);
         callHooks('onSongEnd', [np]);
 
         player.playedQueue.push(player.queue[0]);
@@ -130,7 +125,7 @@ var prepareError = function(song, err) {
     for(var i = player.queue.length - 1; i >= 0; i--) {
         if(player.queue[i].songID === song.songID && player.queue[i].backendName === song.backendName) {
             if(!song.beingDeleted) {
-                console.log('DEBUG: error! (' + err + ') removing song from queue: ' + song.songID);
+                logger.error('preparing song failed! (' + err + '), removing from queue: ' + song.songID);
                 removeFromQueue(i);
             }
         }
@@ -142,7 +137,7 @@ var prepareError = function(song, err) {
 // TODO: get rid of the callback hell, use promises?
 var prepareSong = function(song, asyncCallback) {
     if(!song) {
-        console.log('DEBUG: prepareSong() without song');
+        logger.debug('prepareSong() without song');
         asyncCallback(true);
         return;
     }
@@ -164,7 +159,7 @@ var prepareSong = function(song, asyncCallback) {
         asyncCallback(true);
     } else {
         // song is not prepared and not currently preparing: let backend prepare it
-        //console.log('DEBUG: prepareSong() ' + song.songID);
+        logger.debug('DEBUG: prepareSong() ' + song.songID);
         player.songsPreparing[song.backendName][song.songID] = song;
 
         song.cancelPrepare = player.backends[song.backendName].prepareSong(song.songID, function(dataSize, done) {
@@ -242,7 +237,7 @@ player.prepareSongs = prepareSongs;
 var onQueueModify = function() {
     if(!player.queue.length) {
         callHooks('onEndOfQueue');
-        console.log('end of queue, waiting for more songs');
+        logger.info('end of queue, waiting for more songs');
         return;
     }
 
@@ -293,7 +288,7 @@ var searchBackends = function(query, callback) {
                 callback(allResults);
         }, function(err) {
             resultCnt++;
-            console.log(err);
+            logger.error('error while searching ' + backend.name + ': ' + err);
 
             // got results from all services?
             if(resultCnt >= Object.keys(player.backends).length)
@@ -364,21 +359,21 @@ var addToQueue = function(songs, pos) {
 
     callHooks('preSongsQueued', [songs, pos]);
     _.each(songs, function(song) {
-        //console.log('DEBUG: addToQueue(): ' + song.songID);
+        logger.debug('DEBUG: addToQueue(): ' + song.songID);
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
-            console.log('required song fields not provided: ' + song.songID);
+            logger.info('required song fields not provided: ' + song.songID);
             return 'required song fields not provided';
         }
 
         var err = callHooks('preSongQueued', [song]);
         if(err) {
-            console.log('ERROR: not adding song to queue: ' + err);
+            logger.error('not adding song to queue: ' + err);
         } else {
             song.timeAdded = new Date().getTime();
 
             player.queue.splice(pos++, 0, song);
-            console.log('added song to queue: ' + song.songID);
+            logger.info('added song to queue: ' + song.songID);
             callHooks('postSongQueued', [song]);
         }
     })
@@ -439,10 +434,10 @@ async.each(config.plugins, function(pluginName, callback) {
         if(!err) {
             // TODO: some plugins set player.plugin = blah; now, and we do this here.
             player.plugins[pluginName] = plugin;
-            console.log('plugin ' + pluginName + ' initialized');
+            logger.info('plugin ' + pluginName + ' initialized');
             callHooks('onPluginInitialized', [plugin]);
         } else {
-            console.log('error in ' + pluginName + ': ' + err);
+            logger.info('error in ' + pluginName + ': ' + err);
             callHooks('onPluginInitError', [plugin, err]);
         }
         callback(err);
@@ -462,21 +457,15 @@ async.each(config.backends, function(backendName, callback) {
             player.backends[backendName] = backend;
             player.songsPreparing[backendName] = {};
 
-            console.log('backend ' + backendName + ' initialized');
+            logger.info('backend ' + backendName + ' initialized');
             callHooks('onBackendInitialized', [backend]);
         } else {
-            console.log('error in ' + backendName + ': ' + err);
+            logger.info('error in ' + backendName + ': ' + err);
             callHooks('onBackendInitError', [backend, err]);
         }
         callback(err);
     });
 }, function(err) {
     callHooks('onBackendsInitialized');
-    console.log('ready');
+    logger.info('ready');
 });
-
-process.on('uncaughtException', function (err) {
-    console.error(err.stack);
-    console.log("ERROR! Node not exiting.");
-});
-
