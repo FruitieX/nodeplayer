@@ -68,6 +68,9 @@ var numHooks = player.numHooks = function(hook) {
 player.songEndTimeout = null;
 var startPlayback = player.startPlayback = function(pos) {
     var np = player.queue[0];
+    if(!np)
+        return 'can\'t start playback: queue is empty';
+
     if(pos)
         logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
     else
