@@ -14,6 +14,7 @@
         <script src="js/jquery.cookie.js"></script>
         <script src="js/jquery.tmpl.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
+        <script src="js/underscore-min.js"></script>
         <script src="js/socket.io-1.2.0.js"></script>
         <script src="listener.js"></script>
     </head>
@@ -44,6 +45,24 @@
                         <span class="glyphicon glyphicon-random" aria-hidden="true"></span>
                     </button>
 
+                    <div class="row clear">
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search-terms">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" id="search-button" onclick="search();">Search!</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="hidden" id="search-results-text">Search results:</h2>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <ul class="list-group" id="search-results">
+                            </ul>
+                        </div>
+                    </div>
                     <!-- List group -->
                     <ul class="list-group" id="queue">
                     </ul>

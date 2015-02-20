@@ -1,6 +1,78 @@
 var queue = [];
+var searchResults = {};
 var progress = {progress: 0, interval: null};
 var paused = true;
+
+var search = function() {
+    var searchTerms = $("#search-terms").val();
+    $("#search-button").prop('disabled', true);
+
+    $.ajax({
+        type: 'POST',
+        url: '/search',
+        data: JSON.stringify({
+            terms: searchTerms
+            //pageToken: 0 // don't use unless you really want a specific page
+        }),
+        contentType: 'application/json'
+    })
+    .done(function(data) {
+        searchResults = JSON.parse(data);
+        $("#search-results").empty();
+        $("#search-results-text").removeClass('hidden');
+        $("#search-button").prop('disabled', false);
+
+        // TODO: separate backends somehow
+        // right now we just sort songs by score
+        var songs = [];
+        _.each(_.pluck(searchResults, 'songs'), function(backendSongs) {
+            _.each(backendSongs, function(song) {
+                songs.push(song);
+            });
+        });
+        songs = _.sortBy(songs, 'score').reverse();
+        _.each(songs, function(song) {
+            $.tmpl( "searchTemplate", {
+                title: song.title,
+                artist: song.artist,
+                album: song.album,
+                albumArt: song.albumArt,
+                duration: durationToString(song.duration / 1000),
+                songID: song.songID,
+                backendName: song.backendName
+            }).appendTo("#search-results");
+        });
+        /*
+            var songsInOrder = _.sortBy(searchResults[backendName].songs, 'score');
+            _.each(songsInOrder, function(songID) {
+                var song = searchResults[backendName].songs[songID];
+            });
+        });
+        // TODO: pagination using backendResults.next/prevPageToken
+        if (searchResults.length > resultsCount) {
+            $.tmpl( "ellipsisTemplate", {
+        */
+    }).fail(function() {
+        $("#search-button").prop('disabled', false);
+    });
+};
+
+var appendQueue = function(backendName, songID) {
+    if (songID !== 0 && !songID) return;
+    if (!backendName) return;
+    searchResults[backendName].songs[songID].userID = $.cookie('userID');
+    $.ajax({
+        type: 'POST',
+        url: '/queue',
+        data: JSON.stringify({
+            songs: [searchResults[backendName].songs[songID]]
+        }),
+        contentType: 'application/json'
+    });
+
+    $("#search-results").empty();
+    $("#search-results-text").addClass('hidden');
+};
 
 var socket = io();
 socket.on('queue', function(data) {
@@ -153,6 +225,24 @@ $(document).ready(function() {
         + '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
+
+    var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
+        + '<div class="big"><b>${title}</b> - ${duration}</div>'
+        + '<div class="small"><b>${artist}</b> (${album})</div>'
+        + '</li>';
+
+    $.template( "searchTemplate", searchResultMarkup );
+
+    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">'
+        + '<div class="big">${title}</div>'
+        + '</li>';
+
+    $.template( "ellipsisTemplate", ellipsisResultMarkup );
+
+    $("#search-terms").keyup(function(e) {
+        if(e.keyCode === 13)
+            search();
+    });
 
     var queueMarkup = '<li class="list-group-item queue-item" id="${backendName}${songID}" onclick="skipSongs(\'${pos}\');">'
     + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(\'${pos}\', \'${backendName}${songID}\'); return false;"></div>'

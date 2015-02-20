@@ -55,6 +55,13 @@
 .searchResult:hover {
     background: #eff;
 }
+#search-terms, #search-button {
+    margin-top: 10px;
+}
+
+.clear {
+    clear: both;
+}
 
 .now-playing {
     background: none;
