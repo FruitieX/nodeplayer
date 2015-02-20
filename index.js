@@ -66,7 +66,7 @@ var numHooks = player.numHooks = function(hook) {
 // start or resume playback of now playing song.
 // if pos is undefined, playback continues (or starts from 0 if !playbackPosition)
 player.songEndTimeout = null;
-var startPlayback = player.startFeedback = function(pos) {
+var startPlayback = player.startPlayback = function(pos) {
     var np = player.queue[0];
     if(pos)
         logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
@@ -102,7 +102,7 @@ var startPlayback = player.startFeedback = function(pos) {
     }, durationLeft);
 };
 
-var pausePlayback = player.pauseFeedback = function() {
+var pausePlayback = player.pausePlayback = function() {
     // update position
     player.playbackPosition += new Date().getTime() - player.playbackStart;
     player.playbackStart = null;
