@@ -59,7 +59,7 @@ exports.init = function(_player, _logger, callback) {
 exports.onPluginsInitialized = function() {
     // sortQueue should only be hooked to from one plugin at a time
     if(player.numHooks('sortQueue') > 1)
-        logger.warn('partyplay: warning: more than one plugin hooks to sortQueue, expect weird behaviour');
+        logger.warn('more than one plugin hooks to sortQueue, expect weird behaviour');
 };
 
 
@@ -82,7 +82,7 @@ exports.onSongEnd = function(nowPlaying) {
 var checkDuration = function(song) {
     // check duration of song
     if(song.duration > config.songMaxDuration) {
-        return "partyplay: song duration too long";
+        return '[partyplay] song duration ' + song.duration + ' too long, max: ' + config.songMaxDuration;
     }
 }
 
