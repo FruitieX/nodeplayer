@@ -10,7 +10,7 @@ var newLogger = function(label) {
         transports: [
             new (winston.transports.Console)({
                 label: label,
-                level: config.loglevel,
+                level: config.logLevel,
                 colorize: config.logColorize,
                 handleExceptions: config.logExceptions,
                 json: config.logJson

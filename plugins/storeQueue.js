@@ -2,17 +2,24 @@
 
 var fs = require('fs');
 var mkdirp = require('mkdirp');
+var _ = require('underscore');
 
 var path = process.env.HOME + '/.nodeplayer/stored-queue.json';
-var player, config;
+var player, config, logger;
 
 exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
+    logger = _logger;
 
     mkdirp(process.env.HOME + '/.nodeplayer');
-    if(fs.existsSync(path)) {
-        player.queue = JSON.parse(fs.readFileSync(path));
+    try {
+        player.queue = require(path);
+        _.each(player.queue, function(song) {
+            logger.verbose('added stored song to queue: ' + song.songID);
+        });
+    } catch(e) {
+        logger.warn('no stored queue found');
     }
 
     callback();
