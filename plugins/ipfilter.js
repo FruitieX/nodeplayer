@@ -1,6 +1,7 @@
 "use strict";
 
 var filter = require('express-ipfilter');
+var player, config;
 
 exports.init = function(_player, _logger, callback) {
     player = _player;
