@@ -3,7 +3,7 @@
 var crypto = require('crypto');
 var fs = require('fs');
 
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
 

@@ -21,10 +21,10 @@ var queueEvent = function(socket) {
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
-    logger = _player.logger;
+    logger = _logger;
 
     if(!player.httpServer) {
         callback('module must be initialized after expressjs module!');

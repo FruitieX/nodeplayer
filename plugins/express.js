@@ -9,7 +9,7 @@ var config, player;
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
 

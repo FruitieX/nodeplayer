@@ -6,7 +6,7 @@ var mkdirp = require('mkdirp');
 var path = process.env.HOME + '/.nodeplayer/stored-queue.json';
 var player, config;
 
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
 

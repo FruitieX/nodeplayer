@@ -4,12 +4,12 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 
-var player, config, logger
+var player, config, logger;
 
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
-    logger = _player.logger;
+    logger = _logger;
 
     if(!player.app) {
         callback('module must be initialized after expressjs module!');

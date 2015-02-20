@@ -19,10 +19,10 @@ var sendResponse = function(res, msg, err) {
 
 // called when nodeplayer is started to initialize the backend
 // do any necessary initialization here
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
-    logger = _player.logger;
+    logger = _logger;
 
     if(!player.app) {
         callback('module must be initialized after expressjs module!');

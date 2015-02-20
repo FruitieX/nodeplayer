@@ -1,20 +1,24 @@
-'use strict';
 
 var _ = require('underscore');
 var async = require('async');
 var winston = require('winston');
 var config = require('nodeplayer-defaults')(console);
 
-var logger = new (winston.Logger)({
-    transports: [
-        new (winston.transports.Console)({
-            level: config.loglevel,
-            colorize: config.logColorize,
-            handleExceptions: config.logExceptions,
-            json: config.logJson
-        })
-    ]
-});
+var newLogger = function(label) {
+    return new (winston.Logger)({
+        transports: [
+            new (winston.transports.Console)({
+                label: label,
+                level: config.loglevel,
+                colorize: config.logColorize,
+                handleExceptions: config.logExceptions,
+                json: config.logJson
+            })
+        ]
+    });
+};
+
+var logger = newLogger('core');
 
 var checkModule = function(module) {
 	try {
@@ -430,14 +434,15 @@ async.each(config.plugins, function(pluginName, callback) {
 	checkModule(pluginFile);
     var plugin = require('./plugins/' + pluginName);
 
-    plugin.init(player, function(err) {
+    var pluginLogger = newLogger(pluginName);
+    plugin.init(player, pluginLogger, function(err) {
         if(!err) {
             // TODO: some plugins set player.plugin = blah; now, and we do this here.
             player.plugins[pluginName] = plugin;
-            logger.info('plugin ' + pluginName + ' initialized');
+            pluginLogger.info('plugin initialized');
             callHooks('onPluginInitialized', [plugin]);
         } else {
-            logger.info('error in ' + pluginName + ': ' + err);
+            pluginLogger.error('error while initializing: ' + err);
             callHooks('onPluginInitError', [plugin, err]);
         }
         callback(err);
@@ -452,15 +457,16 @@ async.each(config.backends, function(backendName, callback) {
 	checkModule(backendFile);
     var backend = require('nodeplayer-' + backendName);
 
+    var backendLogger = newLogger(backendName);
     backend.init(player, function(err) {
         if(!err) {
             player.backends[backendName] = backend;
             player.songsPreparing[backendName] = {};
 
-            logger.info('backend ' + backendName + ' initialized');
+            backendLogger.info('backend initialized');
             callHooks('onBackendInitialized', [backend]);
         } else {
-            logger.info('error in ' + backendName + ': ' + err);
+            backendLogger.error('error while initializing: ' + err);
             callHooks('onBackendInitError', [backend, err]);
         }
         callback(err);

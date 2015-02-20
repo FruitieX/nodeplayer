@@ -3,7 +3,7 @@
 var express = require('express');
 var player, config;
 
-exports.init = function(_player, callback) {
+exports.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
 
