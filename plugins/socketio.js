@@ -66,7 +66,7 @@ exports.onSongPause = function(song) {
     playbackEvent(player.socketio);
 };
 
-exports.onQueueModify = function(queue) {
+exports.postQueueModify = function(queue) {
     queueEvent(player.socketio);
 };
 

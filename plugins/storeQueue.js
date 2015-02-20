@@ -29,7 +29,7 @@ exports.onBackendsInitialized = function() {
     player.prepareSongs();
 };
 
-exports.onQueueModify = function(queue) {
+exports.postQueueModify = function(queue) {
     fs.writeFileSync(path, JSON.stringify(player.queue, undefined, 4));
 };
-exports.postSongsRemoved = exports.onQueueModify;
+exports.postSongsRemoved = exports.postQueueModify;
