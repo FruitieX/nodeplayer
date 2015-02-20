@@ -80,6 +80,7 @@ var startPlayback = player.startPlayback = function(pos) {
     else
         logger.info('playing song: ' + np.songID);
 
+    var oldPlaybackStart = player.playbackStart;
     player.playbackStart = new Date().getTime(); // song is playing while this is truthy
 
     // where did the song start playing from at playbackStart?
@@ -88,7 +89,10 @@ var startPlayback = player.startPlayback = function(pos) {
     else if(!player.playbackPosition)
         player.playbackPosition = 0;
 
-    callHooks('onSongChange', [np]);
+    if(oldPlaybackStart)
+        callHooks('onSongSeek', [np]);
+    else
+        callHooks('onSongChange', [np]);
 
     var durationLeft = parseInt(np.duration) - player.playbackPosition + config.songDelayMs;
     if(player.songEndTimeout) {
