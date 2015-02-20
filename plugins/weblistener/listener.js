@@ -176,7 +176,7 @@ $(document).ready(function() {
             $("#muteicon").addClass("glyphicon-volume-off");
         }
     }
-    $("#volume").change(function(event) {
+    $("#volume").on('input', function(event) {
         $("#audio")[0].volume = $("#volume").val();
         setVolumeIcon();
     });
