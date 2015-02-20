@@ -118,8 +118,8 @@ socket.on('playback', function(data) {
 
             console.log('loadedmetadata, starting playback from ' + pos);
             audio.currentTime = pos;
+            audio.removeEventListener('loadedmetadata', setPos, false);
         }
-        audio.removeEventListener('loadedmetadata', setPos, false);
         audio.addEventListener('loadedmetadata', setPos, false);
 
         var currentProgress = (data.position || 0);
