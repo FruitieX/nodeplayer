@@ -21,15 +21,6 @@ var newLogger = function(label) {
 
 var logger = newLogger('core');
 
-var checkModule = function(module) {
-	try {
-		require.resolve(module);
-	} catch(e) {
-		logger.error('Cannot find module: ' + module);
-		process.exit(e.code);
-	}
-};
-
 var player = {
     config: config,
     logger: logger,
@@ -43,7 +34,7 @@ var player = {
 // call hook function in all modules
 // if any hooks return a truthy value, it is an error and we abort
 // be very careful with calling hooks from within a hook, infinite loops are possible
-var callHooks = function(hook, argv) {
+var callHooks = player.callHooks = function(hook, argv) {
     // _.find() used instead of _.each() because we want to break out as soon
     // as a hook returns a truthy value (used to indicate an error, e.g. in form
     // of a string)
@@ -58,10 +49,9 @@ var callHooks = function(hook, argv) {
 
     return err;
 };
-player.callHooks = callHooks;
 
 // returns number of hook functions attached to given hook
-var numHooks = function(hook) {
+var numHooks = player.numHooks = function(hook) {
     var cnt = 0;
 
     _.find(player.plugins, function(plugin) {
@@ -72,12 +62,11 @@ var numHooks = function(hook) {
 
     return cnt;
 };
-player.numHooks = numHooks;
 
 // start or resume playback of now playing song.
 // if pos is undefined, playback continues (or starts from 0 if !playbackPosition)
 player.songEndTimeout = null;
-var startPlayback = function(pos) {
+var startPlayback = player.startFeedback = function(pos) {
     var np = player.queue[0];
     if(pos)
         logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
@@ -112,9 +101,8 @@ var startPlayback = function(pos) {
         onQueueModify();
     }, durationLeft);
 };
-player.startPlayback = startPlayback;
 
-var pausePlayback = function() {
+var pausePlayback = player.pauseFeedback = function() {
     // update position
     player.playbackPosition += new Date().getTime() - player.playbackStart;
     player.playbackStart = null;
@@ -123,7 +111,6 @@ var pausePlayback = function() {
     player.songEndTimeout = null;
     callHooks('onSongPause', [player.nowPlaying]);
 };
-player.pausePlayback = pausePlayback;
 
 var prepareError = function(song, err) {
     // remove all instances of this song
@@ -213,7 +200,7 @@ var prepareSong = function(song, asyncCallback) {
 };
 
 // prepare now playing and queued songs for playback
-var prepareSongs = function() {
+var prepareSongs = player.prepareSongs = function() {
     async.series([
         function(callback) {
             // prepare now-playing song if it exists and if not prepared
@@ -233,13 +220,12 @@ var prepareSongs = function() {
         }
     ]);
 };
-player.prepareSongs = prepareSongs;
 
 // to be called whenever the queue has been modified
 // this function will:
 // - play back the first song in the queue if no song is playing
 // - call prepareSongs()
-var onQueueModify = function() {
+var onQueueModify = player.onQueueModify = function() {
     if(!player.queue.length) {
         callHooks('onEndOfQueue');
         logger.info('end of queue, waiting for more songs');
@@ -253,10 +239,9 @@ var onQueueModify = function() {
     prepareSongs();
     callHooks('onQueueModify', [player.queue]);
 };
-player.onQueueModify = onQueueModify;
 
 // find song from queue
-var searchQueue = function(backendName, songID) {
+var searchQueue = player.searchQueue = function(backendName, songID) {
     for(var i = 0; i < player.queue.length; i++) {
         if(player.queue[i].songID === songID
                 && player.queue[i].backendName === backendName)
@@ -265,10 +250,9 @@ var searchQueue = function(backendName, songID) {
 
     return null;
 };
-player.searchQueue = searchQueue;
 
 // make a search query to backends
-var searchBackends = function(query, callback) {
+var searchBackends = player.searchBackends = function(query, callback) {
     var resultCnt = 0;
     var allResults = {};
 
@@ -301,7 +285,6 @@ var searchBackends = function(query, callback) {
         });
     });
 };
-player.searchBackends = searchBackends;
 
 // get rid of song in either queue (negative signifies playedQueue)
 // cnt can be left out for deleting only one song
@@ -357,7 +340,7 @@ var removeFromQueue = function(pos, cnt) {
 player.removeFromQueue = removeFromQueue;
 
 // add songs to the queue, at optional position
-var addToQueue = function(songs, pos) {
+var addToQueue = player.addToQueue = function(songs, pos) {
     if(!pos || pos < 0)
         pos = player.queue.length;
     pos = Math.min(pos, player.queue.length)
@@ -387,9 +370,8 @@ var addToQueue = function(songs, pos) {
     onQueueModify();
     callHooks('postSongsQueued', [songs, pos]);
 };
-player.addToQueue = addToQueue;
 
-var shuffleQueue = function() {
+var shuffleQueue = player.shuffleQueue = function() {
     // don't change now playing
     var temp = player.queue.shift();
     player.queue = _.shuffle(player.queue);
@@ -397,10 +379,9 @@ var shuffleQueue = function() {
 
     player.onQueueModify();
 };
-player.shuffleQueue = shuffleQueue;
 
 // cnt can be negative to go back or zero to restart current song
-var skipSongs = function(cnt) {
+var skipSongs = player.skipSongs = function(cnt) {
     player.npIsPlaying = false;
 
     for(var i = 0; i < Math.abs(cnt); i++) {
@@ -425,7 +406,15 @@ var skipSongs = function(cnt) {
     player.songEndTimeout = null;
     player.onQueueModify();
 };
-player.skipSongs = skipSongs;
+
+var checkModule = function(module) {
+	try {
+		require.resolve(module);
+	} catch(e) {
+		logger.error('Cannot find module: ' + module);
+		process.exit(e.code);
+	}
+};
 
 // init plugins
 async.each(config.plugins, function(pluginName, callback) {
