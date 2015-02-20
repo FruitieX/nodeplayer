@@ -1,7 +1,10 @@
+"use strict";
+
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 
 var path = process.env.HOME + '/.nodeplayer/stored-queue.json';
+var player, config;
 
 exports.init = function(_player, callback) {
     player = _player;

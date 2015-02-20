@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('underscore');
 var async = require('async');
 
@@ -8,14 +10,14 @@ var checkModule = function(module) {
 		console.error('Cannot find module: ' + module);
 		process.exit(e.code);
 	}
-}
+};
 
 var getConfigPath = function(config) {
 	if (process.platform == 'win32')
 		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
 	else
 		return process.env.HOME + '/.' + config;
-}
+};
 
 checkModule('nodeplayer-defaults');
 var defaultConfig = require('nodeplayer-defaults');
@@ -36,7 +38,7 @@ var player = {
     plugins: {},
     backends: {},
     songsPreparing: {}
-}
+};
 
 // call hook function in all modules
 // if any hooks return a truthy value, it is an error and we abort

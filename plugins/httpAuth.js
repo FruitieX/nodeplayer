@@ -1,3 +1,5 @@
+"use strict";
+
 var auth = require('http-auth');
 var fs = require('fs');
 

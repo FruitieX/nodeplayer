@@ -1,3 +1,5 @@
+"use strict";
+
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var url = require('url');

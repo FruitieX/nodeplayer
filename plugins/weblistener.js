@@ -1,4 +1,7 @@
+"use strict";
+
 var express = require('express');
+var player, config;
 
 exports.init = function(_player, callback) {
     player = _player;
