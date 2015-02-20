@@ -20,6 +20,7 @@ var search = function() {
         searchResults = JSON.parse(data);
         $("#search-results").empty();
         $("#search-results-text").removeClass('hidden');
+        $("#search-remove").removeClass('hidden');
         $("#search-button").prop('disabled', false);
 
         // TODO: separate backends somehow
@@ -72,6 +73,13 @@ var appendQueue = function(backendName, songID) {
 
     $("#search-results").empty();
     $("#search-results-text").addClass('hidden');
+    $("#search-remove").addClass('hidden');
+};
+
+var searchRemove = function() {
+    $("#search-results").empty();
+    $("#search-results-text").addClass('hidden');
+    $("#search-remove").addClass('hidden');
 };
 
 var socket = io();

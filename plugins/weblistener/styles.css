@@ -16,6 +16,25 @@
     font-size: 15px;
     text-align:center;
 }
+#search-remove {
+    float:right;
+    margin-left:5px;
+    color: #aaa;
+    font-size:30px;
+    width:30px;
+    height:100%;
+    cursor:pointer;
+    padding-top:10px;
+}
+#search-remove:hover {
+    color: #c77;
+}
+#search-results {
+    clear: both;
+}
+#search-results-text {
+    font-size: 30px;
+}
 .remove {
     float:right;
     margin-left:5px;
