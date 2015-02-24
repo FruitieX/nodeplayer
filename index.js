@@ -3,7 +3,7 @@
 var _ = require('underscore');
 var async = require('async');
 var winston = require('winston');
-var config = require('nodeplayer-defaults')(console);
+var config = require('nodeplayer-defaults')();
 
 var newLogger = function(label) {
     return new (winston.Logger)({
