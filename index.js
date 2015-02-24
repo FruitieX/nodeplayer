@@ -273,6 +273,8 @@ var searchBackends = player.searchBackends = function(query, callback) {
                 var err = player.callHooks('preAddSearchResult', [song]);
                 if(!err)
                     allResults[backend.name].songs[song.songID] = song;
+                else
+                    logger.error('preAddSearchResult hook error: ' + err);
             });
 
             // got results from all services?
