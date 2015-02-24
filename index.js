@@ -463,7 +463,7 @@ async.each(config.backends, function(backendName, callback) {
     var backend = require('nodeplayer-' + backendName);
 
     var backendLogger = newLogger(backendName);
-    backend.init(player, function(err) {
+    backend.init(player, backendLogger, function(err) {
         if(!err) {
             player.backends[backendName] = backend;
             player.songsPreparing[backendName] = {};
