@@ -40,6 +40,8 @@ var callHooks = player.callHooks = function(hook, argv) {
     // of a string)
     var err = null;
 
+    logger.silly('callHooks(' + hook + ', ' + JSON.stringify(argv, undefined, 4) + ')');
+
     _.find(player.plugins, function(plugin) {
         if(plugin[hook]) {
             err = plugin[hook].apply(null, argv);
@@ -68,14 +70,17 @@ var numHooks = player.numHooks = function(hook) {
 player.songEndTimeout = null;
 var startPlayback = player.startPlayback = function(pos) {
     var np = player.queue[0];
-    if(!np)
-        return 'can\'t start playback: queue is empty';
+    if(!np) {
+        logger.verbose('startPlayback called, but hit end of queue');
+        return;
+    }
 
     if(pos)
         logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
     else
         logger.info('playing song: ' + np.songID);
 
+    var oldPlaybackStart = player.playbackStart;
     player.playbackStart = new Date().getTime(); // song is playing while this is truthy
 
     // where did the song start playing from at playbackStart?
@@ -84,7 +89,10 @@ var startPlayback = player.startPlayback = function(pos) {
     else if(!player.playbackPosition)
         player.playbackPosition = 0;
 
-    callHooks('onSongChange', [np]);
+    if(oldPlaybackStart)
+        callHooks('onSongSeek', [np]);
+    else
+        callHooks('onSongChange', [np]);
 
     var durationLeft = parseInt(np.duration) - player.playbackPosition + config.songDelayMs;
     if(player.songEndTimeout) {
@@ -229,18 +237,20 @@ var prepareSongs = player.prepareSongs = function() {
 // - play back the first song in the queue if no song is playing
 // - call prepareSongs()
 var onQueueModify = player.onQueueModify = function() {
+    callHooks('preQueueModify', [player.queue]);
+
+    // set next song as now playing
+    if(!player.queue[0])
+        player.queue.shift();
+
+    // if the queue is now empty, do nothing
     if(!player.queue.length) {
         callHooks('onEndOfQueue');
         logger.info('end of queue, waiting for more songs');
-        return;
+    } else {
+        prepareSongs();
     }
-
-    // set next song as now playing, moves current into playedQueue
-    if(!player.queue[0])
-        player.playedQueue.push(player.queue.shift());
-
-    prepareSongs();
-    callHooks('onQueueModify', [player.queue]);
+    callHooks('postQueueModify', [player.queue]);
 };
 
 // find song from queue
@@ -352,7 +362,6 @@ var addToQueue = player.addToQueue = function(songs, pos) {
 
     callHooks('preSongsQueued', [songs, pos]);
     _.each(songs, function(song) {
-        logger.debug('DEBUG: addToQueue(): ' + song.songID);
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
             logger.info('required song fields not provided: ' + song.songID);

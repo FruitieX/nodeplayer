@@ -147,7 +147,6 @@ exports.onBackendInitialized = function(backend) {
         logger.verbose('got streaming request for song: ' + songID + ', range: ' + range);
 
         var doSend = function(offset) {
-            logger.debug('doSend(' + offset + ')');
             var m = meter();
 
             // TODO: this may have race condition issues causing the end of a song to be cut out
@@ -180,6 +179,7 @@ exports.onBackendInitialized = function(backend) {
                     }
                 } else {
                     // data is available, let's send as much as we can
+                    // TODO: would it maybe be better to open the file once per request and then seek...
                     var sendStream = fs.createReadStream(path, {
                         start: offset,
                         end: end
@@ -194,8 +194,13 @@ exports.onBackendInitialized = function(backend) {
 
                         sendStream.close();
 
+                        // this is needed currently because otherwise we leak events
+                        res.removeListener('close', sendStream.close);
+
                         doSend(m.bytes + offset);
                     });
+                    // client disconnected before end of file, close file
+                    res.on('close', sendStream.close);
                 }
             } else {
                 logger.verbose('file not found: ' + path);

@@ -61,12 +61,13 @@ exports.init = function(_player, _logger, callback) {
 exports.onSongChange = function(song) {
     playbackEvent(player.socketio);
 };
+exports.onSongSeek = exports.onSongChange;
 
 exports.onSongPause = function(song) {
     playbackEvent(player.socketio);
 };
 
-exports.onQueueModify = function(queue) {
+exports.postQueueModify = function(queue) {
     queueEvent(player.socketio);
 };
 
