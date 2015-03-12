@@ -275,6 +275,7 @@ $(document).ready(function() {
     }
     $("#volume").on('input', function(event) {
         $("#audio")[0].volume = $("#volume").val();
+        socket.emit('volume', $("#volume").val());
         setVolumeIcon();
     });
     $("#mute").click(function(event) {

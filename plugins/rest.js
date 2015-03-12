@@ -59,6 +59,10 @@ exports.init = function(_player, _logger, callback) {
 
             res.send('success');
         });
+        player.app.post('/volume', bodyParser.json({limit: '100mb'}), function(req, res) {
+            player.setVolume(req.body);
+            res.send('success');
+        });
 
         // search for song with given search terms
         player.app.post('/search', bodyParser.json({limit: '100mb'}), function(req, res) {

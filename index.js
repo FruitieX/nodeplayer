@@ -28,7 +28,8 @@ var player = {
     queue: [],
     plugins: {},
     backends: {},
-    songsPreparing: {}
+    songsPreparing: {},
+    volume: 1
 };
 
 // call hook function in all modules
@@ -421,6 +422,13 @@ var skipSongs = player.skipSongs = function(cnt) {
     player.songEndTimeout = null;
     player.onQueueModify();
 };
+
+var setVolume = function(newVol) {
+    newVol = Math.min(1, Math.max(0, newVol));
+    player.volume = newVol;
+    callHooks('onVolumeChange', [volume]);
+};
+player.setVolume = setVolume;
 
 var checkModule = function(module) {
 	try {

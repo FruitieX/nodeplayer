@@ -48,6 +48,7 @@ exports.init = function(_player, _logger, callback) {
             socket.on('pausePlayback', player.pausePlayback);
             socket.on('skipSongs', player.skipSongs);
             socket.on('shuffleQueue', player.shuffleQueue);
+            socket.on('setVolume', player.setVolume);
 
             playbackEvent(socket);
             queueEvent(socket);
@@ -74,4 +75,8 @@ exports.postQueueModify = function(queue) {
 exports.onEndOfQueue = function() {
     playbackEvent(player.socketio);
     queueEvent(player.socketio);
+};
+
+exports.onVolumeChange = function(volume) {
+    socket.emit('volume', volume);
 };
