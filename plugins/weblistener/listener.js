@@ -88,6 +88,21 @@ socket.on('queue', function(data) {
     updateQueue();
 });
 
+socket.on('volume', function(data) {
+    console.log(data);
+    if(data.userID === $.cookie('userID'))
+        return;
+    $("#volume").val(data.volume);
+    $("#audio")[0].volume = data.volume;
+});
+var setVolume = _.throttle(function(volume) {
+    console.log('setting volume');
+    socket.emit('setVolume', {
+        userID: $.cookie('userID'),
+        volume: volume
+    });
+}, 100);
+
 socket.on('playback', function(data) {
     console.log(data);
     var msgTime = new Date().getTime();
@@ -222,6 +237,18 @@ var skipSongs = function(cnt) {
 }
 
 $(document).ready(function() {
+    // generate a user ID if there is not one yet
+    if(!$.cookie('userID')) {
+        var s4 = function() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+        var guid = s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+        $.cookie('userID', guid);
+    }
+
     var nowPlayingMarkup = '<li class="list-group-item now-playing" id="nowplaying">'
         + '<div id="progressmouseover"></div>'
         + '<div id="progress"></div>'
@@ -274,8 +301,9 @@ $(document).ready(function() {
         }
     }
     $("#volume").on('input', function(event) {
-        $("#audio")[0].volume = $("#volume").val();
-        socket.emit('volume', $("#volume").val());
+        var volume = $("#volume").val();
+        $("#audio")[0].volume = volume;
+        setVolume(volume);
         setVolumeIcon();
     });
     $("#mute").click(function(event) {

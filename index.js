@@ -423,10 +423,10 @@ var skipSongs = player.skipSongs = function(cnt) {
     player.onQueueModify();
 };
 
-var setVolume = function(newVol) {
+var setVolume = function(newVol, userID) {
     newVol = Math.min(1, Math.max(0, newVol));
     player.volume = newVol;
-    callHooks('onVolumeChange', [volume]);
+    callHooks('onVolumeChange', [newVol, userID]);
 };
 player.setVolume = setVolume;
 
