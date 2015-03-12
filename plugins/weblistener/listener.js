@@ -89,14 +89,12 @@ socket.on('queue', function(data) {
 });
 
 socket.on('volume', function(data) {
-    console.log(data);
     if(data.userID === $.cookie('userID'))
         return;
     $("#volume").val(data.volume);
     $("#audio")[0].volume = data.volume;
 });
 var setVolume = _.throttle(function(volume) {
-    console.log('setting volume');
     socket.emit('setVolume', {
         userID: $.cookie('userID'),
         volume: volume
