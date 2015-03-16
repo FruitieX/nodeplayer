@@ -11,7 +11,8 @@ var playbackEvent = function(socket) {
         backendName: player.queue[0].backendName,
         duration: player.queue[0].duration,
         position: player.playbackStart ? player.playbackPosition + (new Date() - player.playbackStart) : player.playbackPosition,
-        playbackStart: player.playbackStart
+        playbackStart: player.playbackStart,
+        volume: player.volume
     } : null);
 };
 

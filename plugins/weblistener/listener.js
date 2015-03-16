@@ -123,6 +123,10 @@ socket.on('playback', function(data) {
         $("#playpauseicon").removeClass("glyphicon-pause glyphicon-play");
         $("#playpauseicon").addClass("glyphicon-pause");
 
+        // volume update
+        $("#volume").val(data.volume);
+        $("#audio")[0].volume = data.volume;
+
         // TODO: even better sync using NTP
         var setPos = function() {
             var pos = 0;
