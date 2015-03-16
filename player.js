@@ -10,7 +10,7 @@ function Player() {
     _.bindAll.apply(_, [this].concat(_.functions(this)));
     this.config = config;
     this.logger = logger;
-    this.playedQueue = []; // TODO: don't let this grow to infinity
+    this.playedQueue = [];
     this.queue = [];
     this.plugins = {};
     this.backends = {};
@@ -60,6 +60,7 @@ Player.prototype.endOfSong = function() {
     this.callHooks('onSongEnd', [np]);
 
     this.playedQueue.push(this.queue[0]);
+    this.playedQueue = _.last(this.playedQueue, config.playedQueueSize);
 
     this.playbackPosition = null;
     this.playbackStart = null;
@@ -396,6 +397,7 @@ Player.prototype.shuffleQueue = function() {
 Player.prototype.skipSongs = function(cnt) {
     this.npIsPlaying = false;
 
+    // TODO: this could be replaced with a splice?
     for(var i = 0; i < Math.abs(cnt); i++) {
         if(cnt > 0) {
             if(this.queue[0])
@@ -411,6 +413,8 @@ Player.prototype.skipSongs = function(cnt) {
         if(!this.queue[0])
             break;
     }
+
+    this.playedQueue = _.last(this.playedQueue, config.playedQueueSize);
 
     this.playbackPosition = null;
     this.playbackStart = null;
