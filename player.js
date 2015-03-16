@@ -273,7 +273,7 @@ Player.prototype.searchBackends = function(query, callback) {
     var resultCnt = 0;
     var allResults = {};
 
-    _.each(this.backends, _.bind(function(backend) {
+    _.each(this.backends, function(backend) {
         backend.search(query, _.bind(function(results) {
             resultCnt++;
 
@@ -283,13 +283,13 @@ Player.prototype.searchBackends = function(query, callback) {
             allResults[backend.name] = results;
             allResults[backend.name].songs = {};
 
-            _.each(tempSongs, _.bind(function(song) {
+            _.each(tempSongs, function(song) {
                 var err = this.callHooks('preAddSearchResult', [song]);
                 if(!err)
                     allResults[backend.name].songs[song.songID] = song;
                 else
                     logger.error('preAddSearchResult hook error: ' + err);
-            }, this));
+            }, this);
 
             // got results from all services?
             if(resultCnt >= Object.keys(this.backends).length)
@@ -302,7 +302,7 @@ Player.prototype.searchBackends = function(query, callback) {
             if(resultCnt >= Object.keys(this.backends).length)
                 callback(allResults);
         }, this));
-    }, this));
+    }, this);
 };
 
 // get rid of song in either queue (negative signifies playedQueue)
@@ -364,11 +364,11 @@ Player.prototype.addToQueue = function(songs, pos) {
     pos = Math.min(pos, this.queue.length)
 
     this.callHooks('preSongsQueued', [songs, pos]);
-    _.each(songs, _.bind(function(song) {
+    _.each(songs, function(song) {
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
             logger.info('required song fields not provided: ' + song.songID);
-            return 'required song fields not provided';
+            return 'required song fields not provided'; // TODO: this ain't gonna work
         }
 
         var err = this.callHooks('preSongQueued', [song]);
@@ -381,7 +381,7 @@ Player.prototype.addToQueue = function(songs, pos) {
             logger.info('added song to queue: ' + song.songID);
             this.callHooks('postSongQueued', [song]);
         }
-    }, this));
+    }, this);
 
     this.callHooks('sortQueue');
     this.onQueueModify();
