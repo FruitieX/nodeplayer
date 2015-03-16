@@ -1,4 +1,5 @@
 var queue = [];
+var queueTruncated = false;
 var searchResults = {};
 var progress = {progress: 0, interval: null};
 var paused = true;
@@ -84,7 +85,8 @@ var searchRemove = function() {
 
 var socket = io();
 socket.on('queue', function(data) {
-    queue = data;
+    queue = data.items;
+    queueTruncated = data.isTruncated;
     updateQueue();
 });
 
@@ -218,6 +220,9 @@ var updateQueue = function() {
                 e.stopPropagation();
             });
         }
+        if(queueTruncated) {
+            $.tmpl( "queueTruncated").appendTo("#queue");
+        }
     }
 };
 
@@ -289,6 +294,14 @@ $(document).ready(function() {
     + '</li>';
 
     $.template( "queueTemplate", queueMarkup );
+
+    var queueTruncatedMarkup = '<li class="list-group-item queue-item">'
+    + '<div class="songinfo">'
+    + '<div class="big"><b>...</b></div>'
+    + '</div>'
+    + '</li>';
+
+    $.template( "queueTruncated", queueTruncatedMarkup );
 
     var preMuteVolume;
     var setVolumeIcon = function() {

@@ -17,7 +17,10 @@ var playbackEvent = function(socket) {
 };
 
 var queueEvent = function(socket) {
-    socket.emit('queue', player.queue);
+    socket.emit('queue', {
+        items: _.first(player.queue, config.socketio.queuelimit),
+        isTruncated: (player.queue.length > config.socketio.queuelimit)
+    });
 };
 
 // called when nodeplayer is started to initialize the plugin
