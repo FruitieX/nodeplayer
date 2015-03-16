@@ -66,4 +66,20 @@ describe('Player', function() {
             player.queue.should.deep.equal(_.last(exampleQueue, playedQueueSize));
         });
     });
+
+    describe('#shuffleQueue()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player();
+            player.queue = _.clone(exampleQueue);
+        });
+        it('should not change the now playing song', function() {
+            for(var i = 0; i < 10; i++) {
+                // no matter how many times we shuffle :-)
+                player.shuffleQueue();
+                _.first(player.queue).should.deep.equal(_.first(exampleQueue));
+            }
+        });
+    });
 })
