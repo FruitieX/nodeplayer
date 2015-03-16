@@ -19,7 +19,7 @@ var playbackEvent = function(socket) {
 var queueEvent = function(socket) {
     socket.emit('queue', {
         items: _.first(player.queue, config.socketio.queueLimit),
-        isTruncated: (player.queue.length > config.socketio.queueLimit)
+        length: player.queue.length
     });
 };
 

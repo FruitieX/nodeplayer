@@ -86,7 +86,7 @@ var searchRemove = function() {
 var socket = io();
 socket.on('queue', function(data) {
     queue = data.items;
-    queueTruncated = data.isTruncated;
+    queueTruncated = (data.length > data.items.length);
     updateQueue();
 });
 
