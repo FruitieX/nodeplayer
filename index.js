@@ -8,12 +8,12 @@ var config = require('nodeplayer-defaults')();
 var logger = labeledLogger('core');
 
 function checkModule(module) {
-	try {
-		require.resolve(module);
-	} catch(e) {
-		logger.error('Cannot find module: ' + module);
-		process.exit(e.code);
-	}
+    try {
+        require.resolve(module);
+    } catch(e) {
+        logger.error('Cannot find module: ' + module);
+        process.exit(e.code);
+    }
 };
 
 var player = new Player();
@@ -22,8 +22,8 @@ var player = new Player();
 async.each(config.plugins, function(pluginName, callback) {
     // TODO: put plugin modules into npm
     // must implement .init, can implement hooks
-	var pluginFile = './plugins/' + pluginName;
-	checkModule(pluginFile);
+    var pluginFile = './plugins/' + pluginName;
+    checkModule(pluginFile);
     var plugin = require('./plugins/' + pluginName);
 
     var pluginLogger = labeledLogger(pluginName);
@@ -46,7 +46,7 @@ async.each(config.plugins, function(pluginName, callback) {
 // init backends
 async.each(config.backends, function(backendName, callback) {
     var backendFile = 'nodeplayer-' + backendName;
-	checkModule(backendFile);
+    checkModule(backendFile);
     var backend = require('nodeplayer-' + backendName);
 
     var backendLogger = labeledLogger(backendName);
