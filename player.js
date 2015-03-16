@@ -6,6 +6,10 @@ var config = require('nodeplayer-defaults')();
 
 var logger = labeledLogger('core');
 
+function testEnv() {
+    return (process.env.NODE_ENV === 'test');
+}
+
 function Player() {
     _.bindAll.apply(_, [this].concat(_.functions(this)));
     this.config = config;
@@ -60,7 +64,7 @@ Player.prototype.endOfSong = function() {
     this.callHooks('onSongEnd', [np]);
 
     this.playedQueue.push(this.queue[0]);
-    this.playedQueue = _.last(this.playedQueue, config.playedQueueSize);
+    this.playedQueue = _.last(this.playedQueue, this.config.playedQueueSize);
 
     this.playbackPosition = null;
     this.playbackStart = null;
@@ -97,7 +101,7 @@ Player.prototype.startPlayback = function(pos) {
     else
         this.callHooks('onSongChange', [np]);
 
-    var durationLeft = parseInt(np.duration) - this.playbackPosition + config.songDelayMs;
+    var durationLeft = parseInt(np.duration) - this.playbackPosition + this.config.songDelayMs;
     if(this.songEndTimeout) {
         logger.debug('songEndTimeout was cleared');
         clearTimeout(this.songEndTimeout);
@@ -242,11 +246,12 @@ Player.prototype.onQueueModify = function() {
     if(!this.queue[0])
         this.queue.shift();
 
-    // if the queue is now empty, do nothing
     if(!this.queue.length) {
+        // if the queue is now empty, do nothing
         this.callHooks('onEndOfQueue');
         logger.info('end of queue, waiting for more songs');
-    } else {
+    } else if (!testEnv()) {
+        // else prepare songs (skipped in testing environment TODO: is this a good idea?)
         this.prepareSongs();
     }
     this.callHooks('postQueueModify', [this.queue]);
@@ -414,7 +419,7 @@ Player.prototype.skipSongs = function(cnt) {
             break;
     }
 
-    this.playedQueue = _.last(this.playedQueue, config.playedQueueSize);
+    this.playedQueue = _.last(this.playedQueue, this.config.playedQueueSize);
 
     this.playbackPosition = null;
     this.playbackStart = null;
@@ -423,6 +428,7 @@ Player.prototype.skipSongs = function(cnt) {
     this.onQueueModify();
 };
 
+// TODO: userID does not belong into core...?
 Player.prototype.setVolume = function(newVol, userID) {
     newVol = Math.min(1, Math.max(0, newVol));
     this.volume = newVol;
