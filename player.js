@@ -10,17 +10,19 @@ function testEnv() {
     return (process.env.NODE_ENV === 'test');
 }
 
-function Player() {
+function Player(options) {
+    options = options || {};
+
     _.bindAll.apply(_, [this].concat(_.functions(this)));
-    this.config = config;
-    this.logger = logger;
-    this.playedQueue = [];
-    this.queue = [];
-    this.plugins = {};
-    this.backends = {};
-    this.songsPreparing = {};
-    this.volume = 1;
-    this.songEndTimeout = null;
+    this.config         = options.config            || config;
+    this.logger         = options.logger            || logger;
+    this.playedQueue    = options.playedQueue       || [];
+    this.queue          = options.queue             || [];
+    this.plugins        = options.plugins           || {};
+    this.backends       = options.backends          || {};
+    this.songsPreparing = options.songsPreparing    || {};
+    this.volume         = options.volume            || 1;
+    this.songEndTimeout = options.songEndTimeout    || null;
 }
 
 // call hook function in all modules
@@ -368,7 +370,8 @@ Player.prototype.addToQueue = function(songs, pos) {
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
             logger.info('required song fields not provided: ' + song.songID);
-            return 'required song fields not provided'; // TODO: this ain't gonna work
+            return;
+            //return 'required song fields not provided'; // TODO: this ain't gonna work
         }
 
         var err = this.callHooks('preSongQueued', [song]);
