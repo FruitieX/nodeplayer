@@ -2,9 +2,6 @@
 var _ = require('underscore');
 var async = require('async');
 var labeledLogger = require('./logger');
-var config = require('nodeplayer-defaults')();
-
-var logger = labeledLogger('core');
 
 function testEnv() {
     return (process.env.NODE_ENV === 'test');
@@ -14,8 +11,8 @@ function Player(options) {
     options = options || {};
 
     _.bindAll.apply(_, [this].concat(_.functions(this)));
-    this.config         = options.config            || config;
-    this.logger         = options.logger            || logger;
+    this.config         = options.config            || require('nodeplayer-defaults')();
+    this.logger         = options.logger            || labeledLogger('core');
     this.playedQueue    = options.playedQueue       || [];
     this.queue          = options.queue             || [];
     this.plugins        = options.plugins           || {};
@@ -34,7 +31,7 @@ Player.prototype.callHooks = function(hook, argv) {
     // of a string)
     var err = null;
 
-    logger.silly('callHooks(' + hook + ', ' + JSON.stringify(argv, undefined, 4) + ')');
+    this.logger.silly('callHooks(' + hook + ', ' + JSON.stringify(argv, undefined, 4) + ')');
 
     _.find(this.plugins, function(plugin) {
         if(plugin[hook]) {
@@ -62,7 +59,7 @@ Player.prototype.numHooks = function(hook) {
 Player.prototype.endOfSong = function() {
     var np = this.queue[0];
 
-    logger.info('end of song ' + np.songID);
+    this.logger.info('end of song ' + np.songID);
     this.callHooks('onSongEnd', [np]);
 
     this.playedQueue.push(this.queue[0]);
@@ -80,14 +77,14 @@ Player.prototype.endOfSong = function() {
 Player.prototype.startPlayback = function(pos) {
     var np = this.queue[0];
     if(!np) {
-        logger.verbose('startPlayback called, but hit end of queue');
+        this.logger.verbose('startPlayback called, but hit end of queue');
         return;
     }
 
     if(pos)
-        logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
+        this.logger.info('playing song: ' + np.songID + ', from pos: ' + pos);
     else
-        logger.info('playing song: ' + np.songID);
+        this.logger.info('playing song: ' + np.songID);
 
     var oldPlaybackStart = this.playbackStart;
     this.playbackStart = new Date().getTime(); // song is playing while this is truthy
@@ -105,7 +102,7 @@ Player.prototype.startPlayback = function(pos) {
 
     var durationLeft = parseInt(np.duration) - this.playbackPosition + this.config.songDelayMs;
     if(this.songEndTimeout) {
-        logger.debug('songEndTimeout was cleared');
+        this.logger.debug('songEndTimeout was cleared');
         clearTimeout(this.songEndTimeout);
     }
     this.songEndTimeout = setTimeout(this.endOfSong, durationLeft);
@@ -126,7 +123,7 @@ Player.prototype.prepareError = function(song, err) {
     for(var i = this.queue.length - 1; i >= 0; i--) {
         if(this.queue[i].songID === song.songID && this.queue[i].backendName === song.backendName) {
             if(!song.beingDeleted) {
-                logger.error('preparing song failed! (' + err + '), removing from queue: ' + song.songID);
+                this.logger.error('preparing song failed! (' + err + '), removing from queue: ' + song.songID);
                 this.removeFromQueue(i);
             }
         }
@@ -182,7 +179,7 @@ Player.prototype.prepareErrCallback = function(song, err, asyncCallback) {
 // TODO: get rid of the callback hell, use promises?
 Player.prototype.prepareSong = function(song, asyncCallback) {
     if(!song) {
-        logger.debug('prepareSong() without song');
+        this.logger.debug('prepareSong() without song');
         asyncCallback(true);
         return;
     }
@@ -204,7 +201,7 @@ Player.prototype.prepareSong = function(song, asyncCallback) {
         asyncCallback(true);
     } else {
         // song is not prepared and not currently preparing: let backend prepare it
-        logger.debug('DEBUG: prepareSong() ' + song.songID);
+        this.logger.debug('DEBUG: prepareSong() ' + song.songID);
         this.songsPreparing[song.backendName][song.songID] = song;
 
         song.cancelPrepare = this.backends[song.backendName].prepareSong(
@@ -251,7 +248,7 @@ Player.prototype.onQueueModify = function() {
     if(!this.queue.length) {
         // if the queue is now empty, do nothing
         this.callHooks('onEndOfQueue');
-        logger.info('end of queue, waiting for more songs');
+        this.logger.info('end of queue, waiting for more songs');
     } else if (!testEnv()) {
         // else prepare songs (skipped in testing environment TODO: is this a good idea?)
         this.prepareSongs();
@@ -290,7 +287,7 @@ Player.prototype.searchBackends = function(query, callback) {
                 if(!err)
                     allResults[backend.name].songs[song.songID] = song;
                 else
-                    logger.error('preAddSearchResult hook error: ' + err);
+                    this.logger.error('preAddSearchResult hook error: ' + err);
             }, this);
 
             // got results from all services?
@@ -298,7 +295,7 @@ Player.prototype.searchBackends = function(query, callback) {
                 callback(allResults);
         }, this), _.bind(function(err) {
             resultCnt++;
-            logger.error('error while searching ' + backend.name + ': ' + err);
+            this.logger.error('error while searching ' + backend.name + ': ' + err);
 
             // got results from all services?
             if(resultCnt >= Object.keys(this.backends).length)
@@ -369,19 +366,19 @@ Player.prototype.addToQueue = function(songs, pos) {
     _.each(songs, function(song) {
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
-            logger.info('required song fields not provided: ' + song.songID);
+            this.logger.info('required song fields not provided: ' + song.songID);
             return;
             //return 'required song fields not provided'; // TODO: this ain't gonna work
         }
 
         var err = this.callHooks('preSongQueued', [song]);
         if(err) {
-            logger.error('not adding song to queue: ' + err);
+            this.logger.error('not adding song to queue: ' + err);
         } else {
             song.timeAdded = new Date().getTime();
 
             this.queue.splice(pos++, 0, song);
-            logger.info('added song to queue: ' + song.songID);
+            this.logger.info('added song to queue: ' + song.songID);
             this.callHooks('postSongQueued', [song]);
         }
     }, this);
