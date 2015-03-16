@@ -143,7 +143,7 @@ Player.prototype.prepareError = function(song, err) {
     this.callHooks('onSongPrepareError', [song, err]);
 };
 
-Player.prototype.prepareProgCallback = function(song, dataSize, done) {
+Player.prototype.prepareProgCallback = function(song, dataSize, done, asyncCallback) {
     /* progress callback
      * when this is called, new song data has been flushed to disk */
 
@@ -173,7 +173,7 @@ Player.prototype.prepareProgCallback = function(song, dataSize, done) {
     this.callHooks('onPrepareProgress', [song, dataSize, done]);
 }
 
-Player.prototype.prepareErrCallback = function(song, err) {
+Player.prototype.prepareErrCallback = function(song, err, asyncCallback) {
     /* error callback */
 
     // don't let anything run cancelPrepare anymore
@@ -216,9 +216,9 @@ Player.prototype.prepareSong = function(song, asyncCallback) {
         this.songsPreparing[song.backendName][song.songID] = song;
 
         song.cancelPrepare = this.backends[song.backendName].prepareSong(
-            song.songID,
-            this.prepareProgCallback,
-            this.prepareErrCallback
+            song,
+            _.partial(this.prepareProgCallback, _, _, _, asyncCallback),
+            _.partial(this.prepareErrCallback, _, _, asyncCallback)
         );
     }
 };
@@ -373,7 +373,7 @@ Player.prototype.addToQueue = function(songs, pos) {
     pos = Math.min(pos, this.queue.length)
 
     this.callHooks('preSongsQueued', [songs, pos]);
-    _.each(songs, function(song) {
+    _.each(songs, _.bind(function(song) {
         // check that required fields are provided
         if(!song.title || !song.songID || !song.backendName || !song.duration) {
             logger.info('required song fields not provided: ' + song.songID);
@@ -390,7 +390,7 @@ Player.prototype.addToQueue = function(songs, pos) {
             logger.info('added song to queue: ' + song.songID);
             this.callHooks('postSongQueued', [song]);
         }
-    })
+    }, this));
 
     this.callHooks('sortQueue');
     this.onQueueModify();
