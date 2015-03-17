@@ -31,7 +31,7 @@ Player.prototype.callHooks = function(hook, argv) {
     // of a string)
     var err = null;
 
-    this.logger.silly('callHooks(' + hook + ', ' + JSON.stringify(argv, undefined, 4) + ')');
+    this.logger.silly('callHooks(' + hook + ',', argv, ')');
 
     _.find(this.plugins, function(plugin) {
         if (plugin[hook]) {

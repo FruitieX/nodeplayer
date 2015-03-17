@@ -1,5 +1,6 @@
 'use strict';
 var _ = require('underscore');
+var npm = require('npm');
 var async = require('async');
 var labeledLogger = require('./logger');
 var Player = require('./player');
@@ -10,9 +11,9 @@ var logger = labeledLogger('core');
 function checkModule(module) {
     try {
         require.resolve(module);
+        return true;
     } catch (e) {
-        logger.error('Cannot find module: ' + module);
-        process.exit(e.code);
+        return false;
     }
 }
 
@@ -43,11 +44,8 @@ async.each(config.plugins, function(pluginName, callback) {
     player.callHooks('onPluginsInitialized');
 });
 
-// init backends
-async.each(config.backends, function(backendName, callback) {
-    var backendFile = 'nodeplayer-' + backendName;
-    checkModule(backendFile);
-    var backend = require('nodeplayer-' + backendName);
+function initBackend(backendName, callback) {
+    var backend = require('nodeplayer-backend-' + backendName);
 
     var backendLogger = labeledLogger(backendName);
     backend.init(player, backendLogger, function(err) {
@@ -63,7 +61,35 @@ async.each(config.backends, function(backendName, callback) {
         }
         callback(err);
     });
-}, function(err) {
-    player.callHooks('onBackendsInitialized');
-    logger.info('ready');
+};
+
+async.eachSeries(config.backends, function(backendName, callback) {
+    // check backends & install if needed
+    if (!checkModule('nodeplayer-backend-' + backendName)) {
+        logger.info('backend module ' + backendName + ' not found, installing...');
+        npm.load({}, function(err) {
+            npm.commands.install(['nodeplayer-backend-' + backendName], function(err) {
+                if (err) {
+                    logger.error(backendName + ' installation failed:', err);
+                    callback();
+                } else {
+                    logger.info(backendName + ' successfully installed');
+                    callback();
+                }
+            });
+        });
+    } else {
+        // skip already installed
+        callback();
+    }
+}, function() {
+    // init backends
+    async.each(config.backends, function(backendName, callback) {
+        if (checkModule('nodeplayer-backend-' + backendName)) {
+            initBackend(backendName, callback);
+        }
+    }, function(err) {
+        player.callHooks('onBackendsInitialized');
+        logger.info('ready');
+    });
 });
