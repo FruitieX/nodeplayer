@@ -81,18 +81,18 @@ var pendingReqHandlers = [];
 exports.onPrepareProgress = function(song, dataSize, done) {
     for(var i = pendingReqHandlers.length - 1; i >= 0; i--) {
         pendingReqHandlers.pop()();
-    };
+    }
 };
 
 var getFilesizeInBytes = function(filename) {
     if(fs.existsSync(filename)) {
         var stats = fs.statSync(filename);
-        var fileSizeInBytes = stats["size"];
+        var fileSizeInBytes = stats.size;
         return fileSizeInBytes;
     } else {
         return -1;
     }
-}
+};
 
 var getPath = function(player, songID, backendName, songFormat) {
     if(player.songsPreparing[backendName] && player.songsPreparing[backendName][songID]) {

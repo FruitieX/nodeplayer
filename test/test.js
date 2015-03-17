@@ -217,4 +217,4 @@ describe('Player', function() {
             _.first(player.queue).should.deep.equal(exampleQueue[1]);
         });
     });
-})
+});

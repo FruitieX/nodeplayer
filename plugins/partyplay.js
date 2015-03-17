@@ -84,7 +84,7 @@ var checkDuration = function(song) {
     if(song.duration > config.songMaxDuration) {
         return '[partyplay] song duration ' + song.duration + ' too long, max: ' + config.songMaxDuration;
     }
-}
+};
 
 exports.preSongQueued = function(song) {
     // if same song is already queued, don't create a duplicate

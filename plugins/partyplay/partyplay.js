@@ -78,12 +78,12 @@ var vote = function(pos, vote) {
         }
         downArrow.removeClass("active");
     } else if(vote < 0) {
-        // is already downvoted: remove downvote
         if(downArrow.hasClass("active")) {
+            // is already downvoted: remove downvote
             downArrow.removeClass("active");
             vote = 0;
-        // downvote
         } else {
+            // downvote
             downArrow.addClass("active");
         }
         upArrow.removeClass("active");
@@ -126,7 +126,7 @@ var pad = function(number, length) {
     }
 
     return str;
-}
+};
 
 var updateProgress = function(dt) { // dt = ms passed since last call
     if(!queue[0]) {
@@ -139,9 +139,10 @@ var updateProgress = function(dt) { // dt = ms passed since last call
     if (currentProgress > progress.duration) {
         $("#progress").css("width", "100%");
     }
-}
+};
 
 var updateQueue = function() {
+    var i;
     $("#queue").empty();
 
     if(queue) {
@@ -154,7 +155,7 @@ var updateQueue = function() {
         }
 
         // rest of queue
-        for(var i = 1; i < queue.length; i++) {
+        for(i = 1; i < queue.length; i++) {
             queue[i].duration = durationToString(queue[i].duration / 1000);
             queue[i].pos = i;
             $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
@@ -184,7 +185,7 @@ var updateQueue = function() {
 
         var userID = $.cookie('userID');
         // update votes
-        for(var i = 1; i < queue.length; i++) {
+        for(i = 1; i < queue.length; i++) {
             if(queue[i].upVotes && queue[i].upVotes[userID]) {
                 $("#uparrow" + i).addClass("active");
             } else if(queue[i].downVotes && queue[i].downVotes[userID]) {
@@ -198,12 +199,12 @@ var durationToString = function(seconds) {
     var durationString = Math.floor(seconds / 60);
     durationString += ":" + pad(Math.floor(seconds % 60), 2);
     return durationString;
-}
+};
 
 $(document).ready(function() {
     detectPrivateMode(function(isPrivate) {
         if(isPrivate) {
-            document.write('Private browsing unsupported to prevent abuse.<br><img src="media/antitroll.png"></img>');
+            $('body').html('Private browsing unsupported to prevent abuse.<br><img src="media/antitroll.png"></img>');
             return;
         }
 
@@ -213,43 +214,43 @@ $(document).ready(function() {
                 return Math.floor((1 + Math.random()) * 0x10000)
                     .toString(16)
                     .substring(1);
-            }
+            };
             var guid = s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                     s4() + '-' + s4() + s4() + s4();
             $.cookie('userID', guid);
         }
 
-        var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">'
-            + '<div id="progress"></div>'
-            + '<div class="np-songinfo">'
-            + '<div class="big"><b>${title}</b> - ${duration}</div>'
-            + '<div class="small"><b>${artist}</b> (${album})</div>'
-            + '</div>'
-            + '</li>';
+        var nowPlayingMarkup = '<li class="list-group-item now-playing" id="${backendName}${songID}">' +
+            '<div id="progress"></div>' +
+            '<div class="np-songinfo">' +
+            '<div class="big"><b>${title}</b> - ${duration}</div>' +
+            '<div class="small"><b>${artist}</b> (${album})</div>' +
+            '</div>' +
+            '</li>';
 
         $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
-        var queueMarkup = '<li class="list-group-item" id="${backendName}${songID}">'
-            + '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${pos}"  onclick="vote(\'${pos}\', -1);"></div>'
-            + '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${pos}" onclick="vote(\'${pos}\', 1);"></div>'
-            + '<div class="songinfo">'
-            + '<div class="big"><b>${title}</b> - ${duration}</div>'
-            + '<div class="small"><b>${artist}</b> (${album})</div>'
-            + '</div>'
-            + '</li>';
+        var queueMarkup = '<li class="list-group-item" id="${backendName}${songID}">' +
+            '<div class="arrows downarrow glyphicon glyphicon-thumbs-down" id="downarrow${pos}"  onclick="vote(\'${pos}\', -1);"></div>' +
+            '<div class="arrows uparrow glyphicon glyphicon-thumbs-up" id="uparrow${pos}" onclick="vote(\'${pos}\', 1);"></div>' +
+            '<div class="songinfo">' +
+            '<div class="big"><b>${title}</b> - ${duration}</div>' +
+            '<div class="small"><b>${artist}</b> (${album})</div>' +
+            '</div>' +
+            '</li>';
 
         $.template( "queueTemplate", queueMarkup );
 
-        var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
-            + '<div class="big"><b>${title}</b> - ${duration}</div>'
-            + '<div class="small"><b>${artist}</b> (${album})</div>'
-            + '</li>';
+        var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">' +
+            '<div class="big"><b>${title}</b> - ${duration}</div>' +
+            '<div class="small"><b>${artist}</b> (${album})</div>' +
+            '</li>';
 
         $.template( "searchTemplate", searchResultMarkup );
 
-        var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">'
-            + '<div class="big">${title}</div>'
-            + '</li>';
+        var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">' +
+            '<div class="big">${title}</div>' +
+            '</li>';
 
         $.template( "ellipsisTemplate", ellipsisResultMarkup );
 

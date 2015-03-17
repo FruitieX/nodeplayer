@@ -137,11 +137,10 @@ Player.prototype.prepareProgCallback = function(song, dataSize, done, asyncCallb
      * when this is called, new song data has been flushed to disk */
 
     // start playback if it hasn't been started yet
-    if (this.queue[0]
-        && this.queue[0].backendName === song.backendName
-        && this.queue[0].songID === song.songID
-        && !this.playbackStart
-        && dataSize)
+    if (this.queue[0] &&
+        this.queue[0].backendName === song.backendName &&
+        this.queue[0].songID === song.songID &&
+        !this.playbackStart && dataSize)
     {
         this.startPlayback();
     }
@@ -160,7 +159,7 @@ Player.prototype.prepareProgCallback = function(song, dataSize, done, asyncCallb
     // tell plugins that new data is available for this song, and
     // whether the song is now fully written to disk or not.
     this.callHooks('onPrepareProgress', [song, dataSize, done]);
-}
+};
 
 Player.prototype.prepareErrCallback = function(song, err, asyncCallback) {
     /* error callback */
@@ -174,7 +173,7 @@ Player.prototype.prepareErrCallback = function(song, err, asyncCallback) {
 
     this.prepareError(song, err);
     delete(this.songsPreparing[song.backendName][song.songID]);
-}
+};
 
 // TODO: get rid of the callback hell, use promises?
 Player.prototype.prepareSong = function(song, asyncCallback) {
@@ -186,10 +185,10 @@ Player.prototype.prepareSong = function(song, asyncCallback) {
 
     if(this.backends[song.backendName].isPrepared(song)) {
         // start playback if it hasn't been started yet
-        if (this.queue[0]
-            && this.queue[0].backendName === song.backendName
-            && this.queue[0].songID === song.songID
-            && !this.playbackStart)
+        if (this.queue[0] &&
+            this.queue[0].backendName === song.backendName &&
+            this.queue[0].songID === song.songID &&
+            !this.playbackStart)
         {
             this.startPlayback();
         }
@@ -259,9 +258,11 @@ Player.prototype.onQueueModify = function() {
 // find song from queue
 Player.prototype.searchQueue = function(backendName, songID) {
     for(var i = 0; i < this.queue.length; i++) {
-        if(this.queue[i].songID === songID
-                && this.queue[i].backendName === backendName)
+        if(this.queue[i].songID === songID &&
+           this.queue[i].backendName === backendName)
+        {
             return this.queue[i];
+        }
     }
 
     return null;
@@ -362,7 +363,7 @@ Player.prototype.addToQueue = function(songs, pos) {
         pos = this.queue.length;
     if(pos < 0)
         pos = 1;
-    pos = Math.min(pos, this.queue.length)
+    pos = Math.min(pos, this.queue.length);
 
     this.callHooks('preSongsQueued', [songs, pos]);
     _.each(songs, function(song) {

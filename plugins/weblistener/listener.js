@@ -105,6 +105,7 @@ var setVolume = _.throttle(function(volume) {
 
 socket.on('playback', function(data) {
     console.log(data);
+    var currentProgress;
     var msgTime = new Date().getTime();
     if(!data || !data.playbackStart) {
         $("#audio").trigger('pause');
@@ -114,7 +115,7 @@ socket.on('playback', function(data) {
 
         clearInterval(progress.interval);
         if(data) {
-            var currentProgress = (data.position || 0);
+            currentProgress = (data.position || 0);
             progress.started = new Date().getTime() - currentProgress;
             progress.duration = data.duration;
         }
@@ -138,10 +139,10 @@ socket.on('playback', function(data) {
             console.log('loadedmetadata, starting playback from ' + pos);
             audio.currentTime = pos;
             audio.removeEventListener('loadedmetadata', setPos, false);
-        }
+        };
         audio.addEventListener('loadedmetadata', setPos, false);
 
-        var currentProgress = (data.position || 0);
+        currentProgress = (data.position || 0);
         progress.started = new Date() - currentProgress;
         progress.duration = data.duration;
 
@@ -162,7 +163,7 @@ var pad = function(number, length) {
     }
 
     return str;
-}
+};
 
 // UI
 var updateProgress = function(dt) { // dt = ms passed since last call
@@ -176,7 +177,7 @@ var updateProgress = function(dt) { // dt = ms passed since last call
     if (currentProgress > progress.duration) {
         $("#progress").css("width", "100%");
     }
-}
+};
 
 var updateQueue = function() {
     $("#queue").empty();
@@ -210,15 +211,17 @@ var updateQueue = function() {
             });
         }
 
+        var onRemoveClick = function(e) {
+            removeFromQueue(i, queue.backendName + queue.songID);
+            e.stopPropagation();
+        };
+
         // rest of queue
         for(var i = 1; i < queue.length; i++) {
             queue[i].durationString = durationToString(queue[i].duration / 1000);
             queue[i].pos = i;
             $.tmpl( "queueTemplate", queue[i]).appendTo("#queue");
-            $("#remove" + i).click(function(e) {
-                removeFromQueue(i, queue.backendName + queue.songID);
-                e.stopPropagation();
-            });
+            $("#remove" + i).click(onRemoveClick);
         }
         if(queueTruncated) {
             $.tmpl( "queueTruncated").appendTo("#queue");
@@ -230,18 +233,18 @@ var durationToString = function(seconds) {
     var durationString = Math.floor(seconds / 60);
     durationString += ":" + pad(Math.floor(seconds % 60), 2);
     return durationString;
-}
+};
 
 var removeFromQueue = function(pos, id) {
     socket.emit('removeFromQueue', {
         pos: pos
     });
     $(document.getElementById(id)).css('background-color', "#fee");
-}
+};
 
 var skipSongs = function(cnt) {
     socket.emit('skipSongs', cnt);
-}
+};
 
 $(document).ready(function() {
     // generate a user ID if there is not one yet
@@ -250,33 +253,33 @@ $(document).ready(function() {
             return Math.floor((1 + Math.random()) * 0x10000)
                 .toString(16)
                 .substring(1);
-        }
+        };
         var guid = s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                 s4() + '-' + s4() + s4() + s4();
         $.cookie('userID', guid);
     }
 
-    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="nowplaying">'
-        + '<div id="progressmouseover"></div>'
-        + '<div id="progress"></div>'
-        + '<div class="np-songinfo">'
-        + '<div class="big"><b>${title}</b> - ${durationString}</div>'
-        + '<div class="small"><b>${artist}</b> (${album})</div>'
-        + '</div>'
-        + '</li>';
+    var nowPlayingMarkup = '<li class="list-group-item now-playing" id="nowplaying">' +
+        '<div id="progressmouseover"></div>' +
+        '<div id="progress"></div>' +
+        '<div class="np-songinfo">' +
+        '<div class="big"><b>${title}</b> - ${durationString}</div>' +
+        '<div class="small"><b>${artist}</b> (${album})</div>' +
+        '</div>' +
+        '</li>';
 
     $.template( "nowPlayingTemplate", nowPlayingMarkup );
 
-    var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">'
-        + '<div class="big"><b>${title}</b> - ${duration}</div>'
-        + '<div class="small"><b>${artist}</b> (${album})</div>'
-        + '</li>';
+    var searchResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}" onclick="appendQueue(\'${backendName}\', \'${songID}\')">' +
+        '<div class="big"><b>${title}</b> - ${duration}</div>' +
+        '<div class="small"><b>${artist}</b> (${album})</div>' +
+        '</li>';
 
     $.template( "searchTemplate", searchResultMarkup );
 
-    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">'
-        + '<div class="big">${title}</div>'
-        + '</li>';
+    var ellipsisResultMarkup = '<li class="list-group-item searchResult" id="${backendName}${songID}">' +
+        '<div class="big">${title}</div>' +
+        '</li>';
 
     $.template( "ellipsisTemplate", ellipsisResultMarkup );
 
@@ -285,21 +288,21 @@ $(document).ready(function() {
             search();
     });
 
-    var queueMarkup = '<li class="list-group-item queue-item" id="${backendName}${songID}" onclick="skipSongs(\'${pos}\');">'
-    + '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(\'${pos}\', \'${backendName}${songID}\'); return false;"></div>'
-    + '<div class="songinfo">'
-    + '<div class="big"><b>${title}</b> - ${durationString}</div>'
-    + '<div class="small"><b>${artist}</b> (${album})</div>'
-    + '</div>'
-    + '</li>';
+    var queueMarkup = '<li class="list-group-item queue-item" id="${backendName}${songID}" onclick="skipSongs(\'${pos}\');">' +
+    '<div class="remove glyphicon glyphicon-remove" id="remove${pos}" onclick="removeFromQueue(\'${pos}\', \'${backendName}${songID}\'); return false;"></div>' +
+    '<div class="songinfo">' +
+    '<div class="big"><b>${title}</b> - ${durationString}</div>' +
+    '<div class="small"><b>${artist}</b> (${album})</div>' +
+    '</div>' +
+    '</li>';
 
     $.template( "queueTemplate", queueMarkup );
 
-    var queueTruncatedMarkup = '<li class="list-group-item queue-item">'
-    + '<div class="songinfo">'
-    + '<div class="big"><b>...</b></div>'
-    + '</div>'
-    + '</li>';
+    var queueTruncatedMarkup = '<li class="list-group-item queue-item">' +
+    '<div class="songinfo">' +
+    '<div class="big"><b>...</b></div>' +
+    '</div>' +
+    '</li>';
 
     $.template( "queueTruncated", queueTruncatedMarkup );
 
@@ -314,7 +317,7 @@ $(document).ready(function() {
         } else {
             $("#muteicon").addClass("glyphicon-volume-off");
         }
-    }
+    };
     $("#volume").on('input', function(event) {
         var volume = $("#volume").val();
         $("#audio")[0].volume = volume;
@@ -322,7 +325,7 @@ $(document).ready(function() {
         setVolumeIcon();
     });
     $("#mute").click(function(event) {
-        if ($("#volume").val() == 0) {
+        if ($("#volume").val() === 0) {
             $("#audio")[0].volume = preMuteVolume;
             $("#volume").val(preMuteVolume);
         } else {

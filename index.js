@@ -14,7 +14,7 @@ function checkModule(module) {
         logger.error('Cannot find module: ' + module);
         process.exit(e.code);
     }
-};
+}
 
 var player = new Player();
 
