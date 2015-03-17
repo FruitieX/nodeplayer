@@ -61,7 +61,7 @@ function initBackend(backendName, callback) {
         }
         callback(err);
     });
-};
+}
 
 async.eachSeries(config.backends, function(backendName, callback) {
     // check backends & install if needed
