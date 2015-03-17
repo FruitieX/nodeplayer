@@ -3,6 +3,8 @@ nodeplayer
 
 simple, modular music player written in node.js
 
+[![Build Status](https://travis-ci.org/FruitieX/nodeplayer.svg?branch=master)](https://travis-ci.org/FruitieX/nodeplayer)
+
 disclaimer: for personal use only - make sure you configure nodeplayer
 appropriately so that others can't access your music. I take no responsibility
 eg. if your streaming services find you are violating their ToS, you're running
