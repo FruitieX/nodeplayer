@@ -66,7 +66,7 @@ function initBackend(backendName, callback) {
 async.eachSeries(config.backends, function(backendName, callback) {
     // check backends & install if needed
     if (!checkModule('nodeplayer-backend-' + backendName)) {
-        logger.info('backend module ' + backendName + ' not found, installing...');
+        logger.info(backendName + 'backend module not found, installing...');
         npm.load({}, function(err) {
             npm.commands.install(['nodeplayer-backend-' + backendName], function(err) {
                 if (err) {
