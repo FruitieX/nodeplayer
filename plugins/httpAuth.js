@@ -1,9 +1,10 @@
-"use strict";
+'use strict';
 
 var auth = require('http-auth');
 var fs = require('fs');
 
-var config, player;
+var config;
+var player;
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
@@ -12,12 +13,12 @@ exports.init = function(_player, _logger, callback) {
     config = _player.config;
 
     // dependencies
-    if(!player.app) {
+    if (!player.app) {
         callback('module must be initialized after expressjs module!');
     } else {
         var basic = auth.basic({
-                realm: "partyplay listener"
-            }, function (username, password, callback) {
+                realm: 'partyplay listener'
+            }, function(username, password, callback) {
                 callback(username === config.username && password === config.password);
             }
         );

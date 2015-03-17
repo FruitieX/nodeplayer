@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var bodyParser = require('body-parser');
 var _ = require('underscore');
@@ -8,13 +8,16 @@ var fs = require('fs');
 var mime = require('mime');
 var meter = require('stream-meter');
 
-var config, player, logger;
+var config;
+var player;
+var logger;
 
 var sendResponse = function(res, msg, err) {
-    if(err)
+    if (err) {
         res.status(404).send(err);
-    else
+    } else {
         res.send(msg);
+    }
 };
 
 // called when nodeplayer is started to initialize the backend
@@ -24,7 +27,7 @@ exports.init = function(_player, _logger, callback) {
     config = _player.config;
     logger = _logger;
 
-    if(!player.app) {
+    if (!player.app) {
         callback('module must be initialized after expressjs module!');
     } else {
         player.app.get('/queue', function(req, res) {
@@ -47,13 +50,13 @@ exports.init = function(_player, _logger, callback) {
             var action = req.body.action;
             var cnt = req.body.cnt;
 
-            if(action === 'play') {
+            if (action === 'play') {
                 player.startPlayback(req.body.position);
-            } else if(action === 'pause') {
+            } else if (action === 'pause') {
                 player.pausePlayback();
-            } else if(action === 'skip') {
+            } else if (action === 'skip') {
                 player.skipSongs(cnt);
-            } else if(action === 'shuffle') {
+            } else if (action === 'shuffle') {
                 player.shuffleQueue();
             }
 
@@ -79,13 +82,13 @@ exports.init = function(_player, _logger, callback) {
 
 var pendingReqHandlers = [];
 exports.onPrepareProgress = function(song, dataSize, done) {
-    for(var i = pendingReqHandlers.length - 1; i >= 0; i--) {
+    for (var i = pendingReqHandlers.length - 1; i >= 0; i--) {
         pendingReqHandlers.pop()();
     }
 };
 
 var getFilesizeInBytes = function(filename) {
-    if(fs.existsSync(filename)) {
+    if (fs.existsSync(filename)) {
         var stats = fs.statSync(filename);
         var fileSizeInBytes = stats.size;
         return fileSizeInBytes;
@@ -95,10 +98,13 @@ var getFilesizeInBytes = function(filename) {
 };
 
 var getPath = function(player, songID, backendName, songFormat) {
-    if(player.songsPreparing[backendName] && player.songsPreparing[backendName][songID]) {
-        return config.songCachePath + '/' + backendName + '/incomplete/' + songID + '.' + songFormat;
+    if (player.songsPreparing[backendName] &&
+            player.songsPreparing[backendName][songID]) {
+        return config.songCachePath + '/' + backendName +
+            '/incomplete/' + songID + '.' + songFormat;
     } else {
-        return config.songCachePath + '/' + backendName + '/' + songID + '.' + songFormat;
+        return config.songCachePath + '/' + backendName +
+            '/' + songID + '.' + songFormat;
     }
 };
 
@@ -111,7 +117,7 @@ exports.onBackendInitialized = function(backend) {
 
         // try finding out length of song
         var song = player.searchQueue(backend.name, songID);
-        if(song) {
+        if (song) {
             res.setHeader('X-Content-Duration', song.duration / 1000);
         }
 
@@ -122,10 +128,10 @@ exports.onBackendInitialized = function(backend) {
         //res.setHeader('Connection', 'keep-alive');
 
         var range = [0];
-        if(req.headers.range) {
+        if (req.headers.range) {
             range = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
             // TODO: only 206 used right now
-            //if(range[0] != 0 || range[1]) {
+            //if (range[0] != 0 || range[1]) {
             // try guessing at least some length for the song to keep chromium happy
             res.statusCode = 206;
             var path = getPath(player, songID, backend.name, songFormat);
@@ -133,7 +139,7 @@ exports.onBackendInitialized = function(backend) {
 
             // a best guess for the header
             var end;
-            if(range[1]) {
+            if (range[1]) {
                 end = Math.min(range[1], fileSize - 1);
             } else {
                 end = fileSize - 1;
@@ -141,7 +147,8 @@ exports.onBackendInitialized = function(backend) {
 
             // total file size, if known
             var outOf = '*';
-            if(!player.songsPreparing[backend.name] || !player.songsPreparing[backend.name][songID]) {
+            if (!player.songsPreparing[backend.name] ||
+                    !player.songsPreparing[backend.name][songID]) {
                 outOf = fileSize;
             }
             res.setHeader('Content-Range', 'bytes ' + range[0] + '-' + end + '/' + outOf);
@@ -156,25 +163,26 @@ exports.onBackendInitialized = function(backend) {
             // TODO: this may have race condition issues causing the end of a song to be cut out
             var path = getPath(player, songID, backend.name, songFormat);
 
-            if(fs.existsSync(path)) {
+            if (fs.existsSync(path)) {
                 var end;
-                if(range[1]) {
+                if (range[1]) {
                     end = Math.min(range[1], getFilesizeInBytes(path) - 1);
                 } else {
                     end = getFilesizeInBytes(path) - 1;
                 }
 
-                if(offset > end) {
-                    if(range[1] && range[1] <= offset) {
+                if (offset > end) {
+                    if (range[1] && range[1] <= offset) {
                         // range request was fullfilled
                         res.end();
-                    } else if(player.songsPreparing[backend.name] && player.songsPreparing[backend.name][songID]) {
+                    } else if (player.songsPreparing[backend.name] &&
+                            player.songsPreparing[backend.name][songID]) {
                         // song is still preparing, there is more data to come
                         logger.debug('enough data not yet available at: ' + path);
                         pendingReqHandlers.push(function() {
                             doSend(offset);
                         });
-                    } else if ((getFilesizeInBytes(path) - 1) <= offset){
+                    } else if ((getFilesizeInBytes(path) - 1) <= offset) {
                         // song fully prepared and sent
                         res.end();
                     } else {
@@ -183,7 +191,8 @@ exports.onBackendInitialized = function(backend) {
                     }
                 } else {
                     // data is available, let's send as much as we can
-                    // TODO: would it maybe be better to open the file once per request and then seek...
+                    // TODO: would it maybe be better to open the file once per
+                    // request and then seek...
                     var sendStream = fs.createReadStream(path, {
                         start: offset,
                         end: end

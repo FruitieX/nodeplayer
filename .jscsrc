@@ -1,0 +1,14 @@
+{
+    "preset": "google",
+
+    "requireParenthesesAroundIIFE": true,
+    "maximumLineLength": 100,
+    "validateLineBreaks": "LF",
+    "validateIndentation": 4,
+
+    "excludeFiles": [
+        "node_modules/**",
+        "plugins/partyplay/js/**",
+        "plugins/weblistener/js/**"
+    ]
+}

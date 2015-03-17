@@ -1,11 +1,13 @@
-"use strict";
+'use strict';
 
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var _ = require('underscore');
 
 var path = process.env.HOME + '/.nodeplayer/stored-queue.json';
-var player, config, logger;
+var player;
+var config;
+var logger;
 
 exports.init = function(_player, _logger, callback) {
     player = _player;
@@ -18,7 +20,7 @@ exports.init = function(_player, _logger, callback) {
         _.each(player.queue, function(song) {
             logger.verbose('added stored song to queue: ' + song.songID);
         });
-    } catch(e) {
+    } catch (e) {
         logger.warn('no stored queue found');
     }
 

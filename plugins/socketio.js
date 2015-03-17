@@ -1,8 +1,10 @@
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 
-var config, player, logger;
+var config;
+var player;
+var logger;
 
 var playbackEvent = function(socket) {
     socket.emit('playback', player.queue[0] ? {
@@ -10,7 +12,8 @@ var playbackEvent = function(socket) {
         format: player.queue[0].format,
         backendName: player.queue[0].backendName,
         duration: player.queue[0].duration,
-        position: player.playbackStart ? player.playbackPosition + (new Date() - player.playbackStart) : player.playbackPosition,
+        position: player.playbackStart ? player.playbackPosition +
+            (new Date() - player.playbackStart) : player.playbackPosition,
         playbackStart: player.playbackStart,
         volume: player.volume
     } : null);
@@ -30,7 +33,7 @@ exports.init = function(_player, _logger, callback) {
     config = _player.config;
     logger = _logger;
 
-    if(!player.httpServer) {
+    if (!player.httpServer) {
         callback('module must be initialized after expressjs module!');
     } else {
         player.socketio = require('socket.io')(player.httpServer);

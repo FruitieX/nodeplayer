@@ -1,9 +1,11 @@
-"use strict";
+'use strict';
 
 var crypto = require('crypto');
 var fs = require('fs');
 
-var player, config, derivedKey;
+var player;
+var config;
+var derivedKey;
 
 exports.init = function(_player, _logger, callback) {
     player = _player;
@@ -26,9 +28,9 @@ exports.verify = function(str, hmac) {
 };
 
 exports.getSongHmac = function(song) {
-    song.album = (song.album || "");
-    song.artist = (song.artist || "");
-    song.title = (song.title || "");
+    song.album = (song.album || '');
+    song.artist = (song.artist || '');
+    song.title = (song.title || '');
 
     return exports.calculateMac(
         song.album.replace('|', '')                  + '|' +
@@ -51,5 +53,5 @@ exports.preAddSearchResult = function(song) {
 };
 
 exports.preSongQueued = function(song) {
-    return (exports.verifySong(song) ? null : "invalid hmac!");
+    return (exports.verifySong(song) ? null : 'invalid hmac!');
 };

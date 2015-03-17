@@ -10,7 +10,7 @@ var logger = labeledLogger('core');
 function checkModule(module) {
     try {
         require.resolve(module);
-    } catch(e) {
+    } catch (e) {
         logger.error('Cannot find module: ' + module);
         process.exit(e.code);
     }
@@ -28,7 +28,7 @@ async.each(config.plugins, function(pluginName, callback) {
 
     var pluginLogger = labeledLogger(pluginName);
     plugin.init(player, pluginLogger, function(err) {
-        if(!err) {
+        if (!err) {
             // TODO: some plugins set player.plugin = blah; now, and we do this here.
             player.plugins[pluginName] = plugin;
             pluginLogger.info('plugin initialized');
@@ -51,7 +51,7 @@ async.each(config.backends, function(backendName, callback) {
 
     var backendLogger = labeledLogger(backendName);
     backend.init(player, backendLogger, function(err) {
-        if(!err) {
+        if (!err) {
             player.backends[backendName] = backend;
             player.songsPreparing[backendName] = {};
 
