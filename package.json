@@ -4,7 +4,8 @@
   "description": "simple, modular music player written in node.js",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha"
+    "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha",
+    "coverage": "NODE_ENV=test istanbul cover _mocha -- -R spec"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "chai": "*",
     "mocha": "*",
+    "istanbul": "*",,
     "mocha-jshint": "^1.0.0"
   }
 }
