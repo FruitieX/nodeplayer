@@ -188,4 +188,33 @@ describe('Player', function() {
             player.queue.should.deep.equal(_.last(exampleQueue, exampleQueue.length - 4));
         });
     });
+    describe('#searchQueue()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = _.clone(exampleQueue);
+        });
+        it('should return correct song from queue', function() {
+            player.searchQueue(exampleQueue[2].backendName, exampleQueue[2].songID)
+            .should.deep.equal(exampleQueue[2]);
+        });
+        it('should return null for bogus terms', function() {
+            (player.searchQueue('thisBackendShouldNotExist', 'thisSongIdShouldNotExist') === null)
+            .should.equal(true);
+        });
+    });
+    describe('#onQueueModify()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = _.clone(exampleQueue);
+        });
+        it('should move next song to now playing if there is no now playing song', function() {
+            player.queue[0] = null;
+            player.onQueueModify();
+            _.first(player.queue).should.deep.equal(exampleQueue[1]);
+        });
+    });
 })
