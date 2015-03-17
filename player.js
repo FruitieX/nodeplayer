@@ -358,8 +358,10 @@ Player.prototype.removeFromQueue = function(pos, cnt) {
 
 // add songs to the queue, at optional position
 Player.prototype.addToQueue = function(songs, pos) {
-    if(!pos || pos < 0)
+    if(!pos)
         pos = this.queue.length;
+    if(pos < 0)
+        pos = 1;
     pos = Math.min(pos, this.queue.length)
 
     this.callHooks('preSongsQueued', [songs, pos]);

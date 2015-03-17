@@ -4,18 +4,28 @@ var _ = require('underscore');
 var Player = require('../player');
 var exampleQueue = require('./exampleQueue.json');
 
+var dummyLogger = {
+    silly: _.noop,
+    debug: _.noop,
+    verbose: _.noop,
+    info: _.noop,
+    warn: _.noop,
+    error: _.noop,
+};
+
 describe('exampleQueue', function() {
     it('should contain at least 5 items', function() {
         exampleQueue.length.should.be.above(5);
     });
 });
 
+// TODO: test error cases also
 describe('Player', function() {
     describe('#setVolume()', function() {
         var player;
 
         beforeEach(function() {
-            player = new Player();
+            player = new Player({logger: dummyLogger});
         });
         it('should set volume to 1 by default', function() {
             player.volume.should.equal(1).and.be.a('number');
@@ -39,7 +49,7 @@ describe('Player', function() {
         var playedQueueSize = 3; // TODO: better handling of config variables here
 
         beforeEach(function() {
-            player = new Player();
+            player = new Player({logger: dummyLogger});
             player.queue = _.clone(exampleQueue);
             player.config.playedQueueSize = playedQueueSize;
         });
@@ -71,7 +81,7 @@ describe('Player', function() {
         var player;
 
         beforeEach(function() {
-            player = new Player();
+            player = new Player({logger: dummyLogger});
             player.queue = _.clone(exampleQueue);
         });
         it('should not change the now playing song', function() {
@@ -80,6 +90,69 @@ describe('Player', function() {
                 player.shuffleQueue();
                 _.first(player.queue).should.deep.equal(_.first(exampleQueue));
             }
+        });
+    });
+    describe('#addToQueue()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+        });
+        it('should not add song if required fields are not provided', function() {
+            player.addToQueue([{ title: 'foo', songID: 'bar', backendName: 'baz' }]);
+            player.addToQueue([{ title: 'foo', songID: 'bar', duration: 42 }]);
+            player.addToQueue([{ title: 'foo', backendName: 'bar', duration: 42 }]);
+            player.addToQueue([{ songID: 'foo', backendName: 'bar', duration: 42 }]);
+            player.queue.length.should.equal(0);
+        });
+        it('should add song correctly', function() {
+            player.addToQueue([_.first(exampleQueue)]);
+            _.first(player.queue).should.deep.equal(_.first(exampleQueue));
+        });
+        it('should add multiple songs correctly', function() {
+            player.addToQueue(_.first(exampleQueue, 3));
+            player.queue.should.deep.equal(_.first(exampleQueue, 3));
+        });
+        it('should add song to provided position', function() {
+            player.addToQueue(_.first(exampleQueue, 3));
+            player.addToQueue([exampleQueue[3]], 1);
+            player.queue.should.deep.equal([
+                exampleQueue[0],
+                exampleQueue[3],
+                exampleQueue[1],
+                exampleQueue[2]
+            ]);
+        });
+        it('should add multiple songs to provided position', function() {
+            player.addToQueue(_.first(exampleQueue, 3));
+            player.addToQueue(_.last(exampleQueue, 2), 1);
+            player.queue.should.deep.equal([
+                exampleQueue[0],
+                exampleQueue[exampleQueue.length - 2],
+                exampleQueue[exampleQueue.length - 1],
+                exampleQueue[1],
+                exampleQueue[2]
+            ]);
+        });
+        it('should add song to end of queue if provided position is huge', function() {
+            player.addToQueue(_.first(exampleQueue, 3));
+            player.addToQueue([_.last(exampleQueue)], 100000);
+            player.queue.should.deep.equal([
+                exampleQueue[0],
+                exampleQueue[1],
+                exampleQueue[2],
+                exampleQueue[exampleQueue.length - 1]
+            ]);
+        });
+        it('should add song to beginning of queue (not replacing now playing!) if provided position is negative', function() {
+            player.addToQueue(_.first(exampleQueue, 3));
+            player.addToQueue([_.last(exampleQueue)], -100000);
+            player.queue.should.deep.equal([
+                exampleQueue[0],
+                exampleQueue[exampleQueue.length - 1],
+                exampleQueue[1],
+                exampleQueue[2]
+            ]);
         });
     });
 })
