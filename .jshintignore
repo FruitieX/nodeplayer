@@ -1,3 +1,6 @@
+cache
+coverage
+settings
 node_modules
 plugins/partyplay/js
 plugins/weblistener/js
