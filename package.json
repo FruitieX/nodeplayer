@@ -31,7 +31,7 @@
   "devDependencies": {
     "chai": "*",
     "mocha": "*",
-    "istanbul": "*",,
+    "istanbul": "*",
     "mocha-jshint": "^1.0.0"
   }
 }
