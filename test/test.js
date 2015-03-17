@@ -155,4 +155,37 @@ describe('Player', function() {
             ]);
         });
     });
+    describe('#removeFromQueue()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = _.clone(exampleQueue);
+        });
+        it('should remove song from provided pos', function() {
+            player.removeFromQueue(1);
+            player.queue.should.deep.equal(_.without(exampleQueue, exampleQueue[1]));
+        });
+        it('should remove now playing if pos is 0', function() {
+            player.removeFromQueue(0);
+            player.queue.should.deep.equal(_.without(exampleQueue, exampleQueue[0]));
+        });
+        it('should remove multiple songs from provided pos', function() {
+            player.removeFromQueue(1, 2);
+            player.queue.should.deep.equal(_.without(exampleQueue, exampleQueue[1], exampleQueue[2]));
+        });
+        it('should remove songs from playedQueue with negative provided pos', function() {
+            player.skipSongs(2);
+            player.removeFromQueue(-1, 1);
+            player.playedQueue.should.deep.equal([exampleQueue[0]]);
+        });
+        it('should correctly remove songs from both queue and playedQueue with negative provided pos and cnt (range) spanning both queues', function() {
+            player.skipSongs(2);
+            player.removeFromQueue(-1, 3);
+            player.playedQueue.should.deep.equal([exampleQueue[0]]);
+            /* magic number 4 comes from skipping *2* and removing 3 songs
+             * from index -1, removing *2* songs from the queue */
+            player.queue.should.deep.equal(_.last(exampleQueue, exampleQueue.length - 4));
+        });
+    });
 })
