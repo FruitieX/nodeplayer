@@ -172,6 +172,7 @@ Player.prototype.prepareErrCallback = function(song, err, asyncCallback) {
     // onQueueModified is called -> song preparation is triggered again
     asyncCallback(true);
 
+    // TODO: investigate this, should probably be above asyncCallback
     this.prepareError(song, err);
     delete(this.songsPreparing[song.backendName][song.songID]);
 };
