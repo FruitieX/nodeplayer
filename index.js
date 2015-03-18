@@ -20,77 +20,68 @@ function checkModule(module) {
 
 var player = new Player();
 
-// init plugins
-async.each(config.plugins, function(pluginName, callback) {
-    // TODO: put plugin modules into npm
-    // must implement .init, can implement hooks
-    var pluginFile = './plugins/' + pluginName;
-    checkModule(pluginFile);
-    var plugin = require('./plugins/' + pluginName);
-
-    var pluginLogger = labeledLogger(pluginName);
-    plugin.init(player, pluginLogger, function(err) {
-        if (!err) {
-            // TODO: some plugins set player.plugin = blah; now, and we do this here.
-            player.plugins[pluginName] = plugin;
-            pluginLogger.info('plugin initialized');
-            player.callHooks('onPluginInitialized', [plugin]);
+// make sure all modules are installed, installs missing ones, then calls loadCallback
+function installModules(modules, moduleType, loadCallback) {
+    async.eachSeries(modules, function(moduleShortName, callback) {
+        var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
+        if (!checkModule(moduleName)) {
+            logger.info(moduleName + ' module not found, installing...');
+            npm.load({}, function(err) {
+                npm.commands.install([moduleName], function(err) {
+                    if (err) {
+                        logger.error(moduleName + ' installation failed:', err);
+                        callback();
+                    } else {
+                        logger.info(moduleName + ' successfully installed');
+                        callback();
+                    }
+                });
+            });
         } else {
-            pluginLogger.error('error while initializing: ' + err);
-            player.callHooks('onPluginInitError', [plugin, err]);
+            // skip already installed
+            callback();
         }
-        callback(err);
-    });
-}, function(err) {
-    player.callHooks('onPluginsInitialized');
-});
+    }, loadCallback);
+}
 
-function initBackend(backendName, callback) {
-    var backend = require('nodeplayer-backend-' + backendName);
+function initModule(moduleShortName, moduleType, callback) {
+    var moduleTypeCapital = moduleType.charAt(0).toUpperCase() + moduleType.slice(1);
+    var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
+    var module = require(moduleName);
 
-    var backendLogger = labeledLogger(backendName);
-    backend.init(player, backendLogger, function(err) {
+    var moduleLogger = labeledLogger(moduleShortName);
+    module.init(player, moduleLogger, function(err) {
         if (!err) {
-            player.backends[backendName] = backend;
-            player.songsPreparing[backendName] = {};
+            player[moduleType + 's'][moduleType + '-' + moduleShortName] = module;
+            player.songsPreparing[moduleType + '-' + moduleShortName] = {};
 
-            backendLogger.info('backend initialized');
-            player.callHooks('onBackendInitialized', [backend]);
+            moduleLogger.info(moduleType + ' module initialized');
+            player.callHooks('on' + moduleTypeCapital + 'Initialized', [module]);
         } else {
-            backendLogger.error('error while initializing: ' + err);
-            player.callHooks('onBackendInitError', [backend, err]);
+            moduleLogger.error('while initializing: ' + err);
+            player.callHooks('on' + moduleTypeCapital + 'InitError', [module, err]);
         }
         callback(err);
     });
 }
 
-async.eachSeries(config.backends, function(backendName, callback) {
-    // check backends & install if needed
-    if (!checkModule('nodeplayer-backend-' + backendName)) {
-        logger.info(backendName + 'backend module not found, installing...');
-        npm.load({}, function(err) {
-            npm.commands.install(['nodeplayer-backend-' + backendName], function(err) {
-                if (err) {
-                    logger.error(backendName + ' installation failed:', err);
-                    callback();
-                } else {
-                    logger.info(backendName + ' successfully installed');
-                    callback();
-                }
-            });
-        });
-    } else {
-        // skip already installed
-        callback();
-    }
+async.eachSeries(['plugin', 'backend'], function(moduleType, callback) {
+    // first install missing modules
+    installModules(config[moduleType + 's'], moduleType, callback);
 }, function() {
-    // init backends
-    async.each(config.backends, function(backendName, callback) {
-        if (checkModule('nodeplayer-backend-' + backendName)) {
-            initBackend(backendName, callback);
-        }
-    }, function(err) {
-        player.callHooks('onBackendsInitialized');
-        logger.info('ready');
+    // then initialize modules, first all plugins in series, then all backends in parallel
+    async.eachSeries(['plugin', 'backend'], function(moduleType, moduleCallback) {
+        var moduleTypeCapital = moduleType.charAt(0).toUpperCase() + moduleType.slice(1);
+
+        (moduleType === 'plugin' ? async.eachSeries : async.each)
+            (config[moduleType + 's'], function(moduleName, callback) {
+            if (checkModule('nodeplayer-' + moduleType + '-' + moduleName)) {
+                initModule(moduleName, moduleType, callback);
+            }
+        }, function(err) {
+            logger.info('all ' + moduleType + ' modules initialized');
+            player.callHooks('on' + moduleTypeCapital + 'sInitialized');
+            moduleCallback();
+        });
     });
 });
