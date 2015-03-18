@@ -309,4 +309,25 @@ describe('Player', function() {
             });
         });
     });
+    describe('#endOfSong()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = _.clone(exampleQueue);
+
+            player.onQueueModify = _.noop;
+        });
+        it('should push now playing song onto playedQueue', function() {
+            player.endOfSong();
+            _.last(player.playedQueue).should.deep.equal(_.first(exampleQueue));
+        });
+        it('should clear playback state of now playing song', function() {
+            player.endOfSong();
+            (player.playbackPosition === null).should.be.ok;
+            (player.playbackStart === null).should.be.ok;
+            (player.queue[0] === null).should.be.ok;
+            (player.songEndTimeout === null).should.be.ok;
+        });
+    });
 });
