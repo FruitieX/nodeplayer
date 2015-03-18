@@ -9,6 +9,10 @@ var exampleQueue = require('./exampleQueue.json');
 
 process.env.NODE_ENV = 'test';
 
+var dummyClone = function(obj) {
+    return JSON.parse(JSON.stringify(obj));
+};
+
 var dummyLogger = {
     silly: _.noop,
     debug: _.noop,
@@ -55,7 +59,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
             player.config.playedQueueSize = playedQueueSize;
             player.prepareSongs = _.noop;
         });
@@ -91,7 +95,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
             player.prepareSongs = _.noop;
         });
         it('should not change the now playing song', function() {
@@ -172,7 +176,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
             player.prepareSongs = _.noop;
         });
         it('should remove song from provided pos', function() {
@@ -211,7 +215,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
         });
         it('should return correct song from queue', function() {
             player.searchQueue(exampleQueue[2].backendName, exampleQueue[2].songID)
@@ -227,7 +231,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
             player.prepareSongs = _.noop;
         });
         it('should move next song to now playing if there is no now playing song', function() {
@@ -283,7 +287,7 @@ describe('Player', function() {
         });
         it('should call startPlayback and return falsy value ' +
                 'on first queue item if prepared', function(done) {
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
             player.queue[0].songID = 'shouldBePrepared';
 
             var startPlaybackWasCalled = false;
@@ -298,7 +302,7 @@ describe('Player', function() {
             });
         });
         it('should return truthy value if song already preparing', function(done) {
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
 
             player.queue[0].songID = 'shouldPrepareForever';
 
@@ -314,7 +318,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
 
             player.onQueueModify = _.noop;
         });
@@ -335,7 +339,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
-            player.queue = _.clone(exampleQueue);
+            player.queue = dummyClone(exampleQueue);
 
             player.onQueueModify = _.noop;
         });
