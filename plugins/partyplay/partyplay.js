@@ -185,6 +185,9 @@ var updateQueue = function() {
             document.getElementById(queue[i].backendName + queue[i].songID)
                 .style['background-color'] = color;
         }
+        if (queueTruncated) {
+            $.tmpl('queueTruncated').appendTo('#queue');
+        }
 
         var userID = $.cookie('userID');
         // update votes
@@ -262,12 +265,22 @@ $(document).ready(function() {
 
         $.template('searchTemplate', searchResultMarkup);
 
+        var queueTruncatedMarkup = '<li class="list-group-item queue-item">' +
+        '<div class="songinfo">' +
+        '<div class="big"><b>...</b></div>' +
+        '</div>' +
+        '</li>';
+
+        $.template('queueTruncated', queueTruncatedMarkup);
+
+        /*
         var ellipsisResultMarkup =
             '<li class="list-group-item searchResult" id="${backendName}${songID}">' +
             '<div class="big">${title}</div>' +
             '</li>';
 
         $.template('ellipsisTemplate', ellipsisResultMarkup);
+        */
 
         $('#search-terms').keyup(function(e) {
             if (e.keyCode === 13) {
@@ -277,7 +290,8 @@ $(document).ready(function() {
 
         socket = io();
         socket.on('queue', function(data) {
-            queue = data;
+            queue = data.items;
+            queueTruncated = (data.length > data.items.length);
             updateQueue();
         });
 
