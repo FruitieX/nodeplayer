@@ -302,7 +302,7 @@ describe('Player', function() {
 
             player.queue[0].songID = 'shouldPrepareForever';
 
-            player.prepareSong(player.queue[0]);
+            player.prepareSong(player.queue[0], _.noop);
             player.prepareSong(player.queue[0], function(err) {
                 err.should.be.ok;
                 done();
