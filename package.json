@@ -35,6 +35,7 @@
     "jscs": "^1.11.3",
     "mocha": "*",
     "mocha-jscs": "^1.0.2",
-    "mocha-jshint": "^1.0.0"
+    "mocha-jshint": "^1.0.0",
+    "nodeplayer-backend-dummy": "^0.1.9"
   }
 }

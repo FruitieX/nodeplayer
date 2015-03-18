@@ -2,6 +2,7 @@
 var should = require('chai').should();
 var _ = require('underscore');
 var Player = require('../player');
+var dummyBackend = require('nodeplayer-backend-dummy');
 var exampleQueue = require('./exampleQueue.json');
 
 process.env.NODE_ENV = 'test';
@@ -226,6 +227,34 @@ describe('Player', function() {
             player.queue[0] = null;
             player.onQueueModify();
             _.first(player.queue).should.deep.equal(exampleQueue[1]);
+        });
+    });
+    describe('#searchBackends()', function() {
+        var player;
+        var dummyResults;
+
+        beforeEach(function(done) {
+            player = new Player({logger: dummyLogger});
+            dummyBackend.init(player, dummyLogger, _.noop);
+            player.backends.dummyBackend = dummyBackend;
+            player.songsPreparing.dummyBackend = {};
+
+            dummyBackend.search({terms: 'dummySearch'}, function(results) {
+                dummyResults = {dummy: results};
+                done();
+            });
+        });
+        it('should return same results as dummy backend', function(done) {
+            player.searchBackends({terms: 'dummySearch'}, function(results) {
+                results.should.deep.equal(dummyResults);
+                done();
+            });
+        });
+        it('should return empty object if backend errors', function(done) {
+            player.searchBackends({terms: 'shouldCauseError'}, function(results) {
+                results.should.deep.equal({});
+                done();
+            });
         });
     });
 });
