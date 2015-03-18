@@ -90,7 +90,17 @@ This can be checked with:
 
     npm test
 
-### Plugins
+### Modules
+
+Modules are best developed by using `npm link` to install the module from another
+location. `npm link` can be used like so:
+
+- In your module repository, run `sudo npm link`
+- In the nodeplayer repository, link the module with `npm link nodeplayer-plugin-myplugin`
+- Now you can develop your module inside your own repository, and changes will take
+  effect immediately when you run nodeplayer.
+
+#### Plugin modules
 
 The core provides several functions for managing the queue to plugins, and
 through the use of hooks the core will call a plugin's hook functions (if
@@ -98,7 +108,7 @@ defined) at well defined times.
 
 TODO: template plugin
 
-#### Initialization
+##### Initialization
 
 A plugin module must export at least an init function:
 
@@ -121,7 +131,7 @@ The init functions:
 And there you have it, the simplest possible plugin. For more details, take a look at example
 plugins linked at the top! Now let's make it actually do something by taking a look at *hook functions*!
 
-#### Hook functions
+##### Hook functions
 
 Plugin hook functions are called by the core (usually) before or after completing
 some specific task. For instance `onSongEnd` whenever a song ends, with the song as the first
@@ -138,7 +148,7 @@ arg2, ...` as arguments. Simply define a hook function, eg. `hookName` in the pl
 If any hook returns a truthy value it is an error that will also be returned by
 `callHooks()`, and `callHooks()` will stop iterating through other hooks with the same name.
 
-##### List of hook functions with explanations (FIXME: might be out of date, grep the code for `callHooks` to be sure)
+###### List of hook functions with explanations (FIXME: might be out of date, grep the code for `callHooks` to be sure)
 
 * `onSongChange(np)` - song has changed to `np`
 * `onSongEnd(np)` - song `np` ended
@@ -163,7 +173,7 @@ If any hook returns a truthy value it is an error that will also be returned by
 * `onBackendInitError(backend, err)` - `err` while initializing `backend`
 * `onBackendsInitialized()` - all backends were initialized
 
-### Backend modules
+#### Backend modules
 
 Backend modules are sources of music and need to export the following functions:
 
