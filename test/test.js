@@ -388,7 +388,7 @@ describe('Player', function() {
         });
         it('should clear old song timeout', function(done) {
             player.songEndTimeout = setTimeout(function() {
-                console.log('you should never see this');
+                throw new Error('this should never be executed');
             }, 0);
 
             player.endOfSong = function() {
@@ -400,6 +400,35 @@ describe('Player', function() {
             player.queue[0].duration = 0;
 
             player.startPlayback();
+        });
+    });
+    describe('#pausePlayback()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+        });
+        it('should clear songEndTimeout', function(done) {
+            player.songEndTimeout = setTimeout(function() {
+                throw new Error('this should never be executed');
+            }, 0);
+
+            player.pausePlayback();
+
+            setTimeout(function() {
+                done();
+            }, 0);
+        });
+        it('should move playbackPosition forward', function() {
+            player.playbackPosition = 42;
+            player.playbackStart = 42;
+            player.pausePlayback();
+            player.playbackPosition.should.be.greaterThan(42);
+        });
+        it('should clear playbackStart', function() {
+            player.playbackStart = 42;
+            player.pausePlayback();
+            (player.playbackStart === null).should.be.ok;
         });
     });
 });
