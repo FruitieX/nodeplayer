@@ -4,6 +4,7 @@
   "description": "simple, modular music player written in node.js",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha",
     "coverage": "NODE_ENV=test istanbul cover _mocha -- -R spec"
   },
