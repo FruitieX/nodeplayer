@@ -17,28 +17,40 @@ Quickstart
     cd nodeplayer
     npm install
     npm start
-    
+
 nodeplayer will now ask you to edit its configuration file. For a basic setup the
 defaults should be good. You may want to add a few more backends and/or plugins later.
 
-When you're done configuring, run `npm start` again. Note that any backends and
-plugins you load may also ask you to perform additional configuration steps such as
-editing their own configuration files or configuring software such as `mongodb` before
-you can start using them with nodeplayer.
-
+When you're done configuring, run `npm start` again. nodeplayer now automatically installs
+missing plugins and backends, then loads them. Note that any backends and
+plugins you load may also ask you to perform additional configuration steps
+(this is a little obnoxious right now...) such as editing their own
+configuration files or configuring software such as `mongodb` before you can
+start using them with nodeplayer.
 
 ### The nodeplayer project
 * [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
 * [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
-* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audo playback client
-* [nodeplayer-defaults](https://github.com/FruitieX/nodeplayer-defaults) Default configuration file
+* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audio playback client
+* [nodeplayer-config](https://github.com/FruitieX/nodeplayer-config) Configuration loader
+
+#### Plugin modules
+* [nodeplayer-plugin-express](https://github.com/FruitieX/nodeplayer-plugin-express) expressjs server
+* [nodeplayer-plugin-httpauth](https://github.com/FruitieX/nodeplayer-plugin-httpauth) HTTP basic auth
+* [nodeplayer-plugin-ipfilter](https://github.com/FruitieX/nodeplayer-plugin-ipfilter) IP filtering
+* [nodeplayer-plugin-partyplay](https://github.com/FruitieX/nodeplayer-plugin-partyplay) Party playlist
+* [nodeplayer-plugin-rest](https://github.com/FruitieX/nodeplayer-plugin-rest) REST API
+* [nodeplayer-plugin-socketio](https://github.com/FruitieX/nodeplayer-plugin-socketio) socket.io API
+* [nodeplayer-plugin-storequeue](https://github.com/FruitieX/nodeplayer-plugin-storequeue) Save the queue
+* [nodeplayer-plugin-verifymac](https://github.com/FruitieX/nodeplayer-plugin-verifymac) Verify queue add operations
+* [nodeplayer-plugin-weblistener](https://github.com/FruitieX/nodeplayer-plugin-weblistener) Web-based audio player
 
 #### Backend modules
-* [nodeplayer-gmusic](https://github.com/FruitieX/nodeplayer-gmusic)
-* [nodeplayer-youtube](https://github.com/FruitieX/nodeplayer-youtube)
-* [nodeplayer-spotify](https://github.com/FruitieX/nodeplayer-spotify)
-* [nodeplayer-file](https://github.com/FruitieX/nodeplayer-file)
-    
+* [nodeplayer-backend-gmusic](https://github.com/FruitieX/nodeplayer-backend-gmusic)
+* [nodeplayer-backend-youtube](https://github.com/FruitieX/nodeplayer-backend-youtube)
+* [nodeplayer-backend-spotify](https://github.com/FruitieX/nodeplayer-backend-spotify)
+* [nodeplayer-backend-file](https://github.com/FruitieX/nodeplayer-backend-file)
+
 Introduction
 ------------
 
