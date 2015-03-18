@@ -254,6 +254,7 @@ Player.prototype.onQueueModify = function() {
         this.logger.info('end of queue, waiting for more songs');
     } else if (!testEnv()) {
         // else prepare songs (skipped in testing environment TODO: is this a good idea?)
+        // TODO: instead set player.prepareSongs to _.noop in test setup :)
         this.prepareSongs();
     }
     this.callHooks('postQueueModify', [this.queue]);

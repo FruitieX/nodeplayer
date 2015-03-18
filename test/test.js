@@ -1,4 +1,6 @@
 'use strict';
+
+/*jshint expr: true*/
 var should = require('chai').should();
 var _ = require('underscore');
 var Player = require('../player');
@@ -253,6 +255,51 @@ describe('Player', function() {
         it('should return empty object if backend errors', function(done) {
             player.searchBackends({terms: 'shouldCauseError'}, function(results) {
                 results.should.deep.equal({});
+                done();
+            });
+        });
+    });
+    describe('#prepareSong()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            dummyBackend.init(player, dummyLogger, _.noop);
+            player.backends.dummyBackend = dummyBackend;
+            player.songsPreparing.dummyBackend = {};
+
+            player.startPlayback = _.noop;
+        });
+        it('should return truthy value (error) if called without song', function(done) {
+            player.prepareSong(undefined, function(err) {
+                err.should.be.ok;
+                done();
+            });
+        });
+        it('should call startPlayback and return falsy value ' +
+                'on first queue item if prepared', function(done) {
+            player.queue = _.clone(exampleQueue);
+            player.queue[0].songID = 'shouldBePrepared';
+
+            var startPlaybackWasCalled = false;
+            player.startPlayback = function() {
+                startPlaybackWasCalled = true;
+            };
+
+            player.prepareSong(player.queue[0], function(err) {
+                startPlaybackWasCalled.should.equal(true);
+                (!err).should.be.ok;
+                done();
+            });
+        });
+        it('should return truthy value if song already preparing', function(done) {
+            player.queue = _.clone(exampleQueue);
+
+            player.queue[0].songID = 'shouldPrepareForever';
+
+            player.prepareSong(player.queue[0]);
+            player.prepareSong(player.queue[0], function(err) {
+                err.should.be.ok;
                 done();
             });
         });
