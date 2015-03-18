@@ -57,6 +57,7 @@ describe('Player', function() {
             player = new Player({logger: dummyLogger});
             player.queue = _.clone(exampleQueue);
             player.config.playedQueueSize = playedQueueSize;
+            player.prepareSongs = _.noop;
         });
         it('should put a skipped song into playedQueue', function() {
             player.skipSongs(1);
@@ -91,6 +92,7 @@ describe('Player', function() {
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
             player.queue = _.clone(exampleQueue);
+            player.prepareSongs = _.noop;
         });
         it('should not change the now playing song', function() {
             for (var i = 0; i < 10; i++) {
@@ -105,6 +107,7 @@ describe('Player', function() {
 
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
+            player.prepareSongs = _.noop;
         });
         it('should not add song if required fields are not provided', function() {
             player.addToQueue([{title: 'foo', songID: 'bar', backendName: 'baz'}]);
@@ -170,6 +173,7 @@ describe('Player', function() {
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
             player.queue = _.clone(exampleQueue);
+            player.prepareSongs = _.noop;
         });
         it('should remove song from provided pos', function() {
             player.removeFromQueue(1);
@@ -224,6 +228,7 @@ describe('Player', function() {
         beforeEach(function() {
             player = new Player({logger: dummyLogger});
             player.queue = _.clone(exampleQueue);
+            player.prepareSongs = _.noop;
         });
         it('should move next song to now playing if there is no now playing song', function() {
             player.queue[0] = null;

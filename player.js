@@ -3,10 +3,6 @@ var _ = require('underscore');
 var async = require('async');
 var labeledLogger = require('./logger');
 
-function testEnv() {
-    return (process.env.NODE_ENV === 'test');
-}
-
 function Player(options) {
     options = options || {};
 
@@ -252,9 +248,8 @@ Player.prototype.onQueueModify = function() {
         // if the queue is now empty, do nothing
         this.callHooks('onEndOfQueue');
         this.logger.info('end of queue, waiting for more songs');
-    } else if (!testEnv()) {
-        // else prepare songs (skipped in testing environment TODO: is this a good idea?)
-        // TODO: instead set player.prepareSongs to _.noop in test setup :)
+    } else {
+        // else prepare songs
         this.prepareSongs();
     }
     this.callHooks('postQueueModify', [this.queue]);
