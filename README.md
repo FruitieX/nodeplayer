@@ -26,19 +26,16 @@ plugins you load may also ask you to perform additional configuration steps such
 editing their own configuration files or configuring software such as `mongodb` before
 you can start using them with nodeplayer.
     
-for users
----------
+Introduction
+------------
 
-### introduction
-
-This repository contains the core nodeplayer application. As a standalone
+This repository contains the core nodeplayer module. As a standalone
 component it is rather useless, as it is meant to be extended by other modules.
-In essence, the core application manages a playback queue and initializes any
-modules that you have configured it to load. Modules are given various ways to
-manipulate the queue, but without modules you can't really do anything!
+The core module manages a playback queue and initializes any external
+modules that you have configured it to load. External modules are given various ways to
+manipulate the queue, and without them you can't really interact with nodeplayer in any way!
 
-Apart from the core, nodeplayer is split up into several components where each
-component belongs to one of two categories:
+External modules are categorized as follows:
 
 * Backend modules: Sources of music
 * Plugin modules: Extend the functionality of the core in various ways
@@ -47,8 +44,8 @@ By keeping nodeplayer modular it is possible to use it in a wide variety of
 scenarios, ranging from being a basic personal music player to a party playlist
 manager where partygoers can vote on songs. Or perhaps configure it as a
 streaming music player to your mobile devices and when you come home, you can
-simply switch music sources over to your PC since the music plays back in sync.
-More cool functionality can easily be implemented by writing new modules.
+simply switch music sources over to your PC since the music plays back (FIXME: roughly :-)) in sync.
+More cool functionality can easily be implemented by writing new modules!
 
 For developers
 --------------
@@ -68,47 +65,55 @@ This can be checked with:
 
     npm test
 
-### plugins
+### Plugins
 
 The core provides several functions for managing the queue to plugins, and
-through the use of hooks the core will call the plugin's hook functions (if
-defined) at certain times.
+through the use of hooks the core will call a plugin's hook functions (if
+defined) at well defined times.
 
-#### initialization
+TODO: template plugin
 
-A plugin must export at least an init function:
+#### Initialization
 
-    exports.init = function(player, callback) {...};
+A plugin module must export at least an init function:
 
-* Called for each configured plugin when nodeplayer is started.
-* Arguments:
+    exports.init = function(player, logger, callback) {...};
+
+The init functions:
+
+* Are called once for each configured plugin when nodeplayer is started.
+* Are called in sequence (unlike backends), and can thus depend on another plugin
+  being loaded, possibly expanding the functionalities of that plugin.
+* Are passed the following arguments:
   * player: reference to the player object in nodeplayer core, store this if you
-    need it later
+    need it later.
+  * logger: [winston](https://github.com/winstonjs/winston) logger with per-plugin tag,
+    use this for logging! (log levels are: logger.silly, logger.debug, logger.info, logger.warn, logger.error)
   * callback: callback must be called with no arguments when you are done
     initializing the plugin. If there was an error initializing, call it with a
-    string stating the reason of the error.
+    string stating the reason for the error.
 
-And there you have it, the simplest possible plugin. Now let's take a look at
-hook functions!
+And there you have it, the simplest possible plugin. Now let's make it actually do
+something by taking a look at *hook functions*!
 
-#### hook functions
+#### Hook functions
 
 Plugin hook functions are called by the core (usually) before or after completing
-some task. For instance `onSongEnd` will be called with the song that ended as
-the argument whenever a song ends. Hooks are called by calling:
+some specific task. For instance `onSongEnd` whenever a song ends, with the song as the first
+and only argument. Anything with a reference to the player object can call hook functions like so:
 
     player.callHooks('hookName', [arg1, arg2, ...]);
 
 This will call the hook function `hookName` in every plugin that has defined a
 function with that name, in the order the plugins were loaded, with `arg1,
-arg2, ...` as arguments. Simply define the hook function in the plugin as such:
+arg2, ...` as arguments. Simply define a hook function, eg. `hookName` in the plugin as such:
 
     exports.hookName = function(arg1, arg2, ...) {...};
 
 If any hook returns a truthy value it is an error that will also be returned by
-`callHooks()`, and potential further hooks will not be ran.
+`callHooks()`, and `callHooks()` will stop iterating through other hooks with the same name.
 
-##### list of hook functions with explanations
+##### List of hook functions with explanations (FIXME: might be out of date, grep the code for `callHooks` to be sure)
 
 * `onSongChange(np)` - song has changed to `np`
 * `onSongEnd(np)` - song `np` ended
@@ -133,9 +138,47 @@ If any hook returns a truthy value it is an error that will also be returned by
 * `onBackendInitError(backend, err)` - `err` while initializing `backend`
 * `onBackendsInitialized()` - all backends were initialized
 
-### backend modules
+### Backend modules
 
-TODO
+Backend modules are sources of music and need to export the following functions:
+
+```
+exports.init = function(player, logger, callback) {...};
+```
+
+* Very similar to the plugin init function
+* Perform necessary initialization here
+* Run callback with descriptive string argument on error, and no argument on success.
+
+```
+exports.search = function(query, callback, errCallback) {...};
+```
+
+* Should return a JavaScript object containing search results like so:
+
+```
+{
+    songs: {
+        songID1: {
+            ...
+        },
+        songID2: {
+            ...
+        },
+    }
+}
+```
+
+* You can also choose to include some custom metadata as keys in the object, these will
+  be passed along with the results. (eg. pagination)
+
+```
+exports.prepareSong = function(song, progCallback, errCallback) {...};
+```
+
+* TODO
+
+TODO: template backend
 
 ### The nodeplayer project
 * [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
