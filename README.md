@@ -93,8 +93,8 @@ The init functions:
     initializing the plugin. If there was an error initializing, call it with a
     string stating the reason for the error.
 
-And there you have it, the simplest possible plugin. Now let's make it actually do
-something by taking a look at *hook functions*!
+And there you have it, the simplest possible plugin. For more details, take a look at example
+plugins linked below! Now let's make it actually do something by taking a look at *hook functions*!
 
 #### Hook functions
 
@@ -154,31 +154,74 @@ exports.init = function(player, logger, callback) {...};
 exports.search = function(query, callback, errCallback) {...};
 ```
 
-* Should return a JavaScript object containing search results like so:
+* Used for searching songs in your backend. `query` contains a `terms` property
+  which represents the search terms
+* Callback should be called with results on success
+* errCallback should be called with descriptive error string on error
+* Results are a JavaScript object like so:
 
 ```
 {
     songs: {
-        songID1: {
+        dummySongID1: {   // dummySongID1 should equal to the value of songID inside the song object
             ...
         },
-        songID2: {
+        dummySongID1: {
             ...
         },
     }
 }
 ```
-
 * You can also choose to include some custom metadata as keys in the object, these will
   be passed along with the results. (eg. pagination)
+* Song objects look like this:
+```
+{
+    artist: 'dummyArtist',
+    title: 'dummyTitle',
+    album: 'dummyAlbum',
+    albumArt: 'http://dummy.com/albumArt.png',
+    duration: 123456,       // in milliseconds
+    songID: 'dummySongID1', // a string uniquely identifying the song in your backend
+    score: i,               // how relevant is this result, ideally from 0 (least relevant) to 100 (most relevant)
+    backendName: 'dummy',   // name of this backend
+    format: 'opus'          // file format/extension of encoded song
+};
+```
 
+And finally, get ready for the insane one doing all the heavy lifting:
 ```
 exports.prepareSong = function(song, progCallback, errCallback) {...};
 ```
 
-* TODO
+* Called by the core when it wants backend to prepare audio data to disk.
+* Audio data should be encoded and stored in for example:
+    * `/home/user/.nodeplayer/song-cache/backendName/songID.opus`
+    * Use the following functions/variables to build up the path:
+        * config.getConfigDir()
+        * path.sep
+* When more audio data has been written to disk, call progCallback with arguments:
+    * song object (song)
+    * Number of bytes written to disk
+    * true/false: is the whole song now written to disk?
+* Call errCallback with descriptive error string if something goes wrong, nodeplayer
+  will then remove all instances of that song from the queue and skip to the next song.
+* `prepareSong` should return a function which if called, will cancel the preparation
+  process and clean up any song data written so far. Nodeplayer may call this function
+  if for example the song is skipped.
+
+```
+exports.isPrepared = function(song) {...};
+```
+
+* Called by nodeplayer to check if preparation is needed or not
+* Returns `true` if the song is prepared, `false` otherwise
+* Is allowed to return `true` while the song is being prepared
+* Often just a `return fs.existsSync(filePath)`
 
 TODO: template backend
+
+For more details, take a look at example backends linked below!
 
 ### The nodeplayer project
 * [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
