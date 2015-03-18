@@ -8,7 +8,7 @@ Simple, modular music player written in node.js
 Disclaimer: for personal use only - make sure you configure nodeplayer
 appropriately so that others can't access your music. I take no responsibility
 for example if your streaming services find you are violating their ToS. You're running
-this software entirely on your own risk!
+this software entirely at your own risk!
 
 Quickstart
 ----------
@@ -18,19 +18,37 @@ Quickstart
     npm install
     npm start
     
-for users
----------
+nodeplayer will now ask you to edit its configuration file. For a basic setup the
+defaults should be good. You may want to add a few more backends and/or plugins later.
 
-### introduction
+When you're done configuring, run `npm start` again. Note that any backends and
+plugins you load may also ask you to perform additional configuration steps such as
+editing their own configuration files or configuring software such as `mongodb` before
+you can start using them with nodeplayer.
 
-This repository contains the core nodeplayer application. As a standalone
+
+### The nodeplayer project
+* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
+* [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
+* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audo playback client
+* [nodeplayer-defaults](https://github.com/FruitieX/nodeplayer-defaults) Default configuration file
+
+#### Backend modules
+* [nodeplayer-gmusic](https://github.com/FruitieX/nodeplayer-gmusic)
+* [nodeplayer-youtube](https://github.com/FruitieX/nodeplayer-youtube)
+* [nodeplayer-spotify](https://github.com/FruitieX/nodeplayer-spotify)
+* [nodeplayer-file](https://github.com/FruitieX/nodeplayer-file)
+    
+Introduction
+------------
+
+This repository contains the core nodeplayer module. As a standalone
 component it is rather useless, as it is meant to be extended by other modules.
-In essence, the core application manages a playback queue and initializes any
-modules that you have configured it to load. Modules are given various ways to
-manipulate the queue, but without modules you can't really do anything!
+The core module manages a playback queue and initializes any external
+modules that you have configured it to load. External modules are given various ways to
+manipulate the queue, and without them you can't really interact with nodeplayer in any way!
 
-Apart from the core, nodeplayer is split up into several components where each
-component belongs to one of two categories:
+External modules are categorized as follows:
 
 * Backend modules: Sources of music
 * Plugin modules: Extend the functionality of the core in various ways
@@ -39,8 +57,8 @@ By keeping nodeplayer modular it is possible to use it in a wide variety of
 scenarios, ranging from being a basic personal music player to a party playlist
 manager where partygoers can vote on songs. Or perhaps configure it as a
 streaming music player to your mobile devices and when you come home, you can
-simply switch music sources over to your PC since the music plays back in sync.
-More cool functionality can easily be implemented by writing new modules.
+simply switch music sources over to your PC since the music plays back (FIXME: roughly :-)) in sync.
+More cool functionality can easily be implemented by writing new modules!
 
 For developers
 --------------
@@ -60,47 +78,55 @@ This can be checked with:
 
     npm test
 
-### plugins
+### Plugins
 
 The core provides several functions for managing the queue to plugins, and
-through the use of hooks the core will call the plugin's hook functions (if
-defined) at certain times.
+through the use of hooks the core will call a plugin's hook functions (if
+defined) at well defined times.
 
-#### initialization
+TODO: template plugin
 
-A plugin must export at least an init function:
+#### Initialization
 
-    exports.init = function(player, callback) {...};
+A plugin module must export at least an init function:
 
-* Called for each configured plugin when nodeplayer is started.
-* Arguments:
+    exports.init = function(player, logger, callback) {...};
+
+The init functions:
+
+* Are called once for each configured plugin when nodeplayer is started.
+* Are called in sequence (unlike backends), and can thus depend on another plugin
+  being loaded, possibly expanding the functionalities of that plugin.
+* Are passed the following arguments:
   * player: reference to the player object in nodeplayer core, store this if you
-    need it later
+    need it later.
+  * logger: [winston](https://github.com/winstonjs/winston) logger with per-plugin tag,
+    use this for logging! (log levels are: logger.silly, logger.debug, logger.info, logger.warn, logger.error)
   * callback: callback must be called with no arguments when you are done
     initializing the plugin. If there was an error initializing, call it with a
-    string stating the reason of the error.
+    string stating the reason for the error.
 
-And there you have it, the simplest possible plugin. Now let's take a look at
-hook functions!
+And there you have it, the simplest possible plugin. For more details, take a look at example
+plugins linked at the top! Now let's make it actually do something by taking a look at *hook functions*!
 
-#### hook functions
+#### Hook functions
 
 Plugin hook functions are called by the core (usually) before or after completing
-some task. For instance `onSongEnd` will be called with the song that ended as
-the argument whenever a song ends. Hooks are called by calling:
+some specific task. For instance `onSongEnd` whenever a song ends, with the song as the first
+and only argument. Anything with a reference to the player object can call hook functions like so:
 
     player.callHooks('hookName', [arg1, arg2, ...]);
 
 This will call the hook function `hookName` in every plugin that has defined a
 function with that name, in the order the plugins were loaded, with `arg1,
-arg2, ...` as arguments. Simply define the hook function in the plugin as such:
+arg2, ...` as arguments. Simply define a hook function, eg. `hookName` in the plugin as such:
 
     exports.hookName = function(arg1, arg2, ...) {...};
 
 If any hook returns a truthy value it is an error that will also be returned by
-`callHooks()`, and potential further hooks will not be ran.
+`callHooks()`, and `callHooks()` will stop iterating through other hooks with the same name.
 
-##### list of hook functions with explanations
+##### List of hook functions with explanations (FIXME: might be out of date, grep the code for `callHooks` to be sure)
 
 * `onSongChange(np)` - song has changed to `np`
 * `onSongEnd(np)` - song `np` ended
@@ -125,18 +151,87 @@ If any hook returns a truthy value it is an error that will also be returned by
 * `onBackendInitError(backend, err)` - `err` while initializing `backend`
 * `onBackendsInitialized()` - all backends were initialized
 
-### backend modules
+### Backend modules
 
-TODO
+Backend modules are sources of music and need to export the following functions:
 
-### The nodeplayer project
-* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
-* [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
-* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audo playback client
-* [nodeplayer-defaults](https://github.com/FruitieX/nodeplayer-defaults) Default configuration file
+```
+exports.init = function(player, logger, callback) {...};
+```
 
-#### Backend modules
-* [nodeplayer-gmusic](https://github.com/FruitieX/nodeplayer-gmusic)
-* [nodeplayer-youtube](https://github.com/FruitieX/nodeplayer-youtube)
-* [nodeplayer-spotify](https://github.com/FruitieX/nodeplayer-spotify)
-* [nodeplayer-file](https://github.com/FruitieX/nodeplayer-file)
+* Very similar to the plugin init function
+* Perform necessary initialization here
+* Run callback with descriptive string argument on error, and no argument on success.
+
+```
+exports.search = function(query, callback, errCallback) {...};
+```
+
+* Used for searching songs in your backend. `query` contains a `terms` property
+  which represents the search terms
+* Callback should be called with results on success
+* errCallback should be called with descriptive error string on error
+* Results are a JavaScript object like so:
+
+```
+{
+    songs: {
+        dummySongID1: {   // dummySongID1 should equal to the value of songID inside the song object
+            ...
+        },
+        dummySongID1: {
+            ...
+        },
+    }
+}
+```
+* You can also choose to include some custom metadata as keys in the object, these will
+  be passed along with the results. (eg. pagination)
+* Song objects look like this:
+```
+{
+    artist: 'dummyArtist',
+    title: 'dummyTitle',
+    album: 'dummyAlbum',
+    albumArt: 'http://dummy.com/albumArt.png',
+    duration: 123456,       // in milliseconds
+    songID: 'dummySongID1', // a string uniquely identifying the song in your backend
+    score: i,               // how relevant is this result, ideally from 0 (least relevant) to 100 (most relevant)
+    backendName: 'dummy',   // name of this backend
+    format: 'opus'          // file format/extension of encoded song
+};
+```
+
+And finally, get ready for the insane one doing all the heavy lifting:
+```
+exports.prepareSong = function(song, progCallback, errCallback) {...};
+```
+
+* Called by the core when it wants backend to prepare audio data to disk.
+* Audio data should be encoded and stored in for example:
+    * `/home/user/.nodeplayer/song-cache/backendName/songID.opus`
+    * Use the following functions/variables to build up the path:
+        * config.getConfigDir()
+        * path.sep
+* When more audio data has been written to disk, call progCallback with arguments:
+    * song object (song)
+    * Number of bytes written to disk
+    * true/false: is the whole song now written to disk?
+* Call errCallback with descriptive error string if something goes wrong, nodeplayer
+  will then remove all instances of that song from the queue and skip to the next song.
+* `prepareSong` should return a function which if called, will cancel the preparation
+  process and clean up any song data written so far. Nodeplayer may call this function
+  if for example the song is skipped.
+
+```
+exports.isPrepared = function(song) {...};
+```
+
+* Called by nodeplayer to check if preparation is needed or not
+* Returns `true` if the song is prepared, `false` otherwise
+* Is allowed to return `true` while the song is being prepared
+* Often just a `return fs.existsSync(filePath)`
+
+TODO: template backend
+
+For more details, take a look at example backends linked at the top!
