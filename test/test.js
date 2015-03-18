@@ -449,5 +449,24 @@ describe('Player', function() {
             };
             player.prepareError(exampleQueue[2], 'dummyError');
         });
+        it('should call removeFromQueue on all instances song', function(done) {
+            var numCalled = 0;
+            player.removeFromQueue = function(i) {
+                if (player.queue[i].songID === exampleQueue[2].songID) {
+                    numCalled++;
+                }
+
+                // song exists 4 times in queue
+                if (numCalled === 4) {
+                    done();
+                }
+            };
+
+            player.queue.push(_.clone(exampleQueue[2]));
+            player.queue.push(_.clone(exampleQueue[2]));
+            player.queue.push(_.clone(exampleQueue[2]));
+
+            player.prepareError(exampleQueue[2], 'dummyError');
+        });
     });
 });
