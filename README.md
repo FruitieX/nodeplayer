@@ -1,15 +1,23 @@
 nodeplayer
 ==========
 
-simple, modular music player written in node.js
+Simple, modular music player written in node.js
 
 [![Build Status](https://travis-ci.org/FruitieX/nodeplayer.svg?branch=master)](https://travis-ci.org/FruitieX/nodeplayer)
 
-disclaimer: for personal use only - make sure you configure nodeplayer
+Disclaimer: for personal use only - make sure you configure nodeplayer
 appropriately so that others can't access your music. I take no responsibility
-eg. if your streaming services find you are violating their ToS, you're running
+for example if your streaming services find you are violating their ToS. You're running
 this software entirely on your own risk!
 
+Quickstart
+----------
+
+    git clone https://github.com/FruitieX/nodeplayer
+    cd nodeplayer
+    npm install
+    npm start
+    
 for users
 ---------
 
@@ -34,12 +42,23 @@ streaming music player to your mobile devices and when you come home, you can
 simply switch music sources over to your PC since the music plays back in sync.
 More cool functionality can easily be implemented by writing new modules.
 
-### setup
-
-TODO
-
-for developers
+For developers
 --------------
+
+### Pull requests
+
+Code style adheres mostly to the [Google JavaScript Style Guide](https://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml),
+with the following exceptions:
+
+- One indent equals 4 spaces, not 2
+- Maximum line length is 100, not 80
+- UNIX endlines (LF) are enforced
+
+Apart from unit tests, code is ran through jshint and jscs with above options.
+Before submitting a pull request, make sure that your code passes the test suite.
+This can be checked with:
+
+    npm test
 
 ### plugins
 
