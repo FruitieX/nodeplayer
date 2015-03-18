@@ -8,7 +8,7 @@ Simple, modular music player written in node.js
 Disclaimer: for personal use only - make sure you configure nodeplayer
 appropriately so that others can't access your music. I take no responsibility
 for example if your streaming services find you are violating their ToS. You're running
-this software entirely on your own risk!
+this software entirely at your own risk!
 
 Quickstart
 ----------
@@ -17,6 +17,14 @@ Quickstart
     cd nodeplayer
     npm install
     npm start
+    
+nodeplayer will now ask you to edit its configuration file. For a basic setup the
+defaults should be good. You may want to add a few more backends and/or plugins later.
+
+When you're done configuring, run `npm start` again. Note that any backends and
+plugins you load may also ask you to perform additional configuration steps such as
+editing their own configuration files or configuring software such as `mongodb` before
+you can start using them with nodeplayer.
     
 for users
 ---------
