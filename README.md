@@ -25,6 +25,19 @@ When you're done configuring, run `npm start` again. Note that any backends and
 plugins you load may also ask you to perform additional configuration steps such as
 editing their own configuration files or configuring software such as `mongodb` before
 you can start using them with nodeplayer.
+
+
+### The nodeplayer project
+* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
+* [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
+* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audo playback client
+* [nodeplayer-defaults](https://github.com/FruitieX/nodeplayer-defaults) Default configuration file
+
+#### Backend modules
+* [nodeplayer-gmusic](https://github.com/FruitieX/nodeplayer-gmusic)
+* [nodeplayer-youtube](https://github.com/FruitieX/nodeplayer-youtube)
+* [nodeplayer-spotify](https://github.com/FruitieX/nodeplayer-spotify)
+* [nodeplayer-file](https://github.com/FruitieX/nodeplayer-file)
     
 Introduction
 ------------
@@ -94,7 +107,7 @@ The init functions:
     string stating the reason for the error.
 
 And there you have it, the simplest possible plugin. For more details, take a look at example
-plugins linked below! Now let's make it actually do something by taking a look at *hook functions*!
+plugins linked at the top! Now let's make it actually do something by taking a look at *hook functions*!
 
 #### Hook functions
 
@@ -221,16 +234,4 @@ exports.isPrepared = function(song) {...};
 
 TODO: template backend
 
-For more details, take a look at example backends linked below!
-
-### The nodeplayer project
-* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
-* [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
-* [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audo playback client
-* [nodeplayer-defaults](https://github.com/FruitieX/nodeplayer-defaults) Default configuration file
-
-#### Backend modules
-* [nodeplayer-gmusic](https://github.com/FruitieX/nodeplayer-gmusic)
-* [nodeplayer-youtube](https://github.com/FruitieX/nodeplayer-youtube)
-* [nodeplayer-spotify](https://github.com/FruitieX/nodeplayer-spotify)
-* [nodeplayer-file](https://github.com/FruitieX/nodeplayer-file)
+For more details, take a look at example backends linked at the top!
