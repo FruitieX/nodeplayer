@@ -330,4 +330,76 @@ describe('Player', function() {
             (player.songEndTimeout === null).should.be.ok;
         });
     });
+    describe('#startPlayback()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = _.clone(exampleQueue);
+
+            player.onQueueModify = _.noop;
+        });
+        afterEach(function() {
+            if (player.songEndTimeout) {
+                clearTimeout(player.songEndTimeout);
+            }
+        });
+        it('should do nothing if the queue is empty', function() {
+            player.queue = [];
+            player.startPlayback();
+
+            // something startPlayback() would do after the queue check
+            (player.playbackStart === undefined).should.be.ok;
+        });
+        it('should start playback from the start when first called', function() {
+            player.startPlayback();
+
+            player.playbackPosition.should.equal(0);
+        });
+        it('should start playback from given pos', function() {
+            player.startPlayback(42);
+
+            player.playbackPosition.should.equal(42);
+        });
+        it('should set a song end timeout', function() {
+            player.startPlayback(0);
+
+            player.songEndTimeout.should.be.ok;
+        });
+        it('should resume playback if no pos given', function() {
+            player.playbackStart = 42;
+            player.playbackPosition = 42;
+            player.startPlayback();
+
+            player.playbackPosition.should.equal(42);
+        });
+        it('should restart playback if pos is 0', function() {
+            player.playbackStart = 42;
+            player.playbackPosition = 42;
+            player.startPlayback(0);
+
+            player.playbackPosition.should.equal(0);
+        });
+        it('should call song end timeout immediately for insane start pos', function(done) {
+            player.endOfSong = function() {
+                done();
+            };
+            player.startPlayback(100000000000);
+        });
+        it('should clear old song timeout', function(done) {
+            player.songEndTimeout = setTimeout(function() {
+                console.log('you should never see this');
+            }, 0);
+
+            player.endOfSong = function() {
+                done();
+            };
+
+            // call endOfSong immediately
+            player.config.songDelayMs = 0;
+            player.queue[0].duration = 0;
+
+            player.startPlayback();
+        });
+    });
 });

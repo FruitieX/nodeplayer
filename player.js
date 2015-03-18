@@ -103,6 +103,7 @@ Player.prototype.startPlayback = function(pos) {
     if (this.songEndTimeout) {
         this.logger.debug('songEndTimeout was cleared');
         clearTimeout(this.songEndTimeout);
+        this.songEndTimeout = null;
     }
     this.songEndTimeout = setTimeout(this.endOfSong, durationLeft);
 };
