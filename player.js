@@ -334,6 +334,13 @@ Player.prototype.removeFromQueue = function(pos, cnt) {
                 var song = this.queue[i];
 
                 // signal prepareError function not to run removeFromQueue again
+                // TODO: try getting rid of this ugly hack (beingDeleted)...
+                // TODO: more non enumerable properties, especially plugins?
+                Object.defineProperty(song, 'beingDeleted', {
+                    enumerable: false,
+                    writable: true
+                });
+
                 song.beingDeleted = true;
                 if (song.cancelPrepare) {
                     song.cancelPrepare('song deleted');

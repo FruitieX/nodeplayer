@@ -435,4 +435,19 @@ describe('Player', function() {
             (player.playbackStart === null).should.be.ok;
         });
     });
+    describe('#prepareError()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = dummyClone(exampleQueue);
+        });
+        it('should call removeFromQueue on song', function(done) {
+            player.removeFromQueue = function(i) {
+                i.should.equal(2);
+                done();
+            };
+            player.prepareError(exampleQueue[2], 'dummyError');
+        });
+    });
 });
