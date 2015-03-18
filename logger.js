@@ -1,5 +1,5 @@
 'use strict';
-var config = require('nodeplayer-defaults')();
+var config = require('nodeplayer-config')();
 var winston = require('winston');
 
 module.exports = function(label) {
