@@ -7,7 +7,7 @@ function Player(options) {
     options = options || {};
 
     _.bindAll.apply(_, [this].concat(_.functions(this)));
-    this.config         = options.config            || require('nodeplayer-config')();
+    this.config         = options.config            || require('nodeplayer-config').getConfig();
     this.logger         = options.logger            || labeledLogger('core');
     this.playedQueue    = options.playedQueue       || [];
     this.queue          = options.queue             || [];

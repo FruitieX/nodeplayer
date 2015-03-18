@@ -4,7 +4,8 @@ var npm = require('npm');
 var async = require('async');
 var labeledLogger = require('./logger');
 var Player = require('./player');
-var config = require('nodeplayer-config')();
+var nodeplayerConfig = require('nodeplayer-config');
+var config = nodeplayerConfig.getConfig();
 
 var logger = labeledLogger('core');
 
