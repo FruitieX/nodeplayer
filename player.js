@@ -180,7 +180,12 @@ Player.prototype.prepareErrCallback = function(song, err, asyncCallback) {
 // TODO: get rid of the callback hell, use promises?
 Player.prototype.prepareSong = function(song, asyncCallback) {
     if (!song) {
-        this.logger.debug('prepareSong() without song');
+        this.logger.warn('prepareSong() without song');
+        asyncCallback(true);
+        return;
+    }
+    if (!this.backends[song.backendName]) {
+        this.prepareError(song, 'prepareSong() with unknown backend ' + song.backendName);
         asyncCallback(true);
         return;
     }
