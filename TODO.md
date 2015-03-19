@@ -2,11 +2,11 @@ nodeplayer TODO
 ===============
 
 ### core
-- standalone program
+- ~~standalone program~~
 - play/pause a bit unintuitive
 - timeout preparing requests after a certain time
 - use unique queue item ids for songs in the queue and address songs with this
-- write tests also for logger.js and index.js
+- write unit tests also for logger.js and index.js
 
 ### apis
 - total queue length
