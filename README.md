@@ -21,17 +21,19 @@ plugins later, see below for some examples!
 
 When you're done configuring, run `nodeplayer` again. nodeplayer now
 automatically installs missing plugins and backends. Note that if you installed
-nodeplayer as root, this step also requires root since modules are installed to
+nodeplayer as root (you *shouldn't*), this step also requires root since modules are installed to
 the same path as nodeplayer.
 
 Note that backends and plugins you load may ask you to perform additional
 configuration steps. Read through the setup instructions for each of the
 plugins/backends you enable, and read through the output they print to console
-on first run. For example, the default nodeplayer configuration uses the `file`
-backend, which requires you to set up `mongodb` before use.
+on first run. For example, the default nodeplayer configuration uses the [file backend](https://github.com/FruitieX/nodeplayer-backend-file)
+, which requires some configuration before use.
+
+All modules can be updated by running `npm update -g`
 
 ### The nodeplayer project
-* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
+* [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player component
 * [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
 * [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audio playback client
 * [nodeplayer-config](https://github.com/FruitieX/nodeplayer-config) Configuration loader
@@ -71,15 +73,15 @@ By keeping nodeplayer modular it is possible to use it in a wide variety of
 scenarios, ranging from being a basic personal music player to a party playlist
 manager where partygoers can vote on songs. Or perhaps configure it as a
 streaming music player to your mobile devices and when you come home, you can
-simply switch music sources over to your PC since the music plays back (FIXME: roughly :-)) in sync.
+simply switch music sources over to your PC since the music plays back in sync.
 More cool functionality can easily be implemented by writing new modules!
 
 For developers
 --------------
 
-NOTE: The API is definitely NOT stable yet! Things may break at any time without warning,
+NOTE: The API is NOT stable yet! Things may break at any time without warning,
 I'm trying to stabilize things for [0.2.0](https://github.com/FruitieX/nodeplayer/milestones/0.2.0).
-But [some issues](https://github.com/FruitieX/nodeplayer/labels/API%20change) still exist that will definitely change the plugin and backend API a bit (likewise, the [client API](https://github.com/FruitieX/nodeplayer/labels/Client%20API)).
+But [some issues](https://github.com/FruitieX/nodeplayer/labels/API%20change) still exist that will definitely change the plugin and backend API a bit (likewise for the [client API](https://github.com/FruitieX/nodeplayer/labels/Client%20API)).
 
 ### Pull requests
 
@@ -90,20 +92,25 @@ with the following exceptions:
 - Maximum line length is 100, not 80
 - UNIX endlines (LF) are enforced
 
-Apart from unit tests, code is ran through jshint and jscs with above options.
+Apart from unit tests, code is ran through `jshint` and `jscs` with above options.
 Before submitting a pull request, make sure that your code passes the test suite.
 This can be checked with:
 
     npm test
+    
+### Collaborators
+
+This repository follows the principles of [git-flow](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ### Modules
 
-Modules are best developed by using `npm link` to install the module from another
-location. `npm link` can be used like so:
+Modules are best developed by using `npm link`. This allows nodeplayer to load the module directly from your module repository. This is only possible when running nodeplayer directly from the [nodeplayer repository](https://github.com/FruitieX/nodeplayer),
+so getting a clone is highly recommended. `npm link` can be used like so:
 
-- In your module repository, run `sudo npm link`
+- First make sure your module has a `package.json` file
+- In your module repository, run `npm link` ([here's](https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md) how you can do this without sudo, *highly recommended*)
 - In the nodeplayer repository, link the module with `npm link nodeplayer-plugin-myplugin`
-- Now you can develop your module inside your own repository, and changes will take
+- Now you can develop your module inside its own repository, any changes will take
   effect immediately when you run nodeplayer.
 
 #### Plugin modules
