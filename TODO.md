@@ -1,20 +1,13 @@
 nodeplayer TODO
 ===============
 
-### core
-- ~~standalone program~~
-- play/pause a bit unintuitive
-- timeout preparing requests after a certain time
-- use unique queue item ids for songs in the queue and address songs with this
-- write unit tests also for logger.js and index.js
+Note: most of this was/should be moved to issues in relevant modules
 
 ### apis
 - total queue length
-- move command for queue items
-- send queue updates as add/remove commands instead of entire queue each time
 
 ### plugins
-- plugins that use keys: autogenerate keys if they are not present
+- plugins that use crypto keys: autogenerate keys if they are not present
 - partyplay: disable or at least password protect "admin" API calls
 - unit tests!
 
