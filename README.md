@@ -75,6 +75,10 @@ More cool functionality can easily be implemented by writing new modules!
 For developers
 --------------
 
+NOTE: The API is definitely NOT stable yet! Things may break at any time without warning,
+I'm trying to stabilize things for [0.2.0](https://github.com/FruitieX/nodeplayer/milestones/0.2.0).
+But [some issues](https://github.com/FruitieX/nodeplayer/labels/API%20change) still exist that will definitely change the plugin and backend API a bit (likewise, the [client API](https://github.com/FruitieX/nodeplayer/labels/Client%20API)).
+
 ### Pull requests
 
 Code style adheres mostly to the [Google JavaScript Style Guide](https://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml),
