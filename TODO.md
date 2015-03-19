@@ -3,12 +3,6 @@ nodeplayer TODO
 
 Note: most of this was/should be moved to issues in relevant modules
 
-### plugins
-- unit tests!
-
-### backends
-- unit tests!
-
 ### web frontends
 - rewrite web frontends using eg. angular.js
 - get dependencies with bower
