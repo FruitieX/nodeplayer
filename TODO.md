@@ -15,6 +15,7 @@ nodeplayer TODO
 
 ### plugins
 - plugins that use keys: autogenerate keys if they are not present
+- partyplay: disable or at least password protect "admin" API calls
 - unit tests!
 
 ### backends
