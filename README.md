@@ -12,7 +12,7 @@ this software entirely at your own risk!
 Quickstart
 ----------
 
-- `npm install -g nodeplayer` ([here's](https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md) how you can do this without sudo)
+- `npm install -g nodeplayer` ([here's](https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md) how you can do this without sudo, *highly recommended*)
 - `nodeplayer`
 
 nodeplayer will now ask you to edit its configuration file. For a basic setup
@@ -20,7 +20,9 @@ the defaults should be good. You may want to add a few more backends and/or
 plugins later, see below for some examples!
 
 When you're done configuring, run `nodeplayer` again. nodeplayer now
-automatically installs missing plugins and backends.
+automatically installs missing plugins and backends. Note that if you installed
+nodeplayer as root, this step also requires root since modules are installed to
+the same path as nodeplayer.
 
 Note that backends and plugins you load may ask you to perform additional
 configuration steps. Read through the setup instructions for each of the
