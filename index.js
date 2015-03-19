@@ -58,10 +58,10 @@ function initModule(moduleShortName, moduleType, callback) {
             }
 
             moduleLogger.info(moduleType + ' module initialized');
-            player.callHooks('on' + moduleTypeCapital + 'Initialized', [module]);
+            player.callHooks('on' + moduleTypeCapital + 'Initialized', [moduleShortName]);
         } else {
             moduleLogger.error('while initializing: ' + err);
-            player.callHooks('on' + moduleTypeCapital + 'InitError', [module, err]);
+            player.callHooks('on' + moduleTypeCapital + 'InitError', [moduleShortName, err]);
         }
         callback(err);
     });
