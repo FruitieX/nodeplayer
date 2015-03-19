@@ -1,6 +1,6 @@
 {
   "name": "nodeplayer",
-  "version": "0.1.99",
+  "version": "0.1.991",
   "description": "simple, modular music player written in node.js",
   "main": "index.js",
   "preferGlobal": true,
