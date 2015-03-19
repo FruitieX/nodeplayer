@@ -12,6 +12,9 @@ nodeplayer TODO
 - move command for queue items
 - send queue updates as add/remove commands instead of entire queue each time
 
+### plugins
+- plugins that use keys: autogenerate keys if they are not present
+
 ### backends
 - album art
 - support partial prepares, ie. starting from any position in the song
