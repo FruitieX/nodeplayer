@@ -52,8 +52,10 @@ function initModule(moduleShortName, moduleType, callback) {
     var moduleLogger = labeledLogger(moduleShortName);
     module.init(player, moduleLogger, function(err) {
         if (!err) {
-            player[moduleType + 's'][moduleType + '-' + moduleShortName] = module;
-            player.songsPreparing[moduleType + '-' + moduleShortName] = {};
+            player[moduleType + 's'][moduleShortName] = module;
+            if (moduleType === 'backend') {
+                player.songsPreparing[moduleShortName] = {};
+            }
 
             moduleLogger.info(moduleType + ' module initialized');
             player.callHooks('on' + moduleTypeCapital + 'Initialized', [module]);
