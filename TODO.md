@@ -19,6 +19,7 @@ nodeplayer TODO
 - album art
 - support partial prepares, ie. starting from any position in the song
 - pagination support for search results
+- file backend should defer scanning until file has not changed for a while
 
 ### web frontends
 - rewrite web frontends using eg. angular.js
