@@ -27,7 +27,7 @@ function installModules(modules, moduleType, loadCallback) {
         if (!checkModule(moduleName)) {
             logger.info(moduleName + ' module not found, installing...');
             npm.load({}, function(err) {
-                npm.commands.install([moduleName], function(err) {
+                npm.commands.install(__dirname, [moduleName], function(err) {
                     if (err) {
                         logger.error(moduleName + ' installation failed:', err);
                         callback();
