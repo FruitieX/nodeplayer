@@ -1,5 +1,4 @@
-nodeplayer
-==========
+![Logo](/media/logo_text.png)
 
 Simple, modular music player written in node.js
 
