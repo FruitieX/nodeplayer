@@ -32,3 +32,9 @@ nodeplayer TODO
 ### CLI client
 - use verifymac plugin instead of duplicating code
 - clean unnecessary properties from song before storing a playlist
+- less hacky music playback than now?
+
+### android client
+- supports streaming, controlling playback
+- android wear support
+- eventually local caching?
