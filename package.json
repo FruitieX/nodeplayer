@@ -3,8 +3,9 @@
   "version": "0.1.99",
   "description": "simple, modular music player written in node.js",
   "main": "index.js",
+  "preferGlobal": true,
   "scripts": {
-    "start": "node index.js",
+    "start": "./bin/nodeplayer",
     "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha",
     "coverage": "NODE_ENV=test istanbul cover _mocha -- -R spec"
   },
@@ -13,6 +14,9 @@
     "url": "https://github.com/FruitieX/nodeplayer"
   },
   "author": "FruitieX",
+  "bin": {
+      "nodeplayer": "./bin/nodeplayer"
+  },
   "license": "MIT",
   "dependencies": {
     "async": "^0.9.0",

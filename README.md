@@ -12,20 +12,21 @@ this software entirely at your own risk!
 Quickstart
 ----------
 
-    git clone https://github.com/FruitieX/nodeplayer
-    cd nodeplayer
-    npm install
-    npm start
+- `npm install -g nodeplayer` ([here's](https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md) how you can do this without sudo)
+- `nodeplayer`
 
-nodeplayer will now ask you to edit its configuration file. For a basic setup the
-defaults should be good. You may want to add a few more backends and/or plugins later.
+nodeplayer will now ask you to edit its configuration file. For a basic setup
+the defaults should be good. You may want to add a few more backends and/or
+plugins later, see below for some examples!
 
-When you're done configuring, run `npm start` again. nodeplayer now automatically installs
-missing plugins and backends, then loads them. Note that any backends and
-plugins you load may also ask you to perform additional configuration steps
-(this is a little obnoxious right now...) such as editing their own
-configuration files or configuring software such as `mongodb` before you can
-start using them with nodeplayer.
+When you're done configuring, run `nodeplayer` again. nodeplayer now
+automatically installs missing plugins and backends.
+
+Note that backends and plugins you load may ask you to perform additional
+configuration steps. Read through the setup instructions for each of the
+plugins/backends you enable, and read through the output they print to console
+on first run. For example, the default nodeplayer configuration uses the `file`
+backend, which requires you to set up `mongodb` before use.
 
 ### The nodeplayer project
 * [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player
