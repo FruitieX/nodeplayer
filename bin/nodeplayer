@@ -1,3 +1,11 @@
 #!/usr/bin/env node
 
-require('../index.js');
+var Core = require('../');
+var labeledLogger = require('../logger');
+
+var logger = labeledLogger('core');
+
+var core = new Core();
+core.initModules(function() {
+    logger.info('ready');
+});
