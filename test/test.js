@@ -3,7 +3,7 @@
 /*jshint expr: true*/
 var should = require('chai').should();
 var _ = require('underscore');
-var Player = require('../player');
+var Player = require('../lib/player');
 var dummyBackend = require('nodeplayer-backend-dummy');
 var exampleQueue = require('./exampleQueue.json');
 
