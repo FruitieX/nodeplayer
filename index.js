@@ -3,9 +3,9 @@
 var _ = require('underscore');
 var npm = require('npm');
 var async = require('async');
-var labeledLogger = require('./logger');
-var Player = require('./player');
-var nodeplayerConfig = require('nodeplayer-config');
+var labeledLogger = require('./lib/logger');
+var Player = require('./lib/player');
+var nodeplayerConfig = require('./lib/config');
 var config = nodeplayerConfig.getConfig();
 
 var logger = labeledLogger('core');
@@ -95,7 +95,8 @@ Core.prototype.initModules = function(callback) {
     }, this));
 };
 
-Core.prototype.Player = Player;
-Core.prototype.labeledLogger = labeledLogger;
+exports.Player = Player;
+exports.labeledLogger = labeledLogger;
+exports.config = nodeplayerConfig;
 
-module.exports = Core;
+exports.Core = Core;

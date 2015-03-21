@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
-var Core = require('../');
-var labeledLogger = require('../logger');
+var nodeplayer = require('../');
+var logger = nodeplayer.labeledLogger('core');
 
-var logger = labeledLogger('core');
-
-var core = new Core();
+var core = new nodeplayer.Core();
 core.initModules(function() {
     logger.info('ready');
 });

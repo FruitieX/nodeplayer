@@ -1,6 +1,6 @@
 {
   "name": "nodeplayer",
-  "version": "0.1.992",
+  "version": "0.1.995",
   "description": "simple, modular music player written in node.js",
   "main": "index.js",
   "preferGlobal": true,
@@ -15,12 +15,12 @@
   },
   "author": "FruitieX",
   "bin": {
-      "nodeplayer": "./bin/nodeplayer"
+    "nodeplayer": "./bin/nodeplayer"
   },
   "license": "MIT",
   "dependencies": {
     "async": "^0.9.0",
-    "nodeplayer-config": "*",
+    "mkdirp": "^0.5.0",
     "npm": "^2.7.1",
     "underscore": "^1.7.0",
     "winston": "^0.9.0"

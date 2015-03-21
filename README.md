@@ -36,7 +36,6 @@ All modules can be updated by running `npm update -g`
 * [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player component
 * [nodeplayer-client](https://github.com/FruitieX/nodeplayer-client) CLI client for controlling nodeplayer
 * [nodeplayer-player](https://github.com/FruitieX/nodeplayer-player) CLI audio playback client
-* [nodeplayer-config](https://github.com/FruitieX/nodeplayer-config) Configuration loader
 
 #### Plugin modules
 * [nodeplayer-plugin-express](https://github.com/FruitieX/nodeplayer-plugin-express) expressjs server
