@@ -278,6 +278,7 @@ describe('Player', function() {
             player.songsPreparing.dummyBackend = {};
 
             player.startPlayback = _.noop;
+            player.setPrepareTimeout = _.noop;
         });
         it('should return truthy value (error) if called without song', function(done) {
             player.prepareSong(undefined, function(err) {
@@ -467,6 +468,38 @@ describe('Player', function() {
             player.queue.push(_.clone(exampleQueue[2]));
 
             player.prepareError(exampleQueue[2], 'dummyError');
+        });
+    });
+    describe('#setPrepareTimeout()', function() {
+        var player;
+        var song;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.config.songPrepareTimeout = 0;
+            song = _.clone(exampleQueue[0]);
+            song.cancelPrepare = _.noop;
+        });
+        afterEach(function() {
+            if (song.prepareTimeout) {
+                clearTimeout(song.prepareTimeout);
+            }
+        });
+        it('should call cancelPrepare', function(done) {
+            song.cancelPrepare = function() {
+                done();
+            };
+            player.setPrepareTimeout(song);
+        });
+        it('should clear old song timeout', function(done) {
+            song.prepareTimeout = setTimeout(function() {
+                throw new Error('this should never be executed');
+            }, 0);
+
+            song.cancelPrepare = function() {
+                done();
+            };
+            player.setPrepareTimeout(song);
         });
     });
 });
