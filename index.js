@@ -52,19 +52,19 @@ Core.prototype.initModule = function(moduleShortName, moduleType, callback) {
     var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
     var module = require(moduleName);
 
-    var moduleLogger = labeledLogger(moduleShortName);
+    var moduleLogger = labeledLogger(module.name);
     module.init(this.player, moduleLogger, _.bind(function(err) {
         if (!err) {
-            this[moduleType + 's'][moduleShortName] = module;
+            this[moduleType + 's'][module.name] = module;
             if (moduleType === 'backend') {
-                this.songsPreparing[moduleShortName] = {};
+                this.songsPreparing[module.name] = {};
             }
 
             moduleLogger.info(moduleType + ' module initialized');
-            this.callHooks('on' + moduleTypeCapital + 'Initialized', [moduleShortName]);
+            this.callHooks('on' + moduleTypeCapital + 'Initialized', [module.name]);
         } else {
             moduleLogger.error('while initializing: ' + err);
-            this.callHooks('on' + moduleTypeCapital + 'InitError', [moduleShortName, err]);
+            this.callHooks('on' + moduleTypeCapital + 'InitError', [module.name, err]);
         }
         callback(err);
     }, this.player));
