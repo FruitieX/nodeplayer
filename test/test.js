@@ -195,20 +195,6 @@ describe('Player', function() {
                 exampleQueue[2]
             ));
         });
-        it('should remove songs from playedQueue with negative provided pos', function() {
-            player.skipSongs(2);
-            player.removeFromQueue(-1, 1);
-            player.playedQueue.should.deep.equal([exampleQueue[0]]);
-        });
-        it('should correctly remove songs from both queue and playedQueue ' +
-                'with negative provided pos and cnt (range) spanning both queues', function() {
-            player.skipSongs(2);
-            player.removeFromQueue(-1, 3);
-            player.playedQueue.should.deep.equal([exampleQueue[0]]);
-            /* magic number 4 comes from skipping *2* and removing 3 songs
-             * from index -1, removing *2* songs from the queue */
-            player.queue.should.deep.equal(_.last(exampleQueue, exampleQueue.length - 4));
-        });
     });
     describe('#searchQueue()', function() {
         var player;
