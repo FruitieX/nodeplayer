@@ -52,7 +52,7 @@ Core.prototype.initModule = function(moduleShortName, moduleType, callback) {
     var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
     var module = require(moduleName);
 
-    var moduleLogger = labeledLogger(module.name);
+    var moduleLogger = labeledLogger(moduleShortName);
     module.init(this.player, moduleLogger, _.bind(function(err) {
         if (!err) {
             this[moduleType + 's'][module.name] = module;
