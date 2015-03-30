@@ -55,16 +55,16 @@ Core.prototype.initModule = function(moduleShortName, moduleType, callback) {
     var moduleLogger = labeledLogger(moduleShortName);
     module.init(this.player, moduleLogger, _.bind(function(err) {
         if (!err) {
-            this[moduleType + 's'][module.name] = module;
+            this[moduleType + 's'][moduleShortName] = module;
             if (moduleType === 'backend') {
-                this.songsPreparing[module.name] = {};
+                this.songsPreparing[moduleShortName] = {};
             }
 
             moduleLogger.info(moduleType + ' module initialized');
-            this.callHooks('on' + moduleTypeCapital + 'Initialized', [module.name]);
+            this.callHooks('on' + moduleTypeCapital + 'Initialized', [moduleShortName]);
         } else {
             moduleLogger.error('while initializing: ' + err);
-            this.callHooks('on' + moduleTypeCapital + 'InitError', [module.name, err]);
+            this.callHooks('on' + moduleTypeCapital + 'InitError', [moduleShortName]);
         }
         callback(err);
     }, this.player));
