@@ -494,4 +494,67 @@ describe('Player', function() {
             player.setPrepareTimeout(song);
         });
     });
+    describe('#moveInQueue()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = dummyClone(exampleQueue);
+            player.prepareSongs = _.noop;
+        });
+        it('should correctly move a single song backward', function() {
+            player.moveInQueue(2, 1);
+            player.queue[0].should.deep.equal(exampleQueue[0]);
+            player.queue[1].should.deep.equal(exampleQueue[2]);
+            player.queue[2].should.deep.equal(exampleQueue[1]);
+            player.queue[3].should.deep.equal(exampleQueue[3]);
+            player.queue[4].should.deep.equal(exampleQueue[4]);
+        });
+        it('should correctly move several songs backward', function() {
+            player.moveInQueue(2, 0, 2);
+            player.queue[0].should.deep.equal(exampleQueue[2]);
+            player.queue[1].should.deep.equal(exampleQueue[3]);
+            player.queue[2].should.deep.equal(exampleQueue[0]);
+            player.queue[3].should.deep.equal(exampleQueue[1]);
+            player.queue[4].should.deep.equal(exampleQueue[4]);
+        });
+        it('should correctly move a single song forward', function() {
+            player.moveInQueue(1, 2);
+            player.queue[0].should.deep.equal(exampleQueue[0]);
+            player.queue[1].should.deep.equal(exampleQueue[2]);
+            player.queue[2].should.deep.equal(exampleQueue[1]);
+            player.queue[3].should.deep.equal(exampleQueue[3]);
+            player.queue[4].should.deep.equal(exampleQueue[4]);
+        });
+        it('should correctly move several songs forward', function() {
+            player.moveInQueue(1, 2, 2);
+            player.queue[0].should.deep.equal(exampleQueue[0]);
+            player.queue[1].should.deep.equal(exampleQueue[3]);
+            player.queue[2].should.deep.equal(exampleQueue[1]);
+            player.queue[3].should.deep.equal(exampleQueue[2]);
+            player.queue[4].should.deep.equal(exampleQueue[4]);
+        });
+        it('should correctly move from beginning of queue', function() {
+            player.moveInQueue(0, 1);
+            player.queue[0].should.deep.equal(exampleQueue[1]);
+            player.queue[1].should.deep.equal(exampleQueue[0]);
+            player.queue[2].should.deep.equal(exampleQueue[2]);
+        });
+        it('should correctly move to end of queue', function() {
+            var l = exampleQueue.length;
+            player.moveInQueue(l - 2, l - 1);
+            player.queue[l - 3].should.deep.equal(exampleQueue[l - 3]);
+            player.queue[l - 2].should.deep.equal(exampleQueue[l - 2]);
+            player.queue[l - 1].should.deep.equal(exampleQueue[l - 1]);
+        });
+        it('should return error and not do anything for invalid ranges', function() {
+            var l = exampleQueue.length;
+            should.equal(null, player.moveInQueue(-1, 2, 2));
+            player.queue.should.deep.equal(exampleQueue);
+            should.equal(null, player.moveInQueue(1, 2, 2 + l));
+            player.queue.should.deep.equal(exampleQueue);
+            should.equal(null, player.moveInQueue(l - 1, l));
+            player.queue.should.deep.equal(exampleQueue);
+        });
+    });
 });
