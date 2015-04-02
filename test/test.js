@@ -494,4 +494,23 @@ describe('Player', function() {
             player.setPrepareTimeout(song);
         });
     });
+    describe('#moveInQueue()', function() {
+        var player;
+
+        beforeEach(function() {
+            player = new Player({logger: dummyLogger});
+            player.queue = dummyClone(exampleQueue);
+            player.prepareSongs = _.noop;
+        });
+        it('should correctly move a single song backwards', function() {
+            player.moveInQueue(1, 0);
+            player.queue[0].should.deep.equal(exampleQueue[1]);
+            player.queue[1].should.deep.equal(exampleQueue[0]);
+        });
+        it('should not touch rest of queue when moving a single song backwards', function() {
+            player.moveInQueue(1, 0);
+            _.last(player.queue, exampleQueue.length - 2).should.deep.equal(
+                    _.last(exampleQueue, exampleQueue.length - 2));
+        });
+    });
 });
