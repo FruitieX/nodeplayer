@@ -184,8 +184,14 @@ describe('Player', function() {
             player.queue.should.deep.equal(_.without(exampleQueue, exampleQueue[1]));
         });
         it('should remove now playing if pos is 0', function() {
+            player.playbackPosition = true;
+            player.playbackStart = true;
+            player.songEndTimeout = true;
             player.removeFromQueue(0);
             player.queue.should.deep.equal(_.without(exampleQueue, exampleQueue[0]));
+            should.equal(player.playbackPosition, null);
+            should.equal(player.playbackStart, null);
+            should.equal(player.songEndTimeout, null);
         });
         it('should remove multiple songs from provided pos', function() {
             player.removeFromQueue(1, 2);
