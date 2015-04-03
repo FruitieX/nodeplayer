@@ -227,7 +227,10 @@ exports.search = function(query, callback, errCallback) {...};
     artist: 'dummyArtist',
     title: 'dummyTitle',
     album: 'dummyAlbum',
-    albumArt: 'http://dummy.com/albumArt.png',
+    albumArt: {             // URLs to album art, must contain 'lq' (low quality) and 'hq' (high quality) links
+        lq: 'http://dummy.com/albumArt.png',
+        hq: 'http://dummy.com/albumArt_HighQuality.png'
+    },
     duration: 123456,       // in milliseconds
     songID: 'dummySongID1', // a string uniquely identifying the song in your backend
     score: i,               // how relevant is this result, ideally from 0 (least relevant) to 100 (most relevant)
