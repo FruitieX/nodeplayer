@@ -27,8 +27,8 @@ the same path as nodeplayer.
 Note that backends and plugins you load may ask you to perform additional
 configuration steps. Read through the setup instructions for each of the
 plugins/backends you enable, and read through the output they print to console
-on first run. For example, the default nodeplayer configuration uses the [file backend](https://github.com/FruitieX/nodeplayer-backend-file)
-, which requires some configuration before use.
+on first run. For example, the default nodeplayer configuration uses the [file backend](https://github.com/FruitieX/nodeplayer-backend-file), which requires
+some configuration before use.
 
 All modules can be updated by running `npm update -g`
 
