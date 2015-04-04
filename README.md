@@ -32,7 +32,7 @@ on first run. For example, the default nodeplayer configuration uses the
 which might need some configuration before use. (uses a throwaway API key by
 default)
 
-All modules can be updated by running `npm update -g`
+All modules can be updated by running `nodeplayer -u`
 
 ### The nodeplayer project
 * [nodeplayer](https://github.com/FruitieX/nodeplayer) The core music player component
