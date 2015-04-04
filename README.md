@@ -21,14 +21,16 @@ plugins later, see below for some examples!
 
 When you're done configuring, run `nodeplayer` again. nodeplayer now
 automatically installs missing plugins and backends. Note that if you installed
-nodeplayer as root (you *shouldn't*), this step also requires root since modules are installed to
-the same path as nodeplayer.
+nodeplayer as root (you *probably shouldn't*), this step also requires root
+since modules are installed to the same path as nodeplayer.
 
 Note that backends and plugins you load may ask you to perform additional
 configuration steps. Read through the setup instructions for each of the
 plugins/backends you enable, and read through the output they print to console
-on first run. For example, the default nodeplayer configuration uses the [file backend](https://github.com/FruitieX/nodeplayer-backend-file), which requires
-some configuration before use.
+on first run. For example, the default nodeplayer configuration uses the
+[youtube backend](https://github.com/FruitieX/nodeplayer-backend-youtube),
+which might need some configuration before use. (uses a throwaway API key by
+default)
 
 All modules can be updated by running `npm update -g`
 
@@ -96,7 +98,7 @@ Before submitting a pull request, make sure that your code passes the test suite
 This can be checked with:
 
     npm test
-    
+
 ### Collaborators
 
 This repository follows the principles of [git-flow](http://nvie.com/posts/a-successful-git-branching-model/)
