@@ -23,23 +23,28 @@ Core.prototype.checkModule = function(module) {
     }
 };
 
+Core.prototype.installModule = function(moduleName, callback) {
+    logger.info('installing module: ' + moduleName);
+    npm.load({}, function(err) {
+        npm.commands.install(__dirname, [moduleName], function(err) {
+            if (err) {
+                logger.error(moduleName + ' installation failed:', err);
+                callback();
+            } else {
+                logger.info(moduleName + ' successfully installed');
+                callback();
+            }
+        });
+    });
+};
+
 // make sure all modules are installed, installs missing ones, then calls loadCallback
-Core.prototype.installModules = function(modules, moduleType, loadCallback) {
+Core.prototype.installModules = function(modules, moduleType, update, loadCallback) {
     async.eachSeries(modules, _.bind(function(moduleShortName, callback) {
         var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
-        if (!this.checkModule(moduleName)) {
-            logger.info(moduleName + ' module not found, installing...');
-            npm.load({}, function(err) {
-                npm.commands.install(__dirname, [moduleName], function(err) {
-                    if (err) {
-                        logger.error(moduleName + ' installation failed:', err);
-                        callback();
-                    } else {
-                        logger.info(moduleName + ' successfully installed');
-                        callback();
-                    }
-                });
-            });
+        if (!this.checkModule(moduleName) || update) {
+            // perform install / update
+            this.installModule(moduleName, callback);
         } else {
             // skip already installed
             callback();
@@ -70,10 +75,10 @@ Core.prototype.initModule = function(moduleShortName, moduleType, callback) {
     }, this.player));
 };
 
-Core.prototype.initModules = function(callback) {
+Core.prototype.initModules = function(update, callback) {
     async.eachSeries(['plugin', 'backend'], _.bind(function(moduleType, installCallback) {
         // first install missing modules
-        this.installModules(config[moduleType + 's'], moduleType, installCallback);
+        this.installModules(config[moduleType + 's'], moduleType, update, installCallback);
     }, this), _.bind(function() {
         // then initialize modules, first all plugins in series, then all backends in parallel
         async.eachSeries(['plugin', 'backend'], _.bind(function(moduleType, typeCallback) {

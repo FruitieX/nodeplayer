@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+var argv = require('yargs').argv;
 var nodeplayer = require('../');
 var logger = nodeplayer.labeledLogger('core');
 
 var core = new nodeplayer.Core();
-core.initModules(function() {
+core.initModules(argv.u, function() {
     logger.info('ready');
 });
