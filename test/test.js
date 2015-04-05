@@ -366,7 +366,8 @@ describe('Player', function() {
         it('should resume playback if no pos given', function() {
             player.playbackStart = 42;
             player.playbackPosition = 42;
-            player.startPlayback();
+            player.startPlayback(undefined);
+            player.startPlayback(null);
 
             player.playbackPosition.should.equal(42);
         });
