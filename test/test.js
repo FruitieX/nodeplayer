@@ -545,8 +545,8 @@ describe('Player', function() {
             var l = exampleQueue.length;
             player.moveInQueue(l - 2, l - 1);
             player.queue[l - 3].should.deep.equal(exampleQueue[l - 3]);
-            player.queue[l - 2].should.deep.equal(exampleQueue[l - 2]);
-            player.queue[l - 1].should.deep.equal(exampleQueue[l - 1]);
+            player.queue[l - 2].should.deep.equal(exampleQueue[l - 1]);
+            player.queue[l - 1].should.deep.equal(exampleQueue[l - 2]);
         });
         it('should return error and not do anything for invalid ranges', function() {
             var l = exampleQueue.length;
