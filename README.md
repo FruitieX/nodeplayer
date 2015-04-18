@@ -13,6 +13,8 @@ this software entirely at your own risk!
 Quickstart
 ----------
 
+Make sure you have [Node.js](https://nodejs.org/) installed, then run:
+
 - `npm install -g nodeplayer` ([here's](https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md) how you can do this without sudo, *highly recommended*)
 - `nodeplayer`
 
@@ -28,10 +30,13 @@ since modules are installed to the same path as nodeplayer.
 Note that backends and plugins you load may ask you to perform additional
 configuration steps. Read through the setup instructions for each of the
 plugins/backends you enable, and read through the output they print to console
-on first run. For example, the default nodeplayer configuration uses the
-[youtube backend](https://github.com/FruitieX/nodeplayer-backend-youtube),
-which might need some configuration before use. (uses a throwaway API key by
-default)
+on first run. If you're using the default nodeplayer configuration, you should
+at least consider changing the configuration of the:
+
+- [YouTube backend](https://github.com/FruitieX/nodeplayer-backend-youtube),
+  which uses a throwaway API key by default (might or might not work!)
+- [Passport plugin](https://github.com/FruitieX/nodeplayer-plugin-passport)
+  for password protecting nodeplayer. By default passport uses username `changeMe` and password `keyboard cat`.
 
 All modules can be updated by running `nodeplayer -u`
 
@@ -42,7 +47,7 @@ All modules can be updated by running `nodeplayer -u`
 
 #### Plugin modules
 * [nodeplayer-plugin-express](https://github.com/FruitieX/nodeplayer-plugin-express) expressjs server
-* [nodeplayer-plugin-httpauth](https://github.com/FruitieX/nodeplayer-plugin-httpauth) HTTP basic auth
+* [nodeplayer-plugin-passport](https://github.com/FruitieX/nodeplayer-plugin-passport) Password protection for nodeplayer
 * [nodeplayer-plugin-ipfilter](https://github.com/FruitieX/nodeplayer-plugin-ipfilter) IP filtering
 * [nodeplayer-plugin-partyplay](https://github.com/FruitieX/nodeplayer-plugin-partyplay) Party playlist
 * [nodeplayer-plugin-rest](https://github.com/FruitieX/nodeplayer-plugin-rest) REST API
