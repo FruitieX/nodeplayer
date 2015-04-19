@@ -10,6 +10,10 @@ appropriately so that others can't access your music. I take no responsibility
 for example if your streaming services find you are violating their ToS. You're running
 this software entirely at your own risk!
 
+### Screenshot of the [weblistener](https://github.com/FruitieX/nodeplayer-plugin-weblistener)
+
+![Screenshot of the weblistener] (https://raw.githubusercontent.com/FruitieX/nodeplayer-plugin-weblistener/master/screenshot.png)
+
 Quickstart
 ----------
 
