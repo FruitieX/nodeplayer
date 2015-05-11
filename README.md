@@ -12,6 +12,8 @@ this software entirely at your own risk!
 
 ### Screenshot of the [weblistener](https://github.com/FruitieX/nodeplayer-plugin-weblistener)
 
+[![Join the chat at https://gitter.im/FruitieX/nodeplayer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/FruitieX/nodeplayer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ![Screenshot of the weblistener] (https://raw.githubusercontent.com/FruitieX/nodeplayer-plugin-weblistener/master/screenshot.png)
 
 Quickstart
