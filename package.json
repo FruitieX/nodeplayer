@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "chai": "*",
+    "coveralls": "^2.11.2",
     "istanbul": "*",
     "jscs": "^1.11.3",
     "mocha": "*",
