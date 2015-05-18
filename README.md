@@ -3,6 +3,8 @@
 Simple, modular music player written in node.js
 
 [![Build Status](https://travis-ci.org/FruitieX/nodeplayer.svg?branch=develop)](https://travis-ci.org/FruitieX/nodeplayer)
+[![Coverage Status](https://coveralls.io/repos/FruitieX/nodeplayer/badge.svg?branch=master)](https://coveralls.io/r/FruitieX/nodeplayer?branch=master)
+[![Gitter](https://img.shields.io/badge/gitter-join%20chat-green.svg)](https://gitter.im/FruitieX/nodeplayer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Gratipay](https://img.shields.io/gratipay/FruitieX.svg)](https://gratipay.com/FruitieX/)
 
 Disclaimer: for personal use only - make sure you configure nodeplayer
