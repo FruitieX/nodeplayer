@@ -40,7 +40,7 @@
               as __prequeue.
     - Implementing pre-queue functionality like this makes playlist handling
       code much much simpler. E.g. song preparing doesn't need to care about
-      a separate queue and playlist, it only needs to know about the one and
-      only playback queue.
+      a separate queue and playlist, it only needs to care about one array
+      which is the playback queue.
     - Plugins can restrict how the playback queue is managed, e.g. partyplay
       only allows appending into __prequeue.
