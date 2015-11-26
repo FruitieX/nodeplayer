@@ -3,6 +3,7 @@
 ### Playlist
 
 - Generic list of songs that can be added to the playback queue.
+- Can *not* be played directly, must *always* be added to playback queue first.
 - Core contains playlist management functionality for:
     - Creating playlists
     - Adding/removing songs to/from playlists
