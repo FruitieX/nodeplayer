@@ -3,6 +3,7 @@
 ### Playlist
 
 - Generic list of songs that can be added to the playback queue.
+- Can *not* be played directly, must *always* be added to playback queue first.
 - Core contains playlist management functionality for:
     - Creating playlists
     - Adding/removing songs to/from playlists
@@ -29,8 +30,8 @@
       of the playback queue. Let's call this the 'pre-queue'.
         - This is done by having the client reserve a certain playlist name
           for the pre-queue, say '__prequeue'.
-        - The client checks the current playback queue at the current playback
-          position.
+        - Pre-queuing songs works like this: The client checks the current
+          playback queue at the current playback position.
             - If the current song was added from a playlist '__prequeue', find
               the first song after it that is not part of __prequeue, insert
               song before it.
@@ -39,7 +40,7 @@
               as __prequeue.
     - Implementing pre-queue functionality like this makes playlist handling
       code much much simpler. E.g. song preparing doesn't need to care about
-      a separate queue and playlist, it only needs to know about the one and
-      only playback queue.
+      a separate queue and playlists, it only needs to care about one array
+      which is the playback queue.
     - Plugins can restrict how the playback queue is managed, e.g. partyplay
       only allows appending into __prequeue.
