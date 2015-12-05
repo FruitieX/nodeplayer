@@ -30,6 +30,7 @@ describe('exampleQueue', function() {
 
 // TODO: test error cases also
 describe('Player', function() {
+    /*
     describe('#setVolume()', function() {
         var player;
 
@@ -52,6 +53,7 @@ describe('Player', function() {
             player.volume.should.equal(0.5).and.be.a('number');
         });
     });
+    */
 
     /*
     describe('#skipSongs()', function() {
