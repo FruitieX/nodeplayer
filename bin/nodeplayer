@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-var argv = require('yargs').argv;
-var nodeplayer = require('../');
+var Player = require('../lib/player');
+new Player();
