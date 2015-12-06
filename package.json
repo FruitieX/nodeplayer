@@ -20,6 +20,9 @@
   "license": "MIT",
   "dependencies": {
     "async": "^0.9.0",
+    "body-parser": "^1.14.1",
+    "cookie-parser": "^1.4.0",
+    "express": "^4.13.3",
     "mkdirp": "^0.5.0",
     "node-uuid": "^1.4.4",
     "npm": "^2.7.1",
