@@ -25,9 +25,11 @@
     "express": "^4.13.3",
     "mkdirp": "^0.5.1",
     "mongoose": "^4.2.9",
+    "node-ffprobe": "^1.2.2",
     "node-uuid": "^1.4.4",
     "npm": "^2.7.1",
     "underscore": "^1.7.0",
+    "walk": "^2.3.9",
     "winston": "^0.9.0",
     "yargs": "^3.6.0"
   },
