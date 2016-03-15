@@ -1,5 +1,7 @@
 ![Logo](/media/logo_text.png)
 
+**NOTE: this project is not really in a usable state right now. I'm working on a giant refactor which will hopefully be finished around early summer 2016. This refactor is taking place in the `playlists` branch, but it is unfinished as of yet. Pull requests are welcome there, but please keep this refactor in mind for now!**
+
 Simple, modular music player written in node.js
 
 [![Build Status](https://travis-ci.org/FruitieX/nodeplayer.svg?branch=develop)](https://travis-ci.org/FruitieX/nodeplayer)
