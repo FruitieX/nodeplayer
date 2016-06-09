@@ -1,6 +1,6 @@
 {
   "name": "nodeplayer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "simple, modular music player written in node.js",
   "main": "index.js",
   "preferGlobal": true,
@@ -19,29 +19,29 @@
   },
   "license": "MIT",
   "dependencies": {
-    "async": "^0.9.0",
-    "body-parser": "^1.14.1",
-    "cookie-parser": "^1.4.0",
-    "escape-string-regexp": "^1.0.3",
-    "express": "^4.13.3",
+    "async": "^2.0.0-rc.6",
+    "body-parser": "^1.15.1",
+    "cookie-parser": "^1.4.3",
+    "escape-string-regexp": "^1.0.5",
+    "express": "^4.13.4",
     "mkdirp": "^0.5.1",
-    "mongoose": "^4.2.9",
+    "mongoose": "^4.4.20",
     "node-ffprobe": "^1.2.2",
-    "node-uuid": "^1.4.4",
-    "npm": "^2.7.1",
-    "underscore": "^1.7.0",
+    "node-uuid": "^1.4.7",
+    "npm": "^3.9.5",
+    "underscore": "^1.8.3",
     "walk": "^2.3.9",
-    "winston": "^0.9.0",
-    "yargs": "^3.6.0"
+    "winston": "^2.2.0",
+    "yargs": "^4.7.1"
   },
   "devDependencies": {
     "chai": "*",
-    "coveralls": "^2.11.2",
+    "coveralls": "^2.11.9",
     "istanbul": "*",
-    "jscs": "^1.11.3",
+    "jscs": "^3.0.4",
     "mocha": "*",
-    "mocha-jscs": "^1.0.2",
-    "mocha-jshint": "^1.0.0",
-    "nodeplayer-backend-dummy": "^0.1.9"
+    "mocha-jscs": "^5.0.1",
+    "mocha-jshint": "^2.3.1",
+    "nodeplayer-backend-dummy": "^0.1.999"
   }
 }
