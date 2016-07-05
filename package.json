@@ -29,7 +29,6 @@
     "node-ffprobe": "^1.2.2",
     "node-uuid": "^1.4.7",
     "npm": "^3.9.5",
-    "tail-stream": "/Users/resk/src/tail-stream",
     "underscore": "^1.8.3",
     "walk": "^2.3.9",
     "winston": "^2.2.0",
