@@ -2,10 +2,11 @@
   "name": "nodeplayer",
   "version": "0.2.1",
   "description": "simple, modular music player written in node.js",
-  "main": "index.js",
+  "main": "bin/nodeplayer",
   "preferGlobal": true,
   "scripts": {
     "start": "./bin/nodeplayer",
+    "watch": "nodemon --exec babel-node bin/nodeplayer",
     "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha",
     "coverage": "NODE_ENV=test istanbul cover _mocha -- -R spec"
   },
@@ -20,6 +21,9 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.0-rc.6",
+    "babel-cli": "^6.11.4",
+    "babel-core": "^6.11.4",
+    "babel-preset-node6": "^11.0.0",
     "body-parser": "^1.15.1",
     "cookie-parser": "^1.4.3",
     "escape-string-regexp": "^1.0.5",
@@ -37,6 +41,7 @@
   "devDependencies": {
     "chai": "*",
     "coveralls": "^2.11.9",
+    "eslint": "^3.2.0",
     "istanbul": "*",
     "jscs": "^3.0.4",
     "mocha": "*",
