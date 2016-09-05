@@ -1,8 +1,8 @@
 'use strict';
-var config = require('./config').getConfig();
-var winston = require('winston');
+let config = require('./config').getConfig();
+let winston = require('winston');
 
-module.exports = (label) => {
+module.exports = label => {
   return new (winston.Logger)({
     transports: [
       new (winston.transports.Console)({

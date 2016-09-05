@@ -1,9 +1,9 @@
 'use strict';
 
-var _ = require('lodash');
+let _ = require('lodash');
 
-var async = require('async');
-var path = require('path');
+let async = require('async');
+let path = require('path');
 import Plugin from '../plugin';
 
 export default class Rest extends Plugin {
@@ -11,7 +11,7 @@ export default class Rest extends Plugin {
     super();
 
     // NOTE: no argument passed so we get the core's config
-    var config = require('../config').getConfig();
+    let config = require('../config').getConfig();
 
     if (!player.app) {
       return callback('module must be initialized after express module!');
@@ -29,8 +29,8 @@ export default class Rest extends Plugin {
     });
 
     player.app.get('/queue', (req, res) => {
-      var np = player.nowPlaying;
-      var pos = 0;
+      let np = player.nowPlaying;
+      let pos = 0;
       if (np) {
         if (np.playback.startTime) {
           pos = new Date().getTime() - np.playback.startTime + np.playback.startPos;
@@ -49,12 +49,12 @@ export default class Rest extends Plugin {
 
     // TODO: error handling
     player.app.post('/queue/song', (req, res) => {
-      var err = player.queue.insertSongs(null, req.body);
+      let err = player.queue.insertSongs(null, req.body);
 
       res.sendRes(err);
     });
     player.app.post('/queue/song/:at', (req, res) => {
-      var err = player.queue.insertSongs(req.params.at, req.body);
+      let err = player.queue.insertSongs(req.params.at, req.body);
 
       res.sendRes(err);
     });
@@ -109,7 +109,7 @@ export default class Rest extends Plugin {
     });
 
     this.pendingRequests = {};
-    var rest = this;
+    let rest = this;
     this.registerHook('onPrepareProgress', (song, bytesWritten, done) => {
       if (!rest.pendingRequests[song.backend.name]) {
         return;
@@ -117,7 +117,7 @@ export default class Rest extends Plugin {
 
       _.each(rest.pendingRequests[song.backend.name][song.songId], client => {
         if (bytesWritten) {
-          var end = song.prepare.dataPos;
+          let end = song.prepare.dataPos;
           if (client.wishRange[1]) {
             end = Math.min(client.wishRange[1], bytesWritten - 1);
           }
@@ -148,17 +148,17 @@ export default class Rest extends Plugin {
 
             // provide API path for music data, might block while song is preparing
       player.app.get('/song/' + backendName + '/:fileName', (req, res, next) => {
-        var extIndex = req.params.fileName.lastIndexOf('.');
-        var songId = req.params.fileName.substring(0, extIndex);
-        var songFormat = req.params.fileName.substring(extIndex + 1);
+        let extIndex = req.params.fileName.lastIndexOf('.');
+        let songId = req.params.fileName.substring(0, extIndex);
+        let songFormat = req.params.fileName.substring(extIndex + 1);
 
-        var backend = player.backends[backendName];
-        var filename = path.join(backendName, songId + '.' + songFormat);
+        let backend = player.backends[backendName];
+        let filename = path.join(backendName, songId + '.' + songFormat);
 
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
         res.setHeader('Accept-Ranges', 'bytes');
 
-        var queuedSong = _.find(player.queue.serialize(), song => {
+        let queuedSong = _.find(player.queue.serialize(), song => {
           return song.songId === songId && song.backendName === backendName;
         });
 
@@ -183,11 +183,11 @@ export default class Rest extends Plugin {
               });
             } else if (backend.songsPreparing[songId]) {
                             // song is preparing
-              var song = backend.songsPreparing[songId];
+              let song = backend.songsPreparing[songId];
 
-              var haveRange = [];
-              var wishRange = [];
-              var serveRange = [];
+              let haveRange = [];
+              let wishRange = [];
+              let serveRange = [];
 
               haveRange[0] = 0;
               haveRange[1] = song.prepare.data.length - 1;
@@ -224,7 +224,7 @@ export default class Rest extends Plugin {
                 rest.pendingRequests[backendName][songId] = [];
               }
 
-              var client = {
+              let client = {
                 res: res,
                 serveRange: serveRange,
                 wishRange: wishRange,

@@ -1,8 +1,8 @@
-var path = require('path');
-var fs = require('fs');
-var ffmpeg = require('fluent-ffmpeg');
-var config = require('./config').getConfig();
-var labeledLogger = require('./logger');
+let path = require('path');
+let fs = require('fs');
+let ffmpeg = require('fluent-ffmpeg');
+let config = require('./config').getConfig();
+let labeledLogger = require('./logger');
 
 /**
  * Super constructor for backends
@@ -31,26 +31,26 @@ export default class Backend {
    * @return {Function} - Can be called to terminate encoding
    */
   encodeSong(stream, seek, song, callback) {
-    var self = this;
+    let self = this;
 
-    var encodedPath = path.join(config.songCachePath, self.name,
+    let encodedPath = path.join(config.songCachePath, self.name,
                                   song.songId + '.opus');
 
-    var command = ffmpeg(stream)
+    let command = ffmpeg(stream)
           .noVideo()
           // .inputFormat('mp3')
           // .inputOption('-ac 2')
           .audioCodec('libopus')
           .audioBitrate('192')
           .format('opus')
-          .on('error', (err) => {
+          .on('error', err => {
             self.log.error(self.name + ': error while transcoding ' + song.songId + ': ' + err);
             delete song.prepare.data;
             callback(err);
           });
 
-    var opusStream = command.pipe(null, { end: true });
-    opusStream.on('data', (chunk) => {
+    let opusStream = command.pipe(null, { end: true });
+    opusStream.on('data', chunk => {
           // TODO: this could be optimized by using larger buffers
           // song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
 
@@ -62,12 +62,12 @@ export default class Backend {
               // Otherwise allocate more room, then copy chunk into buffer
 
               // Make absolutely sure that the chunk will fit inside new buffer
-        var newSize = Math.max(song.prepare.data.length * 2,
+        let newSize = Math.max(song.prepare.data.length * 2,
                   song.prepare.data.length + chunk.length);
 
         self.log.debug('Allocated new song data buffer of size: ' + newSize);
 
-        var buf = new Buffer.allocUnsafe(newSize);
+        let buf = new Buffer.allocUnsafe(newSize);
 
         song.prepare.data.copy(buf);
         song.prepare.data = buf;
@@ -96,7 +96,7 @@ export default class Backend {
     self.log.verbose('transcoding ' + song.songId + '...');
 
       // return a function which can be used for terminating encoding
-    return (err) => {
+    return err => {
       command.kill();
       self.log.verbose(self.name + ': canceled preparing: ' + song.songId + ': ' + err);
       delete song.prepare;
@@ -132,7 +132,7 @@ export default class Backend {
    * @param {durationCallback} callback - Called with duration
    */
   getDuration(song, callback) {
-    var err = 'FATAL: backend does not implement getDuration()!';
+    let err = 'FATAL: backend does not implement getDuration()!';
     this.log.error(err);
     callback(err);
   }

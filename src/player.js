@@ -1,10 +1,10 @@
 'use strict';
-var _ = require('lodash');
-var async = require('async');
-var util = require('util');
-var labeledLogger = require('./logger');
+let _ = require('lodash');
+let async = require('async');
+let util = require('util');
+let labeledLogger = require('./logger');
 import Queue from './queue';
-var modules = require('./modules');
+let modules = require('./modules');
 
 export default class Player {
   constructor(options) {
@@ -32,32 +32,32 @@ export default class Player {
    * Initializes player
    */
   init() {
-    var player = this;
-    var config = player.config;
-    var forceUpdate = false;
+    let player = this;
+    let config = player.config;
+    let forceUpdate = false;
 
     // initialize plugins & backends
     async.series([
-      (callback) => {
-        modules.loadBuiltinPlugins(player, (plugins) => {
+      callback => {
+        modules.loadBuiltinPlugins(player, plugins => {
           player.plugins = plugins;
           player.callHooks('onBuiltinPluginsInitialized');
           callback();
         });
-      }, (callback) => {
-        modules.loadPlugins(player, config.plugins, forceUpdate, (results) => {
+      }, callback => {
+        modules.loadPlugins(player, config.plugins, forceUpdate, results => {
           player.plugins = _.extend(player.plugins, results);
           player.callHooks('onPluginsInitialized');
           callback();
         });
-      }, (callback) => {
-        modules.loadBuiltinBackends(player, (backends) => {
+      }, callback => {
+        modules.loadBuiltinBackends(player, backends => {
           player.backends = backends;
           player.callHooks('onBuiltinBackendsInitialized');
           callback();
         });
-      }, (callback) => {
-        modules.loadBackends(player, config.backends, forceUpdate, (results) => {
+      }, callback => {
+        modules.loadBackends(player, config.backends, forceUpdate, results => {
           player.backends = _.extend(player.backends, results);
           player.callHooks('onBackendsInitialized');
           callback();
@@ -76,14 +76,14 @@ export default class Player {
       // _.find() used instead of _.each() because we want to break out as soon
       // as a hook returns a truthy value (used to indicate an error, e.g. in form
       // of a string)
-    var err = null;
+    let err = null;
 
     this.logger.silly('callHooks(' + hook +
           (argv ? ', ' + util.inspect(argv) + ')' : ')'));
 
-    _.find(this.plugins, (plugin) => {
+    _.find(this.plugins, plugin => {
       if (plugin.hooks[hook]) {
-        var fun = plugin.hooks[hook];
+        let fun = plugin.hooks[hook];
         err = fun.apply(null, argv);
         return err;
       }
@@ -94,9 +94,9 @@ export default class Player {
 
   // returns number of hook functions attached to given hook
   numHooks(hook) {
-    var cnt = 0;
+    let cnt = 0;
 
-    _.find(this.plugins, (plugin) => {
+    _.find(this.plugins, plugin => {
       if (plugin[hook]) {
         cnt++;
       }
@@ -124,8 +124,8 @@ export default class Player {
     clearTimeout(this.songEndTimeout);
     this.play = false;
 
-    var np = this.nowPlaying;
-    var pos = np.playback.startPos + (new Date().getTime() - np.playback.startTime);
+    let np = this.nowPlaying;
+    let pos = np.playback.startPos + (new Date().getTime() - np.playback.startTime);
     if (np) {
       np.playback = {
         startTime: 0,
@@ -141,7 +141,7 @@ export default class Player {
    */
   startPlayback(position) {
     position = position || 0;
-    var player = this;
+    let player = this;
 
     if (!this.nowPlaying) {
           // find first song in queue
@@ -152,7 +152,7 @@ export default class Player {
       }
     }
 
-    this.nowPlaying.prepare((err) => {
+    this.nowPlaying.prepare(err => {
       if (err) {
         throw new Error('error while preparing now playing: ' + err);
       }
@@ -185,13 +185,13 @@ export default class Player {
   }
 
   songEnd() {
-    var np = this.getNowPlaying();
-    var npIndex = np ? this.queue.findSongIndex(np.uuid) : -1;
+    let np = this.getNowPlaying();
+    let npIndex = np ? this.queue.findSongIndex(np.uuid) : -1;
 
     this.logger.info('end of song ' + np.uuid);
     this.callHooks('onSongEnd', [np]);
 
-    var nextSong = this.queue.songs[npIndex + 1];
+    let nextSong = this.queue.songs[npIndex + 1];
     if (nextSong) {
       this.changeSong(nextSong.uuid);
     } else {
@@ -208,7 +208,7 @@ export default class Player {
 
   // TODO: move these to song class?
   setPrepareTimeout(song) {
-    var player = this;
+    let player = this;
 
     if (song.prepareTimeout) {
       clearTimeout(song.prepareTimeout);
@@ -291,7 +291,7 @@ export default class Player {
   }
 
   prepareSong(song, callback) {
-    var self = this;
+    let self = this;
 
     if (!song) {
       throw new Error('prepareSong() without song');
@@ -334,11 +334,11 @@ export default class Player {
    * Prepare now playing and next song for playback
    */
   prepareSongs() {
-    var player = this;
+    let player = this;
 
-    var currentSong;
+    let currentSong;
     async.series([
-      (callback) => {
+      callback => {
               // prepare now-playing song
         currentSong = player.getNowPlaying();
         if (currentSong) {
@@ -352,9 +352,9 @@ export default class Player {
           callback(true);
         }
       },
-      (callback) => {
+      callback => {
               // prepare next song in playlist
-        var nextSong = player.queue.songs[player.queue.findSongIndex(currentSong) + 1];
+        let nextSong = player.queue.songs[player.queue.findSongIndex(currentSong) + 1];
         if (nextSong) {
           player.prepareSong(nextSong, callback);
         } else {
@@ -368,11 +368,11 @@ export default class Player {
   }
 
   getPlaylists(callback) {
-    var resultCnt = 0;
-    var allResults = {};
-    var player = this;
+    let resultCnt = 0;
+    let allResults = {};
+    let player = this;
 
-    _.each(this.backends, (backend) => {
+    _.each(this.backends, backend => {
       if (!backend.getPlaylists) {
         resultCnt++;
 
@@ -398,21 +398,21 @@ export default class Player {
 
   // make a search query to backends
   searchBackends(query, callback) {
-    var resultCnt = 0;
-    var allResults = {};
+    let resultCnt = 0;
+    let allResults = {};
 
-    _.each(this.backends, (backend) => {
-      backend.search(query, _.bind((results) => {
+    _.each(this.backends, backend => {
+      backend.search(query, _.bind(results => {
         resultCnt++;
 
               // make a temporary copy of songlist, clear songlist, check
               // each song and add them again if they are ok
-        var tempSongs = _.clone(results.songs);
+        let tempSongs = _.clone(results.songs);
         allResults[backend.name] = results;
         allResults[backend.name].songs = {};
 
-        _.each(tempSongs, (song) => {
-          var err = this.callHooks('preAddSearchResult', [song]);
+        _.each(tempSongs, song => {
+          let err = this.callHooks('preAddSearchResult', [song]);
           if (err) {
             this.logger.error('preAddSearchResult hook error: ' + err);
           } else {
@@ -424,7 +424,7 @@ export default class Player {
         if (resultCnt >= Object.keys(this.backends).length) {
           callback(allResults);
         }
-      }, this), _.bind((err) => {
+      }, this), _.bind(err => {
         resultCnt++;
         this.logger.error('error while searching ' + backend.name + ': ' + err);
 

@@ -1,16 +1,15 @@
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-var mongoose = require('mongoose');
-var async = require('async');
-var walk = require('walk');
-var ffprobe = require('node-ffprobe');
-var _ = require('lodash');
-var escapeStringRegexp = require('escape-string-regexp');
+let path = require('path');
+let fs = require('fs');
+let mkdirp = require('mkdirp');
+let mongoose = require('mongoose');
+let async = require('async');
+let walk = require('walk');
+let ffprobe = require('node-ffprobe');
+let _ = require('lodash');
+let escapeStringRegexp = require('escape-string-regexp');
 
-var util = require('util');
 import Backend from '../backend';
 
 /*
@@ -82,7 +81,7 @@ var probeCallback = (err, probeData, next) => {
 */
 
 // database model
-var SongModel = mongoose.model('Song', {
+let SongModel = mongoose.model('Song', {
   title: String,
   artist: String,
   album: String,
@@ -115,12 +114,12 @@ var SongModel = mongoose.model('Song', {
  * @param {String} fileExt - Filename extension
  * @return {Metadata} Song metadata
  */
-var guessMetadataFromPath = (filePath, fileExt) => {
-  var fileName = path.basename(filePath, fileExt);
+let guessMetadataFromPath = (filePath, fileExt) => {
+  let fileName = path.basename(filePath, fileExt);
 
   // split filename at dashes, trim extra whitespace, e.g:
-  var splitName = fileName.split('-');
-  splitName = _.map(splitName, (name) => {
+  let splitName = fileName.split('-');
+  splitName = _.map(splitName, name => {
     return name.trim();
   });
 
@@ -136,10 +135,10 @@ export default class Local extends Backend {
   constructor(callback) {
     super();
 
-    var self = this;
+    let self = this;
 
       // NOTE: no argument passed so we get the core's config
-    var config = require('../config').getConfig();
+    let config = require('../config').getConfig();
     this.config = config;
     this.songCachePath = config.songCachePath;
     this.importFormats = config.importFormats;
@@ -150,22 +149,22 @@ export default class Local extends Backend {
     // connect to the database
     mongoose.connect(config.mongo);
 
-    var db = mongoose.connection;
-    db.on('error', (err) => {
+    let db = mongoose.connection;
+    db.on('error', err => {
       return callback(err, self);
     });
     db.once('open', () => {
       return callback(null, self);
     });
 
-    var options = {
+    let options = {
       followLinks: config.followSymlinks,
     };
 
-    var insertSong = (probeData, done) => {
-      var guessMetadata = guessMetadataFromPath(probeData.file, probeData.fileext);
+    let insertSong = (probeData, done) => {
+      let guessMetadata = guessMetadataFromPath(probeData.file, probeData.fileext);
 
-      var song = new SongModel({
+      let song = new SongModel({
         title: probeData.metadata.TITLE || guessMetadata.title,
         artist: probeData.metadata.ARTIST || guessMetadata.artist,
         album: probeData.metadata.ALBUM || guessMetadata.album,
@@ -181,7 +180,7 @@ export default class Local extends Backend {
 
       SongModel.findOneAndUpdate({
         filename: probeData.file,
-      }, song, { upsert: true }, (err) => {
+      }, song, { upsert: true }, err => {
         if (err) {
           self.log.error('while inserting song: ' + probeData.file + ', ' + err);
         }
@@ -190,13 +189,13 @@ export default class Local extends Backend {
     };
 
       // create async.js queue to limit concurrent probes
-    var q = async.queue((task, done) => {
+    let q = async.queue((task, done) => {
       ffprobe(task.filename, (err, probeData) => {
         if (!probeData) {
           return done();
         }
 
-        var validStreams = false;
+        let validStreams = false;
 
         if (_.includes(self.importFormats, probeData.format.format_name)) {
           validStreams = true;
@@ -216,11 +215,11 @@ export default class Local extends Backend {
       // TODO: filter by allowed filename extensions
     if (config.rescanAtStart) {
       self.log.info('Scanning directory: ' + config.importPath);
-      var walker = walk.walk(config.importPath, options);
-      var startTime = new Date();
-      var scanned = 0;
+      let walker = walk.walk(config.importPath, options);
+      let startTime = new Date();
+      let scanned = 0;
       walker.on('file', (root, fileStats, next) => {
-        var filename = path.join(root, fileStats.name);
+        let filename = path.join(root, fileStats.name);
         self.log.verbose('Scanning: ' + filename);
         scanned++;
         q.push({
@@ -259,9 +258,9 @@ export default class Local extends Backend {
   }
 
   isPrepared(song) {
-    var filePath = path.join(this.songCachePath, 'local', song.songId + '.opus');
+    let filePath = path.join(this.songCachePath, 'local', song.songId + '.opus');
     return fs.existsSync(filePath);
-  };
+  }
 
   getDuration(song, callback) {
     SongModel.findById(song.songId, (err, item) => {
@@ -271,10 +270,10 @@ export default class Local extends Backend {
 
       callback(null, item.duration);
     });
-  };
+  }
 
   prepare(song, callback) {
-    var self = this;
+    let self = this;
 
     // TODO: move most of this into common code inside core
     if (self.songsPreparing[song.songId]) {
@@ -286,8 +285,8 @@ export default class Local extends Backend {
       callback(null, null, true);
     } else {
           // begin preparing song
-      var cancelEncode = null;
-      var canceled = false;
+      let cancelEncode = null;
+      let canceled = false;
 
       song.prepare = {
         data: new Buffer.allocUnsafe(1024 * 1024),
@@ -306,9 +305,9 @@ export default class Local extends Backend {
         if (canceled) {
           callback(new Error('song was canceled before encoding started'));
         } else if (item) {
-          var readStream = fs.createReadStream(item.filename);
+          let readStream = fs.createReadStream(item.filename);
           cancelEncode = self.encodeSong(readStream, 0, song, callback);
-          readStream.on('error', (err) => {
+          readStream.on('error', err => {
             callback(err);
           });
         } else {
@@ -316,12 +315,12 @@ export default class Local extends Backend {
         }
       });
     }
-  };
+  }
 
   search(query, callback) {
-    var self = this;
+    let self = this;
 
-    var q;
+    let q;
     if (query.any) {
       q = {
         $or: [
@@ -335,8 +334,8 @@ export default class Local extends Backend {
         $and: [],
       };
 
-      _.keys(query).forEach((key) => {
-        var criterion = {};
+      _.keys(query).forEach(key => {
+        let criterion = {};
         criterion[key] = new RegExp(escapeStringRegexp(query[key]), 'i');
         q.$and.push(criterion);
       });
@@ -347,12 +346,12 @@ export default class Local extends Backend {
         return callback(err);
       }
 
-      var results = {};
+      let results = {};
       results.songs = {};
 
-      var numItems = items.length;
-      var cur = 0;
-      items.forEach((song) => {
+      let numItems = items.length;
+      let cur = 0;
+      items.forEach(song => {
         if (Object.keys(results.songs).length <= self.config.searchResultCnt) {
           song = song.toObject();
 
@@ -372,5 +371,5 @@ export default class Local extends Backend {
       });
       callback(results);
     });
-  };
+  }
 }

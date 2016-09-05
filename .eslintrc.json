@@ -14,6 +14,7 @@
         "max-len": ["warn", 100, 2],
         "new-cap": ["error", { "properties": false }],
         "object-curly-spacing": ["error", "always"],
-        "arrow-parens": ["error", "as-needed"]
+        "arrow-parens": ["error", "as-needed"],
+        "no-var": ["error"]
     }
 }

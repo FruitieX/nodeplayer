@@ -1,5 +1,5 @@
-var _ = require('lodash');
-var uuid = require('node-uuid');
+let _ = require('lodash');
+let uuid = require('node-uuid');
 
 /**
  * Constructor
@@ -70,7 +70,7 @@ export default class Song {
       startTime: new Date(),
       startPos: pos || null,
     };
-  };
+  }
 
   /**
    * Return serialized details of the song
@@ -91,7 +91,7 @@ export default class Song {
       playlist: this.playlist,
       playback: this.playback,
     };
-  };
+  }
 
   /**
    * Synchronously(!) returns whether the song is prepared or not
@@ -99,7 +99,7 @@ export default class Song {
    */
   isPrepared() {
     return this.backend.isPrepared(this);
-  };
+  }
 
   /**
    * Prepare song for playback
@@ -107,7 +107,7 @@ export default class Song {
    */
   prepare(callback) {
     this.backend.prepare(this, callback);
-  };
+  }
 
   /**
    * Cancel song preparation if applicable

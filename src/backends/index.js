@@ -1,6 +1,6 @@
 import Local from './local';
 
-var Backends = [];
+let Backends = [];
 Backends.push(Local);
 
 module.exports = Backends;

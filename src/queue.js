@@ -1,4 +1,4 @@
-var _ = require('lodash');
+let _ = require('lodash');
 import Song from './song';
 
 /**
@@ -25,7 +25,7 @@ export default class Queue {
    * @return {[SerializedSong]} - List of songs in serialized format
    */
   serialize() {
-    var serialized = _.map(this.songs, (song) => {
+    let serialized = _.map(this.songs, song => {
       return song.serialize();
     });
 
@@ -38,7 +38,7 @@ export default class Queue {
    * @return {Number} - Index of song, -1 if not found
    */
   findSongIndex(at) {
-    return _.findIndex(this.songs, (song) => {
+    return _.findIndex(this.songs, song => {
       return song.uuid === at;
     });
   }
@@ -49,7 +49,7 @@ export default class Queue {
    * @return {Song|null} - Song object, null if not found
    */
   findSong(at) {
-    return _.find(this.songs, (song) => {
+    return _.find(this.songs, song => {
       return song.uuid === at;
     }) || null;
   }
@@ -60,7 +60,7 @@ export default class Queue {
    * @return {String|null} - UUID, null if not found
    */
   uuidAtIndex(index) {
-    var song = this.songs[index];
+    let song = this.songs[index];
     return song ? song.uuid : null;
   }
 
@@ -80,7 +80,7 @@ export default class Queue {
    * @return {Error} - in case of errors
    */
   insertSongs(at, songs) {
-    var pos;
+    let pos;
     if (at === null) {
           // insert at start of queue
       pos = 0;
@@ -96,10 +96,10 @@ export default class Queue {
     }
 
       // generate Song objects of each song
-    songs = _.map(songs, (song) => {
+    songs = _.map(songs, song => {
           // TODO: this would be best done in the song constructor,
           // effectively making it a SerializedSong object deserializer
-      var backend = this.player.backends[song.backendName];
+      let backend = this.player.backends[song.backendName];
       if (!backend) {
         throw new Error('Song constructor called with invalid backend: ' + song.backendName);
       }
@@ -108,7 +108,7 @@ export default class Queue {
     }, this);
 
       // perform insertion
-    var args = [pos, 0].concat(songs);
+    let args = [pos, 0].concat(songs);
     Array.prototype.splice.apply(this.songs, args);
 
     this.player.prepareSongs();
@@ -121,30 +121,30 @@ export default class Queue {
    * @return {Song[] | Error} - List of removed songs, Error in case of errors
    */
   removeSongs(at, cnt) {
-    var pos = this.findSongIndex(at);
+    let pos = this.findSongIndex(at);
     if (pos < 0) {
       return 'Song with UUID ' + at + ' not found!';
     }
 
       // cancel preparing all songs to be deleted
-    for (var i = pos; i < pos + cnt && i < this.songs.length; i++) {
-      var song = this.songs[i];
+    for (let i = pos; i < pos + cnt && i < this.songs.length; i++) {
+      let song = this.songs[i];
       if (song.cancelPrepare) {
         song.cancelPrepare('Song removed.');
       }
     }
 
       // store index of now playing song
-    var np = this.player.nowPlaying;
-    var npIndex = np ? this.findSongIndex(np.uuid) : -1;
+    let np = this.player.nowPlaying;
+    let npIndex = np ? this.findSongIndex(np.uuid) : -1;
 
       // perform deletion
-    var removed = this.songs.splice(pos, cnt);
+    let removed = this.songs.splice(pos, cnt);
 
       // was now playing removed?
     if (pos <= npIndex && pos + cnt >= npIndex) {
           // change to first song after splice
-      var newNp = this.songs[pos];
+      let newNp = this.songs[pos];
       this.player.changeSong(newNp ? newNp.uuid : null);
     } else {
       this.player.prepareSongs();

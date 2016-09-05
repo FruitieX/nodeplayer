@@ -1,8 +1,8 @@
-var _ = require('lodash');
-var mkdirp = require('mkdirp');
-var fs = require('fs');
-var os = require('os');
-var path = require('path');
+let _ = require('lodash');
+let mkdirp = require('mkdirp');
+let fs = require('fs');
+let os = require('os');
+let path = require('path');
 
 function getHomeDir() {
   if (process.platform === 'win32') {
@@ -22,7 +22,7 @@ function getBaseDir() {
 }
 exports.getBaseDir = getBaseDir;
 
-var defaultConfig = {};
+let defaultConfig = {};
 
 // backends are sources of music
 defaultConfig.backends = [
@@ -86,13 +86,13 @@ exports.getConfig = (module, defaults) => {
     return (defaults || defaultConfig);
   }
 
-  var moduleName = module ? module.name : null;
+  let moduleName = module ? module.name : null;
 
-  var configPath = path.join(getBaseDir(), 'config', (moduleName || 'core') + '.json');
+  let configPath = path.join(getBaseDir(), 'config', (moduleName || 'core') + '.json');
 
   try {
-    var userConfig = require(configPath);
-    var config = _.defaults(userConfig, defaults || defaultConfig);
+    let userConfig = require(configPath);
+    let config = _.defaults(userConfig, defaults || defaultConfig);
     return config;
   } catch (e) {
     if (e.code === 'MODULE_NOT_FOUND') {

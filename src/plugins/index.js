@@ -1,7 +1,7 @@
 import Express from './express';
 import Rest from './rest';
 
-var Plugins = [];
+let Plugins = [];
 Plugins.push(Express);
 Plugins.push(Rest); // NOTE: must be initialized after express
 

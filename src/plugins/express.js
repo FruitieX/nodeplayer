@@ -1,11 +1,11 @@
 'use strict';
 
-var express = require('express');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-var https = require('https');
-var http = require('http');
-var fs = require('fs');
+let express = require('express');
+let bodyParser = require('body-parser');
+let cookieParser = require('cookie-parser');
+let https = require('https');
+let http = require('http');
+let fs = require('fs');
 
 import Plugin from '../plugin';
 
@@ -14,11 +14,11 @@ export default class Express extends Plugin {
     super();
 
         // NOTE: no argument passed so we get the core's config
-    var config = require('../config').getConfig();
+    let config = require('../config').getConfig();
     player.app = express();
 
-    var options = {};
-    var port = process.env.PORT || config.port;
+    let options = {};
+    let port = process.env.PORT || config.port;
     if (config.tls) {
       options = {
         tls: config.tls,
