@@ -1,9 +1,9 @@
 var lint = require('mocha-eslint');
 
 var paths = [
-    'bin',
-    'lib',
-    'test',
+  'bin',
+  'src',
+  'test',
 ];
 
 lint(paths);

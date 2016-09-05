@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var path = require('path');
 var fs = require('fs');
 var ffmpeg = require('fluent-ffmpeg');
@@ -9,10 +8,9 @@ var labeledLogger = require('./logger');
  * Super constructor for backends
  */
 function Backend() {
-    this.name = this.constructor.name.toLowerCase();
-    this.log = labeledLogger(this.name);
-    this.log.info('initializing...');
-    this.songsPreparing = {};
+  this.name = this.constructor.name.toLowerCase();
+  this.log = labeledLogger(this.name);
+  this.songsPreparing = {};
 }
 
 /**
@@ -29,80 +27,80 @@ function Backend() {
  * @param {Number} seek - Skip to this position in song (TODO)
  * @param {Song} song - Song object whose audio is being encoded
  * @param {encodeCallback} callback - Called when song is ready or on error
- * @returns {Function} - Can be called to terminate encoding
+ * @return {Function} - Can be called to terminate encoding
  */
 Backend.prototype.encodeSong = function(stream, seek, song, callback) {
-    var self = this;
+  var self = this;
 
-    var encodedPath = path.join(config.songCachePath, self.name,
+  var encodedPath = path.join(config.songCachePath, self.name,
                                 song.songId + '.opus');
 
-    var command = ffmpeg(stream)
+  var command = ffmpeg(stream)
         .noVideo()
-        //.inputFormat('mp3')
-        //.inputOption('-ac 2')
+        // .inputFormat('mp3')
+        // .inputOption('-ac 2')
         .audioCodec('libopus')
         .audioBitrate('192')
         .format('opus')
         .on('error', function(err) {
-            self.log.error(self.name + ': error while transcoding ' + song.songId + ': ' + err);
-            delete song.prepare.data;
-            callback(err);
+          self.log.error(self.name + ': error while transcoding ' + song.songId + ': ' + err);
+          delete song.prepare.data;
+          callback(err);
         });
 
-    var opusStream = command.pipe(null, {end: true});
-    opusStream.on('data', function(chunk) {
+  var opusStream = command.pipe(null, { end: true });
+  opusStream.on('data', function(chunk) {
         // TODO: this could be optimized by using larger buffers
-        //song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
+        // song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
 
-        if (chunk.length <= song.prepare.data.length - song.prepare.dataPos) {
+    if (chunk.length <= song.prepare.data.length - song.prepare.dataPos) {
             // If there's room in the buffer, write chunk into it
-            chunk.copy(song.prepare.data, song.prepare.dataPos);
-            song.prepare.dataPos += chunk.length;
-        } else {
+      chunk.copy(song.prepare.data, song.prepare.dataPos);
+      song.prepare.dataPos += chunk.length;
+    } else {
             // Otherwise allocate more room, then copy chunk into buffer
 
             // Make absolutely sure that the chunk will fit inside new buffer
-            var newSize = Math.max(song.prepare.data.length * 2,
+      var newSize = Math.max(song.prepare.data.length * 2,
                 song.prepare.data.length + chunk.length);
 
-            self.log.debug('Allocated new song data buffer of size: ' + newSize);
+      self.log.debug('Allocated new song data buffer of size: ' + newSize);
 
-            var buf = new Buffer.allocUnsafe(newSize);
+      var buf = new Buffer.allocUnsafe(newSize);
 
-            song.prepare.data.copy(buf);
-            song.prepare.data = buf;
+      song.prepare.data.copy(buf);
+      song.prepare.data = buf;
 
-            chunk.copy(song.prepare.data, song.prepare.dataPos);
-            song.prepare.dataPos += chunk.length;
-        }
+      chunk.copy(song.prepare.data, song.prepare.dataPos);
+      song.prepare.dataPos += chunk.length;
+    }
 
-        callback(null, chunk.length, false);
-    });
-    opusStream.on('end', () => {
-        fs.writeFile(encodedPath, song.prepare.data, (err) => {
-            self.log.verbose('transcoding ended for ' + song.songId);
+    callback(null, chunk.length, false);
+  });
+  opusStream.on('end', () => {
+    fs.writeFile(encodedPath, song.prepare.data, err => {
+      self.log.verbose('transcoding ended for ' + song.songId);
 
-            delete song.prepare;
+      delete song.prepare;
             // TODO: we don't know if transcoding ended successfully or not,
             // and there might be a race condition between errCallback deleting
             // the file and us trying to move it to the songCache
             // TODO: is this still the case?
             // (we no longer save incomplete files on disk)
 
-            callback(null, null, true);
-        });
+      callback(null, null, true);
     });
+  });
 
-    self.log.verbose('transcoding ' + song.songId + '...');
+  self.log.verbose('transcoding ' + song.songId + '...');
 
     // return a function which can be used for terminating encoding
-    return function(err) {
-        command.kill();
-        self.log.verbose(self.name + ': canceled preparing: ' + song.songId + ': ' + err);
-        delete song.prepare;
-        callback(new Error('canceled preparing: ' + song.songId + ': ' + err));
-    };
+  return function(err) {
+    command.kill();
+    self.log.verbose(self.name + ': canceled preparing: ' + song.songId + ': ' + err);
+    delete song.prepare;
+    callback(new Error('canceled preparing: ' + song.songId + ': ' + err));
+  };
 };
 
 /**
@@ -110,12 +108,12 @@ Backend.prototype.encodeSong = function(stream, seek, song, callback) {
  * @param {Song} song - Song to cancel
  */
 Backend.prototype.cancelPrepare = function(song) {
-    if (this.songsPreparing[song.songId]) {
-        this.log.info('Canceling song preparing: ' + song.songId);
-        this.songsPreparing[song.songId].cancel();
-    } else {
-        this.log.error('cancelPrepare() called on song not in preparation: ' + song.songId);
-    }
+  if (this.songsPreparing[song.songId]) {
+    this.log.info('Canceling song preparing: ' + song.songId);
+    this.songsPreparing[song.songId].cancel();
+  } else {
+    this.log.error('cancelPrepare() called on song not in preparation: ' + song.songId);
+  }
 };
 
 // dummy functions
@@ -133,19 +131,19 @@ Backend.prototype.cancelPrepare = function(song) {
  * @param {durationCallback} callback - Called with duration
  */
 Backend.prototype.getDuration = function(song, callback) {
-    var err = 'FATAL: backend does not implement getDuration()!';
-    this.log.error(err);
-    callback(err);
+  var err = 'FATAL: backend does not implement getDuration()!';
+  this.log.error(err);
+  callback(err);
 };
 
 /**
  * Synchronously(!) returns whether the song with songId is prepared or not
  * @param {Song} song - Query concerns this song
- * @returns {Boolean} - true if song is prepared, false if not
+ * @return {Boolean} - true if song is prepared, false if not
  */
 Backend.prototype.isPrepared = function(song) {
-    this.log.error('FATAL: backend does not implement songPrepared()!');
-    return false;
+  this.log.error('FATAL: backend does not implement songPrepared()!');
+  return false;
 };
 
 /**
@@ -154,8 +152,8 @@ Backend.prototype.isPrepared = function(song) {
  * @param {encodeCallback} callback - Called when song is ready or on error
  */
 Backend.prototype.prepare = function(song, callback) {
-    this.log.error('FATAL: backend does not implement prepare()!');
-    callback(new Error('FATAL: backend does not implement prepare()!'));
+  this.log.error('FATAL: backend does not implement prepare()!');
+  callback(new Error('FATAL: backend does not implement prepare()!'));
 };
 
 /**
@@ -168,8 +166,8 @@ Backend.prototype.prepare = function(song, callback) {
  * @param {Function} callback - Called with error or results
  */
 Backend.prototype.search = function(query, callback) {
-    this.log.error('FATAL: backend does not implement search()!');
-    callback(new Error('FATAL: backend does not implement search()!'));
+  this.log.error('FATAL: backend does not implement search()!');
+  callback(new Error('FATAL: backend does not implement search()!'));
 };
 
 module.exports = Backend;

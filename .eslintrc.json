@@ -4,10 +4,15 @@
         "sourceType": "module"
     },
     "env": {
-        "node": true
+        "node": true,
+        "mocha": true
     },
+    "extends": "google",
     "rules": {
         "comma-dangle": ["error", "always-multiline"],
-        "quotes": ["error", "single"]
+        "quotes": ["error", "single"],
+        "max-len": ["warn", 100, 2],
+        "new-cap": ["error", { "properties": false }],
+        "object-curly-spacing": ["error", "always"]
     }
 }

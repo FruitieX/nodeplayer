@@ -1,18 +1,20 @@
 'use strict';
 
-/*jshint expr: true*/
-var should = require('chai').should();
-var _ = require('underscore');
-var Player = require('../lib/player');
-var dummyBackend = require('nodeplayer-backend-dummy');
-var exampleQueue = require('./exampleQueue.json');
+require('chai').should();
+// var _ = require('underscore');
+// var Player = require('../src/player');
+// var dummyBackend = require('nodeplayer-backend-dummy');
+// var exampleQueue = require('./exampleQueue.json');
 
 process.env.NODE_ENV = 'test';
 
+/*
 var dummyClone = function(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
+*/
 
+/*
 var dummyLogger = {
     silly: _.noop,
     debug: _.noop,
@@ -21,12 +23,15 @@ var dummyLogger = {
     warn: _.noop,
     error: _.noop,
 };
+*/
 
+/*
 describe('exampleQueue', function() {
     it('should contain at least 5 items', function() {
         exampleQueue.length.should.be.above(5);
     });
 });
+*/
 
 // TODO: test error cases also
 describe('Player', function() {

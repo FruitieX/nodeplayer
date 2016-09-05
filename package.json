@@ -5,8 +5,10 @@
   "main": "bin/nodeplayer",
   "preferGlobal": true,
   "scripts": {
-    "start": "./bin/nodeplayer",
-    "watch": "nodemon --exec babel-node bin/nodeplayer",
+    "start": "node dist/index",
+    "build": "babel src --out-dir dist --source-maps",
+    "postinstall": "npm run build",
+    "watch": "nodemon --exec babel-node src/index.js",
     "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha --compilers js:babel-core/register",
     "coverage": "NODE_ENV=test istanbul cover _mocha -- -R spec"
   },
@@ -47,6 +49,7 @@
     "istanbul": "*",
     "mocha": "*",
     "mocha-eslint": "^3.0.1",
+    "nodemon": "^1.10.2",
     "nodeplayer-backend-dummy": "^0.1.999"
   }
 }
