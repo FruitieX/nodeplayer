@@ -27,6 +27,7 @@
     "babel-cli": "^6.11.4",
     "babel-core": "^6.11.4",
     "babel-preset-node6": "^11.0.0",
+    "bluebird": "^3.4.1",
     "body-parser": "^1.15.1",
     "cookie-parser": "^1.4.3",
     "escape-string-regexp": "^1.0.5",

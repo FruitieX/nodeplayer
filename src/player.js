@@ -6,24 +6,22 @@ const labeledLogger = require('./logger');
 import Queue from './queue';
 const modules = require('./modules');
 
-export default class Player {
-  constructor(options) {
-    options = options || {};
+import { getConfig } from './config';
 
-    // TODO: some of these should NOT be loaded from config
-    _.bindAll.apply(_, [this].concat(_.functions(this)));
-    this.config = options.config || require('./config').getConfig();
-    this.logger = options.logger || labeledLogger('core');
-    this.queue = options.queue || new Queue(this);
-    this.nowPlaying = options.nowPlaying || null;
-    this.play = options.play || false;
-    this.repeat = options.repeat || false;
-    this.plugins = options.plugins || {};
-    this.backends = options.backends || {};
-    this.prepareTimeouts = options.prepareTimeouts || {};
-    this.volume = options.volume || 1;
-    this.songEndTimeout = options.songEndTimeout || null;
-    this.pluginVars = options.pluginVars || {};
+export default class Player {
+  constructor(options = {}) {
+    this.config          = getConfig();
+    this.logger          = labeledLogger('core');
+    this.queue           = new Queue(this);
+    this.nowPlaying      = null;
+    this.play            = false;
+    this.repeat          = false;
+    this.plugins         = {};
+    this.backends        = {};
+    this.prepareTimeouts = {};
+    this.volume          = 1;
+    this.songEndTimeout  = null;
+    this.pluginVars      = {};
 
     this.init = this.init.bind(this);
   }
