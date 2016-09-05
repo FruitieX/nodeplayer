@@ -3,7 +3,7 @@ var _ = require('lodash');
 var async = require('async');
 var util = require('util');
 var labeledLogger = require('./logger');
-var Queue = require('./queue');
+import Queue from './queue';
 var modules = require('./modules');
 
 export default class Player {

@@ -1,4 +1,6 @@
+import Local from './local';
+
 var Backends = [];
-Backends.push(require('./local'));
+Backends.push(Local);
 
 module.exports = Backends;
