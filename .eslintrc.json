@@ -7,15 +7,32 @@
         "node": true,
         "mocha": true
     },
-    "extends": "google",
+    "extends": [
+      "eslint:recommended",
+      "google"
+    ],
     "rules": {
         "comma-dangle": ["error", "always-multiline"],
         "quotes": ["error", "single"],
         "max-len": ["warn", 100, 2],
+        "indent": ["error", 2],
+        "linebreak-style": "error",
+        "no-multiple-empty-lines": ["error", { "max": 1 }],
+        "no-trailing-spaces": "error",
+        "eol-last": "error",
         "new-cap": ["error", { "properties": false }],
-        "object-curly-spacing": ["error", "always"],
         "arrow-parens": ["error", "as-needed"],
-        "no-var": ["error"],
-        "prefer-const": ["warn"]
+        "no-var": "error",
+        "prefer-const": "warn",
+        "space-infix-ops": "error",
+        "space-before-blocks": "error",
+        "padded-blocks": ["error", "never"],
+        "object-curly-spacing": ["error", "always"],
+        "no-multi-spaces": "error",
+        "block-spacing": ["error", "always"],
+        "key-spacing": ["error", { "align": "value" }],
+        "comma-spacing": "error",
+        "computed-property-spacing": "error",
+        "keyword-spacing": "error"
     }
 }

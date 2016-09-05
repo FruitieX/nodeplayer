@@ -10,7 +10,7 @@ export default class Player {
   constructor(options) {
     options = options || {};
 
-      // TODO: some of these should NOT be loaded from config
+    // TODO: some of these should NOT be loaded from config
     _.bindAll.apply(_, [this].concat(_.functions(this)));
     this.config = options.config || require('./config').getConfig();
     this.logger = options.logger || labeledLogger('core');
@@ -73,9 +73,9 @@ export default class Player {
   // if any hooks return a truthy value, it is an error and we abort
   // be very careful with calling hooks from within a hook, infinite loops are possible
   callHooks(hook, argv) {
-      // _.find() used instead of _.each() because we want to break out as soon
-      // as a hook returns a truthy value (used to indicate an error, e.g. in form
-      // of a string)
+    // _.find() used instead of _.each() because we want to break out as soon
+    // as a hook returns a truthy value (used to indicate an error, e.g. in form
+    // of a string)
     let err = null;
 
     this.logger.silly('callHooks(' + hook +
@@ -129,7 +129,7 @@ export default class Player {
     if (np) {
       np.playback = {
         startTime: 0,
-        startPos: pause ? pos : 0,
+        startPos:  pause ? pos : 0,
       };
     }
   }
@@ -144,7 +144,7 @@ export default class Player {
     const player = this;
 
     if (!this.nowPlaying) {
-          // find first song in queue
+      // find first song in queue
       this.nowPlaying = this.queue.songs[0];
 
       if (!this.nowPlaying) {
@@ -222,68 +222,68 @@ export default class Player {
 
     Object.defineProperty(song, 'prepareTimeout', {
       enumerable: false,
-      writable: true,
+      writable:   true,
     });
   }
 
   clearPrepareTimeout(song) {
-      // clear prepare timeout
+    // clear prepare timeout
     clearTimeout(song.prepareTimeout);
     song.prepareTimeout = null;
   }
 
   prepareError(song, err) {
-      // TODO: mark song as failed
+    // TODO: mark song as failed
     this.callHooks('onSongPrepareError', [song, err]);
   }
 
   prepareProgCallback(song, bytesWritten, done) {
-      /* progress callback
-       * when this is called, new song data has been flushed to disk */
+    /* progress callback
+     * when this is called, new song data has been flushed to disk */
 
-      // start playback if it hasn't been started yet
+    // start playback if it hasn't been started yet
     if (this.play && this.getNowPlaying() &&
               this.getNowPlaying().uuid === song.uuid &&
               !this.queue.playbackStart && bytesWritten) {
       this.startPlayback();
     }
 
-      // tell plugins that new data is available for this song, and
-      // whether the song is now fully written to disk or not.
+    // tell plugins that new data is available for this song, and
+    // whether the song is now fully written to disk or not.
     this.callHooks('onPrepareProgress', [song, bytesWritten, done]);
 
     if (done) {
-          // mark song as prepared
+      // mark song as prepared
       this.callHooks('onSongPrepared', [song]);
 
-          // done preparing, can't cancel anymore
+      // done preparing, can't cancel anymore
       delete (song.cancelPrepare);
 
-          // song data should now be available on disk, don't keep it in memory
+      // song data should now be available on disk, don't keep it in memory
       song.backend.songsPreparing[song.songId].songData = undefined;
       delete (song.backend.songsPreparing[song.songId]);
 
-          // clear prepare timeout
+      // clear prepare timeout
       this.clearPrepareTimeout(song);
     } else {
-          // reset prepare timeout
+      // reset prepare timeout
       this.setPrepareTimeout(song);
     }
   }
 
   prepareErrCallback(song, err, callback) {
-      /* error callback */
+    /* error callback */
 
-      // don't let anything run cancelPrepare anymore
+    // don't let anything run cancelPrepare anymore
     delete (song.cancelPrepare);
 
     this.clearPrepareTimeout(song);
 
-      // abort preparing more songs; current song will be deleted ->
-      // onQueueModified is called -> song preparation is triggered again
+    // abort preparing more songs; current song will be deleted ->
+    // onQueueModified is called -> song preparation is triggered again
     callback(true);
 
-      // TODO: investigate this, should probably be above callback
+    // TODO: investigate this, should probably be above callback
     this.prepareError(song, err);
 
     song.songData = undefined;
@@ -298,17 +298,17 @@ export default class Player {
     }
 
     if (song.isPrepared()) {
-          // start playback if it hasn't been started yet
+      // start playback if it hasn't been started yet
       if (this.play && this.getNowPlaying() &&
                   this.getNowPlaying().uuid === song.uuid &&
                   !this.queue.playbackStart) {
         this.startPlayback();
       }
 
-          // song is already prepared, ok to prepare more songs
+      // song is already prepared, ok to prepare more songs
       callback();
     } else {
-          // song is not prepared and not currently preparing: let backend prepare it
+      // song is not prepared and not currently preparing: let backend prepare it
       this.logger.debug('DEBUG: prepareSong() ' + song.songId);
 
       song.prepare((err, chunk, done) => {
@@ -339,32 +339,32 @@ export default class Player {
     let currentSong;
     async.series([
       callback => {
-              // prepare now-playing song
+        // prepare now-playing song
         currentSong = player.getNowPlaying();
         if (currentSong) {
           player.prepareSong(currentSong, callback);
         } else if (player.queue.getLength()) {
-                  // songs exist in queue, prepare first one
+          // songs exist in queue, prepare first one
           currentSong = player.queue.songs[0];
           player.prepareSong(currentSong, callback);
         } else {
-                  // bail out
+          // bail out
           callback(true);
         }
       },
       callback => {
-              // prepare next song in playlist
+        // prepare next song in playlist
         const nextSong = player.queue.songs[player.queue.findSongIndex(currentSong) + 1];
         if (nextSong) {
           player.prepareSong(nextSong, callback);
         } else {
-                  // bail out
+          // bail out
           callback(true);
         }
       },
     ]);
-      // TODO where to put this
-      // player.prepareErrCallback();
+    // TODO where to put this
+    // player.prepareErrCallback();
   }
 
   getPlaylists(callback) {
@@ -376,7 +376,7 @@ export default class Player {
       if (!backend.getPlaylists) {
         resultCnt++;
 
-              // got results from all services?
+        // got results from all services?
         if (resultCnt >= Object.keys(player.backends).length) {
           callback(allResults);
         }
@@ -388,7 +388,7 @@ export default class Player {
 
         allResults[backend.name] = results;
 
-              // got results from all services?
+        // got results from all services?
         if (resultCnt >= Object.keys(player.backends).length) {
           callback(allResults);
         }
@@ -405,8 +405,8 @@ export default class Player {
       backend.search(query, _.bind(results => {
         resultCnt++;
 
-              // make a temporary copy of songlist, clear songlist, check
-              // each song and add them again if they are ok
+        // make a temporary copy of songlist, clear songlist, check
+        // each song and add them again if they are ok
         const tempSongs = _.clone(results.songs);
         allResults[backend.name] = results;
         allResults[backend.name].songs = {};
@@ -420,7 +420,7 @@ export default class Player {
           }
         }, this);
 
-              // got results from all services?
+        // got results from all services?
         if (resultCnt >= Object.keys(this.backends).length) {
           callback(allResults);
         }
@@ -428,7 +428,7 @@ export default class Player {
         resultCnt++;
         this.logger.error('error while searching ' + backend.name + ': ' + err);
 
-              // got results from all services?
+        // got results from all services?
         if (resultCnt >= Object.keys(this.backends).length) {
           callback(allResults);
         }

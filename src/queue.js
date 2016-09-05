@@ -82,10 +82,10 @@ export default class Queue {
   insertSongs(at, songs) {
     let pos;
     if (at === null) {
-          // insert at start of queue
+      // insert at start of queue
       pos = 0;
     } else {
-          // insert song after song with UUID
+      // insert song after song with UUID
       pos = this.findSongIndex(at);
 
       if (pos < 0) {
@@ -95,10 +95,10 @@ export default class Queue {
       pos++; // insert after song
     }
 
-      // generate Song objects of each song
+    // generate Song objects of each song
     songs = _.map(songs, song => {
-          // TODO: this would be best done in the song constructor,
-          // effectively making it a SerializedSong object deserializer
+      // TODO: this would be best done in the song constructor,
+      // effectively making it a SerializedSong object deserializer
       const backend = this.player.backends[song.backendName];
       if (!backend) {
         throw new Error('Song constructor called with invalid backend: ' + song.backendName);
@@ -107,7 +107,7 @@ export default class Queue {
       return new Song(song, backend);
     }, this);
 
-      // perform insertion
+    // perform insertion
     const args = [pos, 0].concat(songs);
     Array.prototype.splice.apply(this.songs, args);
 
@@ -126,7 +126,7 @@ export default class Queue {
       return 'Song with UUID ' + at + ' not found!';
     }
 
-      // cancel preparing all songs to be deleted
+    // cancel preparing all songs to be deleted
     for (let i = pos; i < pos + cnt && i < this.songs.length; i++) {
       const song = this.songs[i];
       if (song.cancelPrepare) {
@@ -134,16 +134,16 @@ export default class Queue {
       }
     }
 
-      // store index of now playing song
+    // store index of now playing song
     const np = this.player.nowPlaying;
     const npIndex = np ? this.findSongIndex(np.uuid) : -1;
 
-      // perform deletion
+    // perform deletion
     const removed = this.songs.splice(pos, cnt);
 
-      // was now playing removed?
+    // was now playing removed?
     if (pos <= npIndex && pos + cnt >= npIndex) {
-          // change to first song after splice
+      // change to first song after splice
       const newNp = this.songs[pos];
       this.player.changeSong(newNp ? newNp.uuid : null);
     } else {
@@ -158,16 +158,16 @@ export default class Queue {
    */
   shuffle() {
     if (this.unshuffledSongs) {
-          // unshuffle
+      // unshuffle
 
-          // restore unshuffled list
+      // restore unshuffled list
       this.songs = this.unshuffledSongs;
 
       this.unshuffledSongs = null;
     } else {
-          // shuffle
+      // shuffle
 
-          // store copy of current songs array
+      // store copy of current songs array
       this.unshuffledSongs = this.songs.slice();
 
       this.songs = _.shuffle(this.songs);

@@ -46,7 +46,7 @@ export default class Song {
 
     this.playback = {
       startTime: null,
-      startPos: null,
+      startPos:  null,
     };
 
     // NOTE: internally to the Song we store a reference to the backend.
@@ -68,7 +68,7 @@ export default class Song {
   playbackStarted(pos) {
     this.playback = {
       startTime: new Date(),
-      startPos: pos || null,
+      startPos:  pos || null,
     };
   }
 
@@ -78,18 +78,18 @@ export default class Song {
    */
   serialize() {
     return {
-      uuid: this.uuid,
-      title: this.title,
-      artist: this.artist,
-      album: this.album,
-      albumArt: this.albumArt,
-      duration: this.duration,
-      songId: this.songId,
-      score: this.score,
-      format: this.format,
+      uuid:        this.uuid,
+      title:       this.title,
+      artist:      this.artist,
+      album:       this.album,
+      albumArt:    this.albumArt,
+      duration:    this.duration,
+      songId:      this.songId,
+      score:       this.score,
+      format:      this.format,
       backendName: this.backend.name,
-      playlist: this.playlist,
-      playback: this.playback,
+      playlist:    this.playlist,
+      playback:    this.playback,
     };
   }
 

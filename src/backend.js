@@ -37,31 +37,31 @@ export default class Backend {
                                   song.songId + '.opus');
 
     const command = ffmpeg(stream)
-          .noVideo()
-          // .inputFormat('mp3')
-          // .inputOption('-ac 2')
-          .audioCodec('libopus')
-          .audioBitrate('192')
-          .format('opus')
-          .on('error', err => {
-            self.log.error(self.name + ': error while transcoding ' + song.songId + ': ' + err);
-            delete song.prepare.data;
-            callback(err);
-          });
+      .noVideo()
+      // .inputFormat('mp3')
+      // .inputOption('-ac 2')
+      .audioCodec('libopus')
+      .audioBitrate('192')
+      .format('opus')
+      .on('error', err => {
+        self.log.error(self.name + ': error while transcoding ' + song.songId + ': ' + err);
+        delete song.prepare.data;
+        callback(err);
+      });
 
     const opusStream = command.pipe(null, { end: true });
     opusStream.on('data', chunk => {
-          // TODO: this could be optimized by using larger buffers
-          // song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
+      // TODO: this could be optimized by using larger buffers
+      // song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
 
       if (chunk.length <= song.prepare.data.length - song.prepare.dataPos) {
-              // If there's room in the buffer, write chunk into it
+        // If there's room in the buffer, write chunk into it
         chunk.copy(song.prepare.data, song.prepare.dataPos);
         song.prepare.dataPos += chunk.length;
       } else {
-              // Otherwise allocate more room, then copy chunk into buffer
+        // Otherwise allocate more room, then copy chunk into buffer
 
-              // Make absolutely sure that the chunk will fit inside new buffer
+        // Make absolutely sure that the chunk will fit inside new buffer
         const newSize = Math.max(song.prepare.data.length * 2,
                   song.prepare.data.length + chunk.length);
 
@@ -83,11 +83,11 @@ export default class Backend {
         self.log.verbose('transcoding ended for ' + song.songId);
 
         delete song.prepare;
-              // TODO: we don't know if transcoding ended successfully or not,
-              // and there might be a race condition between errCallback deleting
-              // the file and us trying to move it to the songCache
-              // TODO: is this still the case?
-              // (we no longer save incomplete files on disk)
+        // TODO: we don't know if transcoding ended successfully or not,
+        // and there might be a race condition between errCallback deleting
+        // the file and us trying to move it to the songCache
+        // TODO: is this still the case?
+        // (we no longer save incomplete files on disk)
 
         callback(null, null, true);
       });
@@ -95,7 +95,7 @@ export default class Backend {
 
     self.log.verbose('transcoding ' + song.songId + '...');
 
-      // return a function which can be used for terminating encoding
+    // return a function which can be used for terminating encoding
     return err => {
       command.kill();
       self.log.verbose(self.name + ': canceled preparing: ' + song.songId + ': ' + err);

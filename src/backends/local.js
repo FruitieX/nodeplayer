@@ -82,24 +82,24 @@ var probeCallback = (err, probeData, next) => {
 
 // database model
 const SongModel = mongoose.model('Song', {
-  title: String,
-  artist: String,
-  album: String,
+  title:    String,
+  artist:   String,
+  album:    String,
   albumArt: {
     lq: String,
     hq: String,
   },
   duration: {
-    type: Number,
+    type:     Number,
     required: true,
   },
   format: {
-    type: String,
+    type:     String,
     required: true,
   },
   filename: {
-    type: String,
-    unique: true,
+    type:     String,
+    unique:   true,
     required: true,
     dropDups: true,
   },
@@ -126,8 +126,8 @@ const guessMetadataFromPath = (filePath, fileExt) => {
   // TODO: compare album name against music dir, leave empty if equal
   return {
     artist: splitName[0],
-    title: splitName[1],
-    album: path.basename(path.dirname(filePath)),
+    title:  splitName[1],
+    album:  path.basename(path.dirname(filePath)),
   };
 };
 
@@ -137,13 +137,13 @@ export default class Local extends Backend {
 
     const self = this;
 
-      // NOTE: no argument passed so we get the core's config
+    // NOTE: no argument passed so we get the core's config
     const config = require('../config').getConfig();
     this.config = config;
     this.songCachePath = config.songCachePath;
     this.importFormats = config.importFormats;
 
-      // make sure all necessary directories exist
+    // make sure all necessary directories exist
     mkdirp.sync(path.join(this.songCachePath, 'local', 'incomplete'));
 
     // connect to the database
@@ -165,12 +165,12 @@ export default class Local extends Backend {
       const guessMetadata = guessMetadataFromPath(probeData.file, probeData.fileext);
 
       let song = new SongModel({
-        title: probeData.metadata.TITLE || guessMetadata.title,
-        artist: probeData.metadata.ARTIST || guessMetadata.artist,
-        album: probeData.metadata.ALBUM || guessMetadata.album,
-              // albumArt: {} // TODO
+        title:    probeData.metadata.TITLE || guessMetadata.title,
+        artist:   probeData.metadata.ARTIST || guessMetadata.artist,
+        album:    probeData.metadata.ALBUM || guessMetadata.album,
+        // albumArt: {} // TODO
         duration: probeData.format.duration * 1000,
-        format: probeData.format.format_name,
+        format:   probeData.format.format_name,
         filename: probeData.file,
       });
 
@@ -188,7 +188,7 @@ export default class Local extends Backend {
       });
     };
 
-      // create async.js queue to limit concurrent probes
+    // create async.js queue to limit concurrent probes
     const q = async.queue((task, done) => {
       ffprobe(task.filename, (err, probeData) => {
         if (!probeData) {
@@ -210,9 +210,9 @@ export default class Local extends Backend {
       });
     }, config.concurrentProbes);
 
-      // walk the filesystem and scan files
-      // TODO: also check through entire DB to see that all files still exist on the filesystem
-      // TODO: filter by allowed filename extensions
+    // walk the filesystem and scan files
+    // TODO: also check through entire DB to see that all files still exist on the filesystem
+    // TODO: filter by allowed filename extensions
     if (config.rescanAtStart) {
       self.log.info('Scanning directory: ' + config.importPath);
       const walker = walk.walk(config.importPath, options);
@@ -234,27 +234,27 @@ export default class Local extends Backend {
       });
     }
 
-      // TODO: fs watch
-      // set fs watcher on media directory
-      // TODO: add a debounce so if the file keeps changing we don't probe it multiple times
-      /*
-      watch(config.importPath, {
-          recursive: true,
-          followSymlinks: config.followSymlinks
-      }, (filename) => {
-          if (fs.existsSync(filename)) {
-              self.log.debug(filename + ' modified or created, queued for probing');
-              q.unshift({
-                  filename: filename
-              });
-          } else {
-              self.log.debug(filename + ' deleted');
-              db.collection('songs').remove({file: filename}, (err, items) => {
-                  self.log.debug(filename + ' deleted from db: ' + err + ', ' + items);
-              });
-          }
-      });
-      */
+    // TODO: fs watch
+    // set fs watcher on media directory
+    // TODO: add a debounce so if the file keeps changing we don't probe it multiple times
+    /*
+    watch(config.importPath, {
+        recursive: true,
+        followSymlinks: config.followSymlinks
+    }, (filename) => {
+        if (fs.existsSync(filename)) {
+            self.log.debug(filename + ' modified or created, queued for probing');
+            q.unshift({
+                filename: filename
+            });
+        } else {
+            self.log.debug(filename + ' deleted');
+            db.collection('songs').remove({file: filename}, (err, items) => {
+                self.log.debug(filename + ' deleted from db: ' + err + ', ' + items);
+            });
+        }
+    });
+    */
   }
 
   isPrepared(song) {
@@ -277,21 +277,21 @@ export default class Local extends Backend {
 
     // TODO: move most of this into common code inside core
     if (self.songsPreparing[song.songId]) {
-          // song is preparing, caller can drop this request (previous caller will take care of
-          // handling once preparation is finished)
+      // song is preparing, caller can drop this request (previous caller will take care of
+      // handling once preparation is finished)
       callback(null, null, false);
     } else if (self.isPrepared(song)) {
-          // song has already prepared, caller can start playing song
+      // song has already prepared, caller can start playing song
       callback(null, null, true);
     } else {
-          // begin preparing song
+      // begin preparing song
       let cancelEncode = null;
       let canceled = false;
 
       song.prepare = {
-        data: new Buffer.allocUnsafe(1024 * 1024),
+        data:    new Buffer.allocUnsafe(1024 * 1024),
         dataPos: 0,
-        cancel: () => {
+        cancel:  () => {
           canceled = true;
           if (cancelEncode) {
             cancelEncode();
@@ -356,15 +356,15 @@ export default class Local extends Backend {
           song = song.toObject();
 
           results.songs[song._id] = {
-            artist: song.artist,
-            title: song.title,
-            album: song.album,
-            albumArt: null, // TODO: can we add this?
-            duration: song.duration,
-            songId: song._id,
-            score: self.config.maxScore * (numItems - cur) / numItems,
+            artist:      song.artist,
+            title:       song.title,
+            album:       song.album,
+            albumArt:    null, // TODO: can we add this?
+            duration:    song.duration,
+            songId:      song._id,
+            score:       self.config.maxScore * (numItems - cur) / numItems,
             backendName: 'local',
-            format: 'opus',
+            format:      'opus',
           };
           cur++;
         }

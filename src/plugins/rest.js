@@ -40,10 +40,10 @@ export default class Rest extends Plugin {
       }
 
       res.json({
-        songs: player.queue.serialize(),
-        nowPlaying: np ? np.serialize() : null,
+        songs:         player.queue.serialize(),
+        nowPlaying:    np ? np.serialize() : null,
         nowPlayingPos: pos,
-        play: player.play,
+        play:          player.play,
       });
     });
 
@@ -122,10 +122,10 @@ export default class Rest extends Plugin {
             end = Math.min(client.wishRange[1], bytesWritten - 1);
           }
 
-                    // console.log('end: ' + end + '\tclient.serveRange[1]: ' + client.serveRange[1]);
+          // console.log('end: ' + end + '\tclient.serveRange[1]: ' + client.serveRange[1]);
 
           if (client.serveRange[1] < end) {
-                        // console.log('write');
+            // console.log('write');
             client.res.write(song.prepare.data.slice(client.serveRange[1] + 1, end));
           }
 
@@ -133,7 +133,7 @@ export default class Rest extends Plugin {
         }
 
         if (done) {
-          console.log('done');
+          this.log.debug('done');
           client.res.end();
         }
       });
@@ -146,7 +146,7 @@ export default class Rest extends Plugin {
     this.registerHook('onBackendInitialized', backendName => {
       rest.pendingRequests[backendName] = {};
 
-            // provide API path for music data, might block while song is preparing
+      // provide API path for music data, might block while song is preparing
       player.app.get('/song/' + backendName + '/:fileName', (req, res, next) => {
         const extIndex = req.params.fileName.lastIndexOf('.');
         const songId = req.params.fileName.substring(0, extIndex);
@@ -164,7 +164,7 @@ export default class Rest extends Plugin {
 
         async.series([
           callback => {
-                        // try finding out length of song
+            // try finding out length of song
             if (queuedSong) {
               res.setHeader('X-Content-Duration', queuedSong.duration / 1000);
               callback();
@@ -177,12 +177,12 @@ export default class Rest extends Plugin {
           },
           callback => {
             if (backend.isPrepared({ songId: songId })) {
-                            // song should be available on disk
+              // song should be available on disk
               res.sendFile(filename, {
                 root: config.songCachePath,
               });
             } else if (backend.songsPreparing[songId]) {
-                            // song is preparing
+              // song is preparing
               const song = backend.songsPreparing[songId];
 
               const haveRange = [];
@@ -200,13 +200,13 @@ export default class Rest extends Plugin {
               res.setHeader('Transfer-Encoding', 'chunked');
 
               if (req.headers.range) {
-                                // partial request
+                // partial request
 
                 wishRange = req.headers.range.substr(req.headers.range.indexOf('=') + 1).split('-');
 
                 serveRange[0] = wishRange[0];
 
-                                // a best guess for the response header
+                // a best guess for the response header
                 serveRange[1] = haveRange[1];
                 if (wishRange[1]) {
                   serveRange[1] = Math.min(wishRange[1], haveRange[1]);
@@ -225,10 +225,10 @@ export default class Rest extends Plugin {
               }
 
               const client = {
-                res: res,
+                res:        res,
                 serveRange: serveRange,
-                wishRange: wishRange,
-                filepath: path.join(config.songCachePath, filename),
+                wishRange:  wishRange,
+                filepath:   path.join(config.songCachePath, filename),
               };
 
               // TODO: If we know that we have already flushed data to disk,

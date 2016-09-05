@@ -6,11 +6,11 @@ module.exports = label => {
   return new (winston.Logger)({
     transports: [
       new (winston.transports.Console)({
-        label: label,
-        level: config.logLevel,
-        colorize: config.logColorize,
+        label:            label,
+        level:            config.logLevel,
+        colorize:         config.logColorize,
         handleExceptions: config.logExceptions,
-        json: config.logJson,
+        json:             config.logJson,
       }),
     ],
   });

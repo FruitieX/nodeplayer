@@ -13,7 +13,7 @@ export default class Express extends Plugin {
   constructor(player, callback) {
     super();
 
-        // NOTE: no argument passed so we get the core's config
+    // NOTE: no argument passed so we get the core's config
     const config = require('../config').getConfig();
     player.app = express();
 
@@ -21,14 +21,14 @@ export default class Express extends Plugin {
     const port = process.env.PORT || config.port;
     if (config.tls) {
       options = {
-        tls: config.tls,
-        key: config.key ? fs.readFileSync(config.key) : undefined,
-        cert: config.cert ? fs.readFileSync(config.cert) : undefined,
-        ca: config.ca ? fs.readFileSync(config.ca) : undefined,
-        requestCert: config.requestCert,
+        tls:                config.tls,
+        key:                config.key ? fs.readFileSync(config.key) : undefined,
+        cert:               config.cert ? fs.readFileSync(config.cert) : undefined,
+        ca:                 config.ca ? fs.readFileSync(config.ca) : undefined,
+        requestCert:        config.requestCert,
         rejectUnauthorized: config.rejectUnauthorized,
       };
-            // TODO: deprecated!
+      // TODO: deprecated!
       player.app.set('tls', true);
       player.httpServer = https.createServer(options, player.app)
                     .listen(port);

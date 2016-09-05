@@ -4,6 +4,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+/* eslint no-console: ["error", { "allow": ["warn"] }] */
+
 function getHomeDir() {
   if (process.platform === 'win32') {
     return process.env.USERPROFILE;
@@ -26,7 +28,7 @@ const defaultConfig = {};
 
 // backends are sources of music
 defaultConfig.backends = [
-  'youtube',
+  // 'youtube',
 ];
 
 // plugins are "everything else", most of the functionality is in plugins
@@ -34,7 +36,7 @@ defaultConfig.backends = [
 // NOTE: ordering is important here, plugins that require another plugin will
 // complain if order is wrong.
 defaultConfig.plugins = [
-  'weblistener',
+  // 'weblistener',
 ];
 
 defaultConfig.logLevel = 'info';
@@ -82,7 +84,7 @@ exports.getDefaultConfig = () => {
 // path and defaults are optional, if undefined then values corresponding to core config are used
 exports.getConfig = (module, defaults) => {
   if (process.env.NODE_ENV === 'test') {
-        // unit tests should always use default config
+    // unit tests should always use default config
     return (defaults || defaultConfig);
   }
 
@@ -97,15 +99,15 @@ exports.getConfig = (module, defaults) => {
   } catch (e) {
     if (e.code === 'MODULE_NOT_FOUND') {
       if (!moduleName) {
-                // only print welcome text for core module first run
+        // only print welcome text for core module first run
         console.warn('Welcome to nodeplayer!');
         console.warn('----------------------');
       }
       console.warn('\n=====================================================================');
       console.warn('We couldn\'t find the user configuration file for module "' +
-                    (moduleName || 'core') + '",');
+                   (moduleName || 'core') + '",');
       console.warn('so a sample configuration file containing default settings ' +
-                    'will be written into:');
+                   'will be written into:');
       console.warn(configPath);
 
       mkdirp.sync(path.join(getBaseDir(), 'config'));
@@ -113,15 +115,14 @@ exports.getConfig = (module, defaults) => {
 
       console.warn('\nFile created. Go edit it NOW!');
       console.warn('Note that the file only needs to contain the configuration ' +
-                    'variables that');
+                   'variables that');
       console.warn('you want to override from the defaults. Also note that it ' +
-                    'MUST be valid JSON!');
+                   'MUST be valid JSON!');
       console.warn('=====================================================================\n');
 
       if (!moduleName) {
-                // only exit on missing core module config
-        console.warn('Exiting now. Please re-run nodeplayer when you\'re done ' +
-                        'configuring!');
+        // only exit on missing core module config
+        console.warn('Exiting now. Please re-run nodeplayer when you\'re done configuring!');
         process.exit(0);
       }
 
