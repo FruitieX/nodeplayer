@@ -1,9 +1,14 @@
 'use strict';
 
-var Player = require('./src/player');
-var nodeplayerConfig = require('./src/config');
-var labeledLogger = require('./src/logger');
+var config = require('./src/config');
+var logger = require('./src/logger');
 
-exports.Player = Player;
-exports.config = nodeplayerConfig;
-exports.logger = labeledLogger;
+import Player from './src/player';
+import Backend from './src/backend';
+
+export {
+  Player,
+  Backend,
+  config,
+  logger,
+}

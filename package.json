@@ -2,7 +2,7 @@
   "name": "nodeplayer",
   "version": "0.2.1",
   "description": "simple, modular music player written in node.js",
-  "main": "bin/nodeplayer",
+  "main": "index.js",
   "preferGlobal": true,
   "scripts": {
     "start": "node dist/index",
@@ -19,7 +19,7 @@
   },
   "author": "FruitieX",
   "bin": {
-    "nodeplayer": "./bin/nodeplayer"
+    "nodeplayer": "./dist/index.js"
   },
   "license": "MIT",
   "dependencies": {

@@ -60,9 +60,29 @@ var initModule = (moduleShortName, moduleType, callback) => {
 // TODO: this probably doesn't work
 // needs rewrite
 exports.loadBackends = (player, backends, forceUpdate, done) => {
-    // first install missing backends
-  installModules(backends, 'backend', forceUpdate, () => {
-        // then initialize all backends in parallel
+  async.mapSeries(backends, (moduleName, callback) => {
+    moduleName = 'nodeplayer-backend-' + moduleName;
+
+    const Backend = require(moduleName);
+    const backend = new Backend((err, backend) => {
+      if (err) {
+        backend.log.error('while initializing: ' + err);
+        return callback();
+      }
+
+      player.callHooks('onBackendInitialized', [backend.name]);
+      backend.log.verbose('backend initialized');
+      callback(null, { [backend.name]: backend });
+    });
+  }, (err, results) => {
+    done(Object.assign({}, ...results));
+  });
+};
+
+/*
+  // first install missing backends
+  // installModules(backends, 'backend', forceUpdate, () => {
+  // then initialize all backends in parallel
     async.map(backends, (backend, callback) => {
       const moduleLogger = labeledLogger(backend);
       const moduleName = 'nodeplayer-backend-' + backend;
@@ -92,6 +112,7 @@ exports.loadBackends = (player, backends, forceUpdate, done) => {
     });
   });
 };
+*/
 
 // TODO: this probably doesn't work
 // needs rewrite

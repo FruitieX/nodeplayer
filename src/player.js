@@ -400,7 +400,7 @@ export default class Player {
     const allResults = {};
 
     _.each(this.backends, backend => {
-      backend.search(query, _.bind(results => {
+      backend.search(query, results => {
         resultCnt++;
 
         // make a temporary copy of songlist, clear songlist, check
@@ -416,13 +416,13 @@ export default class Player {
           } else {
             allResults[backend.name].songs[song.songId] = song;
           }
-        }, this);
+        });
 
         // got results from all services?
         if (resultCnt >= Object.keys(this.backends).length) {
           callback(allResults);
         }
-      }, this), _.bind(err => {
+      }, err => {
         resultCnt++;
         this.logger.error('error while searching ' + backend.name + ': ' + err);
 
@@ -430,8 +430,8 @@ export default class Player {
         if (resultCnt >= Object.keys(this.backends).length) {
           callback(allResults);
         }
-      }, this));
-    }, this);
+      });
+    });
   }
 
   // TODO: userID does not belong into core...?

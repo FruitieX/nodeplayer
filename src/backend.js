@@ -1,17 +1,23 @@
 const path = require('path');
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
-const config = require('./config').getConfig();
+const coreConfig = require('./config').getConfig();
+const config = require('./config');
 const labeledLogger = require('./logger');
 
 /**
  * Super constructor for backends
  */
 export default class Backend {
-  constructor() {
+  constructor(defaultConfig) {
     this.name = this.constructor.name.toLowerCase();
     this.log = labeledLogger(this.name);
     this.songsPreparing = {};
+    this.coreConfig = coreConfig;
+
+    if (defaultConfig) {
+      this.config = config.getConfig(this, defaultConfig);
+    }
   }
 
   /**
@@ -33,7 +39,7 @@ export default class Backend {
   encodeSong(stream, seek, song, callback) {
     const self = this;
 
-    const encodedPath = path.join(config.songCachePath, self.name,
+    const encodedPath = path.join(coreConfig.songCachePath, self.name,
                                   song.songId + '.opus');
 
     const command = ffmpeg(stream)
