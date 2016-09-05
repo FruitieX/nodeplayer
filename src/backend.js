@@ -1,8 +1,8 @@
-let path = require('path');
-let fs = require('fs');
-let ffmpeg = require('fluent-ffmpeg');
-let config = require('./config').getConfig();
-let labeledLogger = require('./logger');
+const path = require('path');
+const fs = require('fs');
+const ffmpeg = require('fluent-ffmpeg');
+const config = require('./config').getConfig();
+const labeledLogger = require('./logger');
 
 /**
  * Super constructor for backends
@@ -31,12 +31,12 @@ export default class Backend {
    * @return {Function} - Can be called to terminate encoding
    */
   encodeSong(stream, seek, song, callback) {
-    let self = this;
+    const self = this;
 
-    let encodedPath = path.join(config.songCachePath, self.name,
+    const encodedPath = path.join(config.songCachePath, self.name,
                                   song.songId + '.opus');
 
-    let command = ffmpeg(stream)
+    const command = ffmpeg(stream)
           .noVideo()
           // .inputFormat('mp3')
           // .inputOption('-ac 2')
@@ -49,7 +49,7 @@ export default class Backend {
             callback(err);
           });
 
-    let opusStream = command.pipe(null, { end: true });
+    const opusStream = command.pipe(null, { end: true });
     opusStream.on('data', chunk => {
           // TODO: this could be optimized by using larger buffers
           // song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
@@ -62,12 +62,12 @@ export default class Backend {
               // Otherwise allocate more room, then copy chunk into buffer
 
               // Make absolutely sure that the chunk will fit inside new buffer
-        let newSize = Math.max(song.prepare.data.length * 2,
+        const newSize = Math.max(song.prepare.data.length * 2,
                   song.prepare.data.length + chunk.length);
 
         self.log.debug('Allocated new song data buffer of size: ' + newSize);
 
-        let buf = new Buffer.allocUnsafe(newSize);
+        const buf = new Buffer.allocUnsafe(newSize);
 
         song.prepare.data.copy(buf);
         song.prepare.data = buf;
@@ -132,7 +132,7 @@ export default class Backend {
    * @param {durationCallback} callback - Called with duration
    */
   getDuration(song, callback) {
-    let err = 'FATAL: backend does not implement getDuration()!';
+    const err = 'FATAL: backend does not implement getDuration()!';
     this.log.error(err);
     callback(err);
   }

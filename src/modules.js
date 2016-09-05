@@ -1,13 +1,13 @@
-let npm = require('npm');
-let async = require('async');
-let labeledLogger = require('./logger');
-let BuiltinPlugins = require('./plugins');
-let BuiltinBackends = require('./backends');
+const npm = require('npm');
+const async = require('async');
+const labeledLogger = require('./logger');
+const BuiltinPlugins = require('./plugins');
+const BuiltinBackends = require('./backends');
 
-let _ = require('lodash');
-let logger = labeledLogger('modules');
+const _ = require('lodash');
+const logger = labeledLogger('modules');
 
-let checkModule = module => {
+const checkModule = module => {
   try {
     require.resolve(module);
     return true;
@@ -17,7 +17,7 @@ let checkModule = module => {
 };
 
 // install a single module
-let installModule = (moduleName, callback) => {
+const installModule = (moduleName, callback) => {
   logger.info('installing module: ' + moduleName);
   npm.load({}, err => {
     npm.commands.install(__dirname, [moduleName], err => {
@@ -33,9 +33,9 @@ let installModule = (moduleName, callback) => {
 };
 
 // make sure all modules are installed, installs missing ones, then calls done
-let installModules = (modules, moduleType, forceUpdate, done) => {
+const installModules = (modules, moduleType, forceUpdate, done) => {
   async.eachSeries(modules, (moduleShortName, callback) => {
-    let moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
+    const moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
     if (!checkModule(moduleName) || forceUpdate) {
             // perform install / update
       installModule(moduleName, callback);
@@ -64,13 +64,13 @@ exports.loadBackends = (player, backends, forceUpdate, done) => {
   installModules(backends, 'backend', forceUpdate, () => {
         // then initialize all backends in parallel
     async.map(backends, (backend, callback) => {
-      let moduleLogger = labeledLogger(backend);
-      let moduleName = 'nodeplayer-backend-' + backend;
+      const moduleLogger = labeledLogger(backend);
+      const moduleName = 'nodeplayer-backend-' + backend;
       if (moduleName) {
         moduleLogger.verbose('initializing...');
 
-        let Module = require(moduleName);
-        let instance = new Module(err => {
+        const Module = require(moduleName);
+        const instance = new Module(err => {
           if (err) {
             moduleLogger.error('while initializing: ' + err);
             callback();
@@ -100,13 +100,13 @@ exports.loadPlugins = (player, plugins, forceUpdate, done) => {
   installModules(plugins, 'plugin', forceUpdate, () => {
         // then initialize all plugins in series
     async.mapSeries(plugins, (plugin, callback) => {
-      let moduleLogger = labeledLogger(plugin);
-      let moduleName = 'nodeplayer-plugin-' + plugin;
+      const moduleLogger = labeledLogger(plugin);
+      const moduleName = 'nodeplayer-plugin-' + plugin;
       if (checkModule(moduleName)) {
         moduleLogger.verbose('initializing...');
 
-        let Module = require(moduleName);
-        let instance = new Module(player, err => {
+        const Module = require(moduleName);
+        const instance = new Module(player, err => {
           if (err) {
             moduleLogger.error('while initializing: ' + err);
             callback();

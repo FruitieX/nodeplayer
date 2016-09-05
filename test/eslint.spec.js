@@ -1,6 +1,6 @@
-let lint = require('mocha-eslint');
+const lint = require('mocha-eslint');
 
-let paths = [
+const paths = [
   'bin',
   'src',
   'test',

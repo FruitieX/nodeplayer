@@ -1,10 +1,10 @@
 'use strict';
-let _ = require('lodash');
-let async = require('async');
-let util = require('util');
-let labeledLogger = require('./logger');
+const _ = require('lodash');
+const async = require('async');
+const util = require('util');
+const labeledLogger = require('./logger');
 import Queue from './queue';
-let modules = require('./modules');
+const modules = require('./modules');
 
 export default class Player {
   constructor(options) {
@@ -32,9 +32,9 @@ export default class Player {
    * Initializes player
    */
   init() {
-    let player = this;
-    let config = player.config;
-    let forceUpdate = false;
+    const player = this;
+    const config = player.config;
+    const forceUpdate = false;
 
     // initialize plugins & backends
     async.series([
@@ -83,7 +83,7 @@ export default class Player {
 
     _.find(this.plugins, plugin => {
       if (plugin.hooks[hook]) {
-        let fun = plugin.hooks[hook];
+        const fun = plugin.hooks[hook];
         err = fun.apply(null, argv);
         return err;
       }
@@ -124,8 +124,8 @@ export default class Player {
     clearTimeout(this.songEndTimeout);
     this.play = false;
 
-    let np = this.nowPlaying;
-    let pos = np.playback.startPos + (new Date().getTime() - np.playback.startTime);
+    const np = this.nowPlaying;
+    const pos = np.playback.startPos + (new Date().getTime() - np.playback.startTime);
     if (np) {
       np.playback = {
         startTime: 0,
@@ -141,7 +141,7 @@ export default class Player {
    */
   startPlayback(position) {
     position = position || 0;
-    let player = this;
+    const player = this;
 
     if (!this.nowPlaying) {
           // find first song in queue
@@ -185,13 +185,13 @@ export default class Player {
   }
 
   songEnd() {
-    let np = this.getNowPlaying();
-    let npIndex = np ? this.queue.findSongIndex(np.uuid) : -1;
+    const np = this.getNowPlaying();
+    const npIndex = np ? this.queue.findSongIndex(np.uuid) : -1;
 
     this.logger.info('end of song ' + np.uuid);
     this.callHooks('onSongEnd', [np]);
 
-    let nextSong = this.queue.songs[npIndex + 1];
+    const nextSong = this.queue.songs[npIndex + 1];
     if (nextSong) {
       this.changeSong(nextSong.uuid);
     } else {
@@ -208,7 +208,7 @@ export default class Player {
 
   // TODO: move these to song class?
   setPrepareTimeout(song) {
-    let player = this;
+    const player = this;
 
     if (song.prepareTimeout) {
       clearTimeout(song.prepareTimeout);
@@ -291,7 +291,7 @@ export default class Player {
   }
 
   prepareSong(song, callback) {
-    let self = this;
+    const self = this;
 
     if (!song) {
       throw new Error('prepareSong() without song');
@@ -334,7 +334,7 @@ export default class Player {
    * Prepare now playing and next song for playback
    */
   prepareSongs() {
-    let player = this;
+    const player = this;
 
     let currentSong;
     async.series([
@@ -354,7 +354,7 @@ export default class Player {
       },
       callback => {
               // prepare next song in playlist
-        let nextSong = player.queue.songs[player.queue.findSongIndex(currentSong) + 1];
+        const nextSong = player.queue.songs[player.queue.findSongIndex(currentSong) + 1];
         if (nextSong) {
           player.prepareSong(nextSong, callback);
         } else {
@@ -369,8 +369,8 @@ export default class Player {
 
   getPlaylists(callback) {
     let resultCnt = 0;
-    let allResults = {};
-    let player = this;
+    const allResults = {};
+    const player = this;
 
     _.each(this.backends, backend => {
       if (!backend.getPlaylists) {
@@ -399,7 +399,7 @@ export default class Player {
   // make a search query to backends
   searchBackends(query, callback) {
     let resultCnt = 0;
-    let allResults = {};
+    const allResults = {};
 
     _.each(this.backends, backend => {
       backend.search(query, _.bind(results => {
@@ -407,12 +407,12 @@ export default class Player {
 
               // make a temporary copy of songlist, clear songlist, check
               // each song and add them again if they are ok
-        let tempSongs = _.clone(results.songs);
+        const tempSongs = _.clone(results.songs);
         allResults[backend.name] = results;
         allResults[backend.name].songs = {};
 
         _.each(tempSongs, song => {
-          let err = this.callHooks('preAddSearchResult', [song]);
+          const err = this.callHooks('preAddSearchResult', [song]);
           if (err) {
             this.logger.error('preAddSearchResult hook error: ' + err);
           } else {

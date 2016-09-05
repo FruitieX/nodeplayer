@@ -1,9 +1,9 @@
 'use strict';
 
-let _ = require('lodash');
+const _ = require('lodash');
 
-let async = require('async');
-let path = require('path');
+const async = require('async');
+const path = require('path');
 import Plugin from '../plugin';
 
 export default class Rest extends Plugin {
@@ -11,7 +11,7 @@ export default class Rest extends Plugin {
     super();
 
     // NOTE: no argument passed so we get the core's config
-    let config = require('../config').getConfig();
+    const config = require('../config').getConfig();
 
     if (!player.app) {
       return callback('module must be initialized after express module!');
@@ -29,7 +29,7 @@ export default class Rest extends Plugin {
     });
 
     player.app.get('/queue', (req, res) => {
-      let np = player.nowPlaying;
+      const np = player.nowPlaying;
       let pos = 0;
       if (np) {
         if (np.playback.startTime) {
@@ -49,12 +49,12 @@ export default class Rest extends Plugin {
 
     // TODO: error handling
     player.app.post('/queue/song', (req, res) => {
-      let err = player.queue.insertSongs(null, req.body);
+      const err = player.queue.insertSongs(null, req.body);
 
       res.sendRes(err);
     });
     player.app.post('/queue/song/:at', (req, res) => {
-      let err = player.queue.insertSongs(req.params.at, req.body);
+      const err = player.queue.insertSongs(req.params.at, req.body);
 
       res.sendRes(err);
     });
@@ -109,7 +109,7 @@ export default class Rest extends Plugin {
     });
 
     this.pendingRequests = {};
-    let rest = this;
+    const rest = this;
     this.registerHook('onPrepareProgress', (song, bytesWritten, done) => {
       if (!rest.pendingRequests[song.backend.name]) {
         return;
@@ -148,17 +148,17 @@ export default class Rest extends Plugin {
 
             // provide API path for music data, might block while song is preparing
       player.app.get('/song/' + backendName + '/:fileName', (req, res, next) => {
-        let extIndex = req.params.fileName.lastIndexOf('.');
-        let songId = req.params.fileName.substring(0, extIndex);
-        let songFormat = req.params.fileName.substring(extIndex + 1);
+        const extIndex = req.params.fileName.lastIndexOf('.');
+        const songId = req.params.fileName.substring(0, extIndex);
+        const songFormat = req.params.fileName.substring(extIndex + 1);
 
-        let backend = player.backends[backendName];
-        let filename = path.join(backendName, songId + '.' + songFormat);
+        const backend = player.backends[backendName];
+        const filename = path.join(backendName, songId + '.' + songFormat);
 
         res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
         res.setHeader('Accept-Ranges', 'bytes');
 
-        let queuedSong = _.find(player.queue.serialize(), song => {
+        const queuedSong = _.find(player.queue.serialize(), song => {
           return song.songId === songId && song.backendName === backendName;
         });
 
@@ -183,11 +183,11 @@ export default class Rest extends Plugin {
               });
             } else if (backend.songsPreparing[songId]) {
                             // song is preparing
-              let song = backend.songsPreparing[songId];
+              const song = backend.songsPreparing[songId];
 
-              let haveRange = [];
+              const haveRange = [];
               let wishRange = [];
-              let serveRange = [];
+              const serveRange = [];
 
               haveRange[0] = 0;
               haveRange[1] = song.prepare.data.length - 1;
@@ -224,7 +224,7 @@ export default class Rest extends Plugin {
                 rest.pendingRequests[backendName][songId] = [];
               }
 
-              let client = {
+              const client = {
                 res: res,
                 serveRange: serveRange,
                 wishRange: wishRange,

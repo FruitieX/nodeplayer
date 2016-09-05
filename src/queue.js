@@ -1,4 +1,4 @@
-let _ = require('lodash');
+const _ = require('lodash');
 import Song from './song';
 
 /**
@@ -25,7 +25,7 @@ export default class Queue {
    * @return {[SerializedSong]} - List of songs in serialized format
    */
   serialize() {
-    let serialized = _.map(this.songs, song => {
+    const serialized = _.map(this.songs, song => {
       return song.serialize();
     });
 
@@ -60,7 +60,7 @@ export default class Queue {
    * @return {String|null} - UUID, null if not found
    */
   uuidAtIndex(index) {
-    let song = this.songs[index];
+    const song = this.songs[index];
     return song ? song.uuid : null;
   }
 
@@ -99,7 +99,7 @@ export default class Queue {
     songs = _.map(songs, song => {
           // TODO: this would be best done in the song constructor,
           // effectively making it a SerializedSong object deserializer
-      let backend = this.player.backends[song.backendName];
+      const backend = this.player.backends[song.backendName];
       if (!backend) {
         throw new Error('Song constructor called with invalid backend: ' + song.backendName);
       }
@@ -108,7 +108,7 @@ export default class Queue {
     }, this);
 
       // perform insertion
-    let args = [pos, 0].concat(songs);
+    const args = [pos, 0].concat(songs);
     Array.prototype.splice.apply(this.songs, args);
 
     this.player.prepareSongs();
@@ -121,30 +121,30 @@ export default class Queue {
    * @return {Song[] | Error} - List of removed songs, Error in case of errors
    */
   removeSongs(at, cnt) {
-    let pos = this.findSongIndex(at);
+    const pos = this.findSongIndex(at);
     if (pos < 0) {
       return 'Song with UUID ' + at + ' not found!';
     }
 
       // cancel preparing all songs to be deleted
     for (let i = pos; i < pos + cnt && i < this.songs.length; i++) {
-      let song = this.songs[i];
+      const song = this.songs[i];
       if (song.cancelPrepare) {
         song.cancelPrepare('Song removed.');
       }
     }
 
       // store index of now playing song
-    let np = this.player.nowPlaying;
-    let npIndex = np ? this.findSongIndex(np.uuid) : -1;
+    const np = this.player.nowPlaying;
+    const npIndex = np ? this.findSongIndex(np.uuid) : -1;
 
       // perform deletion
-    let removed = this.songs.splice(pos, cnt);
+    const removed = this.songs.splice(pos, cnt);
 
       // was now playing removed?
     if (pos <= npIndex && pos + cnt >= npIndex) {
           // change to first song after splice
-      let newNp = this.songs[pos];
+      const newNp = this.songs[pos];
       this.player.changeSong(newNp ? newNp.uuid : null);
     } else {
       this.player.prepareSongs();

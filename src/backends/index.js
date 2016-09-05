@@ -1,6 +1,6 @@
 import Local from './local';
 
-let Backends = [];
+const Backends = [];
 Backends.push(Local);
 
 module.exports = Backends;

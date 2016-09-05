@@ -1,14 +1,14 @@
 'use strict';
 
-let path = require('path');
-let fs = require('fs');
-let mkdirp = require('mkdirp');
-let mongoose = require('mongoose');
-let async = require('async');
-let walk = require('walk');
-let ffprobe = require('node-ffprobe');
-let _ = require('lodash');
-let escapeStringRegexp = require('escape-string-regexp');
+const path = require('path');
+const fs = require('fs');
+const mkdirp = require('mkdirp');
+const mongoose = require('mongoose');
+const async = require('async');
+const walk = require('walk');
+const ffprobe = require('node-ffprobe');
+const _ = require('lodash');
+const escapeStringRegexp = require('escape-string-regexp');
 
 import Backend from '../backend';
 
@@ -81,7 +81,7 @@ var probeCallback = (err, probeData, next) => {
 */
 
 // database model
-let SongModel = mongoose.model('Song', {
+const SongModel = mongoose.model('Song', {
   title: String,
   artist: String,
   album: String,
@@ -114,8 +114,8 @@ let SongModel = mongoose.model('Song', {
  * @param {String} fileExt - Filename extension
  * @return {Metadata} Song metadata
  */
-let guessMetadataFromPath = (filePath, fileExt) => {
-  let fileName = path.basename(filePath, fileExt);
+const guessMetadataFromPath = (filePath, fileExt) => {
+  const fileName = path.basename(filePath, fileExt);
 
   // split filename at dashes, trim extra whitespace, e.g:
   let splitName = fileName.split('-');
@@ -135,10 +135,10 @@ export default class Local extends Backend {
   constructor(callback) {
     super();
 
-    let self = this;
+    const self = this;
 
       // NOTE: no argument passed so we get the core's config
-    let config = require('../config').getConfig();
+    const config = require('../config').getConfig();
     this.config = config;
     this.songCachePath = config.songCachePath;
     this.importFormats = config.importFormats;
@@ -149,7 +149,7 @@ export default class Local extends Backend {
     // connect to the database
     mongoose.connect(config.mongo);
 
-    let db = mongoose.connection;
+    const db = mongoose.connection;
     db.on('error', err => {
       return callback(err, self);
     });
@@ -157,12 +157,12 @@ export default class Local extends Backend {
       return callback(null, self);
     });
 
-    let options = {
+    const options = {
       followLinks: config.followSymlinks,
     };
 
-    let insertSong = (probeData, done) => {
-      let guessMetadata = guessMetadataFromPath(probeData.file, probeData.fileext);
+    const insertSong = (probeData, done) => {
+      const guessMetadata = guessMetadataFromPath(probeData.file, probeData.fileext);
 
       let song = new SongModel({
         title: probeData.metadata.TITLE || guessMetadata.title,
@@ -189,7 +189,7 @@ export default class Local extends Backend {
     };
 
       // create async.js queue to limit concurrent probes
-    let q = async.queue((task, done) => {
+    const q = async.queue((task, done) => {
       ffprobe(task.filename, (err, probeData) => {
         if (!probeData) {
           return done();
@@ -215,11 +215,11 @@ export default class Local extends Backend {
       // TODO: filter by allowed filename extensions
     if (config.rescanAtStart) {
       self.log.info('Scanning directory: ' + config.importPath);
-      let walker = walk.walk(config.importPath, options);
-      let startTime = new Date();
+      const walker = walk.walk(config.importPath, options);
+      const startTime = new Date();
       let scanned = 0;
       walker.on('file', (root, fileStats, next) => {
-        let filename = path.join(root, fileStats.name);
+        const filename = path.join(root, fileStats.name);
         self.log.verbose('Scanning: ' + filename);
         scanned++;
         q.push({
@@ -258,7 +258,7 @@ export default class Local extends Backend {
   }
 
   isPrepared(song) {
-    let filePath = path.join(this.songCachePath, 'local', song.songId + '.opus');
+    const filePath = path.join(this.songCachePath, 'local', song.songId + '.opus');
     return fs.existsSync(filePath);
   }
 
@@ -273,7 +273,7 @@ export default class Local extends Backend {
   }
 
   prepare(song, callback) {
-    let self = this;
+    const self = this;
 
     // TODO: move most of this into common code inside core
     if (self.songsPreparing[song.songId]) {
@@ -305,7 +305,7 @@ export default class Local extends Backend {
         if (canceled) {
           callback(new Error('song was canceled before encoding started'));
         } else if (item) {
-          let readStream = fs.createReadStream(item.filename);
+          const readStream = fs.createReadStream(item.filename);
           cancelEncode = self.encodeSong(readStream, 0, song, callback);
           readStream.on('error', err => {
             callback(err);
@@ -318,7 +318,7 @@ export default class Local extends Backend {
   }
 
   search(query, callback) {
-    let self = this;
+    const self = this;
 
     let q;
     if (query.any) {
@@ -335,7 +335,7 @@ export default class Local extends Backend {
       };
 
       _.keys(query).forEach(key => {
-        let criterion = {};
+        const criterion = {};
         criterion[key] = new RegExp(escapeStringRegexp(query[key]), 'i');
         q.$and.push(criterion);
       });
@@ -346,10 +346,10 @@ export default class Local extends Backend {
         return callback(err);
       }
 
-      let results = {};
+      const results = {};
       results.songs = {};
 
-      let numItems = items.length;
+      const numItems = items.length;
       let cur = 0;
       items.forEach(song => {
         if (Object.keys(results.songs).length <= self.config.searchResultCnt) {

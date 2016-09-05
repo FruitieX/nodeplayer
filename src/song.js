@@ -1,5 +1,5 @@
-let _ = require('lodash');
-let uuid = require('node-uuid');
+const _ = require('lodash');
+const uuid = require('node-uuid');
 
 /**
  * Constructor

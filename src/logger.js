@@ -1,6 +1,6 @@
 'use strict';
-let config = require('./config').getConfig();
-let winston = require('winston');
+const config = require('./config').getConfig();
+const winston = require('winston');
 
 module.exports = label => {
   return new (winston.Logger)({
