@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var Player = require('./player');
+import Player from './player';
 var p = new Player();
 
 p.init();

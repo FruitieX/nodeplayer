@@ -64,7 +64,7 @@ function Song(song, backend) {
  * Set playback status as started at specified optional position
  * @param {Number} [pos] - position to start playing at
  */
-Song.prototype.playbackStarted = function(pos) {
+Song.prototype.playbackStarted = (pos) => {
   this.playback = {
     startTime: new Date(),
     startPos: pos || null,
@@ -75,7 +75,7 @@ Song.prototype.playbackStarted = function(pos) {
  * Return serialized details of the song
  * @return {SerializedSong} - serialized Song object
  */
-Song.prototype.serialize = function() {
+Song.prototype.serialize = () => {
   return {
     uuid: this.uuid,
     title: this.title,
@@ -96,7 +96,7 @@ Song.prototype.serialize = function() {
  * Synchronously(!) returns whether the song is prepared or not
  * @return {Boolean} - true if song is prepared, false if not
  */
-Song.prototype.isPrepared = function() {
+Song.prototype.isPrepared = () => {
   return this.backend.isPrepared(this);
 };
 
@@ -104,14 +104,14 @@ Song.prototype.isPrepared = function() {
  * Prepare song for playback
  * @param {encodeCallback} callback - Called when song is ready or on error
  */
-Song.prototype.prepare = function(callback) {
+Song.prototype.prepare = (callback) => {
   this.backend.prepare(this, callback);
 };
 
 /**
  * Cancel song preparation if applicable
  */
-Song.prototype.cancelPrepare = function() {
+Song.prototype.cancelPrepare = () => {
   this.backend.cancelPrepare(this);
 };
 

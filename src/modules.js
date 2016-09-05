@@ -7,7 +7,7 @@ var BuiltinBackends = require('./backends');
 var _ = require('lodash');
 var logger = labeledLogger('modules');
 
-var checkModule = function(module) {
+var checkModule = (module) => {
   try {
     require.resolve(module);
     return true;
@@ -17,10 +17,10 @@ var checkModule = function(module) {
 };
 
 // install a single module
-var installModule = function(moduleName, callback) {
+var installModule = (moduleName, callback) => {
   logger.info('installing module: ' + moduleName);
-  npm.load({}, function(err) {
-    npm.commands.install(__dirname, [moduleName], function(err) {
+  npm.load({}, (err) => {
+    npm.commands.install(__dirname, [moduleName], (err) => {
       if (err) {
         logger.error(moduleName + ' installation failed:', err);
         callback();
@@ -33,8 +33,8 @@ var installModule = function(moduleName, callback) {
 };
 
 // make sure all modules are installed, installs missing ones, then calls done
-var installModules = function(modules, moduleType, forceUpdate, done) {
-  async.eachSeries(modules, function(moduleShortName, callback) {
+var installModules = (modules, moduleType, forceUpdate, done) => {
+  async.eachSeries(modules, (moduleShortName, callback) => {
     var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
     if (!checkModule(moduleName) || forceUpdate) {
             // perform install / update
@@ -47,11 +47,11 @@ var installModules = function(modules, moduleType, forceUpdate, done) {
 };
 
 /*
-var initModule = function(moduleShortName, moduleType, callback) {
+var initModule = (moduleShortName, moduleType, callback) => {
   var moduleName = 'nodeplayer-' + moduleType + '-' + moduleShortName;
   var module = require(moduleName);
 
-  module.init(function(err) {
+  module.init((err) => {
     callback(err, module);
   });
 };
@@ -59,18 +59,18 @@ var initModule = function(moduleShortName, moduleType, callback) {
 
 // TODO: this probably doesn't work
 // needs rewrite
-exports.loadBackends = function(player, backends, forceUpdate, done) {
+exports.loadBackends = (player, backends, forceUpdate, done) => {
     // first install missing backends
-  installModules(backends, 'backend', forceUpdate, function() {
+  installModules(backends, 'backend', forceUpdate, () => {
         // then initialize all backends in parallel
-    async.map(backends, function(backend, callback) {
+    async.map(backends, (backend, callback) => {
       var moduleLogger = labeledLogger(backend);
       var moduleName = 'nodeplayer-backend-' + backend;
       if (moduleName) {
         moduleLogger.verbose('initializing...');
 
         var Module = require(moduleName);
-        var instance = new Module(function(err) {
+        var instance = new Module((err) => {
           if (err) {
             moduleLogger.error('while initializing: ' + err);
             callback();
@@ -85,7 +85,7 @@ exports.loadBackends = function(player, backends, forceUpdate, done) {
         moduleLogger.info('not loading backend: ' + backend);
         callback();
       }
-    }, function(err, results) {
+    }, (err, results) => {
       logger.info('all backend modules initialized');
       results = _.filter(results, _.identity);
       done(results);
@@ -95,18 +95,18 @@ exports.loadBackends = function(player, backends, forceUpdate, done) {
 
 // TODO: this probably doesn't work
 // needs rewrite
-exports.loadPlugins = function(player, plugins, forceUpdate, done) {
+exports.loadPlugins = (player, plugins, forceUpdate, done) => {
     // first install missing plugins
-  installModules(plugins, 'plugin', forceUpdate, function() {
+  installModules(plugins, 'plugin', forceUpdate, () => {
         // then initialize all plugins in series
-    async.mapSeries(plugins, function(plugin, callback) {
+    async.mapSeries(plugins, (plugin, callback) => {
       var moduleLogger = labeledLogger(plugin);
       var moduleName = 'nodeplayer-plugin-' + plugin;
       if (checkModule(moduleName)) {
         moduleLogger.verbose('initializing...');
 
         var Module = require(moduleName);
-        var instance = new Module(player, function(err) {
+        var instance = new Module(player, (err) => {
           if (err) {
             moduleLogger.error('while initializing: ' + err);
             callback();
@@ -121,7 +121,7 @@ exports.loadPlugins = function(player, plugins, forceUpdate, done) {
         moduleLogger.info('not loading plugin: ' + plugin);
         callback();
       }
-    }, function(err, results) {
+    }, (err, results) => {
       logger.info('all plugin modules initialized');
       results = _.filter(results, _.identity);
       done(results);
@@ -129,9 +129,9 @@ exports.loadPlugins = function(player, plugins, forceUpdate, done) {
   });
 };
 
-exports.loadBuiltinPlugins = function(player, done) {
-  async.mapSeries(BuiltinPlugins, function(Plugin, callback) {
-    return new Plugin(player, function(err, plugin) {
+exports.loadBuiltinPlugins = (player, done) => {
+  async.mapSeries(BuiltinPlugins, (Plugin, callback) => {
+    return new Plugin(player, (err, plugin) => {
       if (err) {
         plugin.log.error('while initializing: ' + err);
         return callback();
@@ -141,14 +141,14 @@ exports.loadBuiltinPlugins = function(player, done) {
       player.callHooks('onPluginInitialized', [plugin.name]);
       callback(null, { [plugin.name]: plugin });
     });
-  }, function(err, results) {
+  }, (err, results) => {
     done(Object.assign({}, ...results));
   });
 };
 
-exports.loadBuiltinBackends = function(player, done) {
-  async.mapSeries(BuiltinBackends, function(Backend, callback) {
-    return new Backend(function(err, backend) {
+exports.loadBuiltinBackends = (player, done) => {
+  async.mapSeries(BuiltinBackends, (Backend, callback) => {
+    return new Backend((err, backend) => {
       if (err) {
         backend.log.error('while initializing: ' + err);
         return callback();
@@ -158,7 +158,7 @@ exports.loadBuiltinBackends = function(player, done) {
       backend.log.verbose('backend initialized');
       callback(null, { [backend.name]: backend });
     });
-  }, function(err, results) {
+  }, (err, results) => {
     done(Object.assign({}, ...results));
   });
 };

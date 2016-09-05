@@ -29,7 +29,7 @@ function Backend() {
  * @param {encodeCallback} callback - Called when song is ready or on error
  * @return {Function} - Can be called to terminate encoding
  */
-Backend.prototype.encodeSong = function(stream, seek, song, callback) {
+Backend.prototype.encodeSong = (stream, seek, song, callback) => {
   var self = this;
 
   var encodedPath = path.join(config.songCachePath, self.name,
@@ -42,14 +42,14 @@ Backend.prototype.encodeSong = function(stream, seek, song, callback) {
         .audioCodec('libopus')
         .audioBitrate('192')
         .format('opus')
-        .on('error', function(err) {
+        .on('error', (err) => {
           self.log.error(self.name + ': error while transcoding ' + song.songId + ': ' + err);
           delete song.prepare.data;
           callback(err);
         });
 
   var opusStream = command.pipe(null, { end: true });
-  opusStream.on('data', function(chunk) {
+  opusStream.on('data', (chunk) => {
         // TODO: this could be optimized by using larger buffers
         // song.prepare.data = Buffer.concat([song.prepare.data, chunk], song.prepare.data.length + chunk.length);
 
@@ -95,7 +95,7 @@ Backend.prototype.encodeSong = function(stream, seek, song, callback) {
   self.log.verbose('transcoding ' + song.songId + '...');
 
     // return a function which can be used for terminating encoding
-  return function(err) {
+  return (err) => {
     command.kill();
     self.log.verbose(self.name + ': canceled preparing: ' + song.songId + ': ' + err);
     delete song.prepare;
@@ -107,7 +107,7 @@ Backend.prototype.encodeSong = function(stream, seek, song, callback) {
  * Cancel song preparation if applicable
  * @param {Song} song - Song to cancel
  */
-Backend.prototype.cancelPrepare = function(song) {
+Backend.prototype.cancelPrepare = (song) => {
   if (this.songsPreparing[song.songId]) {
     this.log.info('Canceling song preparing: ' + song.songId);
     this.songsPreparing[song.songId].cancel();
@@ -130,7 +130,7 @@ Backend.prototype.cancelPrepare = function(song) {
  * @param {Song} song - Query concerns this song
  * @param {durationCallback} callback - Called with duration
  */
-Backend.prototype.getDuration = function(song, callback) {
+Backend.prototype.getDuration = (song, callback) => {
   var err = 'FATAL: backend does not implement getDuration()!';
   this.log.error(err);
   callback(err);
@@ -141,7 +141,7 @@ Backend.prototype.getDuration = function(song, callback) {
  * @param {Song} song - Query concerns this song
  * @return {Boolean} - true if song is prepared, false if not
  */
-Backend.prototype.isPrepared = function(song) {
+Backend.prototype.isPrepared = (song) => {
   this.log.error('FATAL: backend does not implement songPrepared()!');
   return false;
 };
@@ -151,7 +151,7 @@ Backend.prototype.isPrepared = function(song) {
  * @param {Song} song - Song to prepare
  * @param {encodeCallback} callback - Called when song is ready or on error
  */
-Backend.prototype.prepare = function(song, callback) {
+Backend.prototype.prepare = (song, callback) => {
   this.log.error('FATAL: backend does not implement prepare()!');
   callback(new Error('FATAL: backend does not implement prepare()!'));
 };
@@ -165,7 +165,7 @@ Backend.prototype.prepare = function(song, callback) {
  * @param {Boolean} [query.any] - Match any of the above, otherwise all fields have to match
  * @param {Function} callback - Called with error or results
  */
-Backend.prototype.search = function(query, callback) {
+Backend.prototype.search = (query, callback) => {
   this.log.error('FATAL: backend does not implement search()!');
   callback(new Error('FATAL: backend does not implement search()!'));
 };

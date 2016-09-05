@@ -23,8 +23,8 @@ function Queue(player) {
  * Get serialized list of songs in queue
  * @return {[SerializedSong]} - List of songs in serialized format
  */
-Queue.prototype.serialize = function() {
-  var serialized = _.map(this.songs, function(song) {
+Queue.prototype.serialize = () => {
+  var serialized = _.map(this.songs, (song) => {
     return song.serialize();
   });
 
@@ -36,8 +36,8 @@ Queue.prototype.serialize = function() {
  * @param {String} at - Look for song with this UUID
  * @return {Number} - Index of song, -1 if not found
  */
-Queue.prototype.findSongIndex = function(at) {
-  return _.findIndex(this.songs, function(song) {
+Queue.prototype.findSongIndex = (at) => {
+  return _.findIndex(this.songs, (song) => {
     return song.uuid === at;
   });
 };
@@ -47,8 +47,8 @@ Queue.prototype.findSongIndex = function(at) {
  * @param {String} at - Look for song with this UUID
  * @return {Song|null} - Song object, null if not found
  */
-Queue.prototype.findSong = function(at) {
-  return _.find(this.songs, function(song) {
+Queue.prototype.findSong = (at) => {
+  return _.find(this.songs, (song) => {
     return song.uuid === at;
   }) || null;
 };
@@ -58,7 +58,7 @@ Queue.prototype.findSong = function(at) {
  * @param {Number} index - Look for song at this index
  * @return {String|null} - UUID, null if not found
  */
-Queue.prototype.uuidAtIndex = function(index) {
+Queue.prototype.uuidAtIndex = (index) => {
   var song = this.songs[index];
   return song ? song.uuid : null;
 };
@@ -67,7 +67,7 @@ Queue.prototype.uuidAtIndex = function(index) {
  * Returns queue length
  * @return {Number} - Queue length
  */
-Queue.prototype.getLength = function() {
+Queue.prototype.getLength = () => {
   return this.songs.length;
 };
 
@@ -78,7 +78,7 @@ Queue.prototype.getLength = function() {
  * @param {Object[]} songs - List of songs to insert
  * @return {Error} - in case of errors
  */
-Queue.prototype.insertSongs = function(at, songs) {
+Queue.prototype.insertSongs = (at, songs) => {
   var pos;
   if (at === null) {
         // insert at start of queue
@@ -95,7 +95,7 @@ Queue.prototype.insertSongs = function(at, songs) {
   }
 
     // generate Song objects of each song
-  songs = _.map(songs, function(song) {
+  songs = _.map(songs, (song) => {
         // TODO: this would be best done in the song constructor,
         // effectively making it a SerializedSong object deserializer
     var backend = this.player.backends[song.backendName];
@@ -119,7 +119,7 @@ Queue.prototype.insertSongs = function(at, songs) {
  * @param {Number} cnt - Number of songs to delete
  * @return {Song[] | Error} - List of removed songs, Error in case of errors
  */
-Queue.prototype.removeSongs = function(at, cnt) {
+Queue.prototype.removeSongs = (at, cnt) => {
   var pos = this.findSongIndex(at);
   if (pos < 0) {
     return 'Song with UUID ' + at + ' not found!';
@@ -155,7 +155,7 @@ Queue.prototype.removeSongs = function(at, cnt) {
 /**
  * Toggle queue shuffling
  */
-Queue.prototype.shuffle = function() {
+Queue.prototype.shuffle = () => {
   if (this.unshuffledSongs) {
         // unshuffle
 

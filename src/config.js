@@ -75,12 +75,12 @@ defaultConfig.maxScore = 10; // FIXME: ATM the search algo can return VERY irrel
 // hostname of the server, may be used as a default value by other plugins
 defaultConfig.hostname = os.hostname();
 
-exports.getDefaultConfig = function() {
+exports.getDefaultConfig = () => {
   return defaultConfig;
 };
 
 // path and defaults are optional, if undefined then values corresponding to core config are used
-exports.getConfig = function(module, defaults) {
+exports.getConfig = (module, defaults) => {
   if (process.env.NODE_ENV === 'test') {
         // unit tests should always use default config
     return (defaults || defaultConfig);

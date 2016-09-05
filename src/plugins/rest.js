@@ -60,7 +60,7 @@ export default class Rest extends Plugin {
     });
 
     /*
-    player.app.post('/queue/move/:pos', function(req, res) {
+    player.app.post('/queue/move/:pos', (req, res) => {
         var err = player.moveInQueue(
             Number(req.params.pos),
             Number(req.body.to),

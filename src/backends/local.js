@@ -17,7 +17,7 @@ var Backend = require('../backend');
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
 /*
-var probeCallback = function(err, probeData, next) {
+var probeCallback = (err, probeData, next) => {
     var formats = config.importFormats;
     if (probeData) {
         // ignore camel case rule here as we can't do anything about probeData
@@ -64,7 +64,7 @@ var probeCallback = function(err, probeData, next) {
 
             song.duration = probeData.format.duration * 1000;
             SongModel.update({file: probeData.file}, {'$set':song}, {upsert: true},
-                    function(err, result) {
+                    (err, result) => {
                 if (result == 1) {
                     self.log.debug('Upserted: ' + probeData.file);
                 } else {
@@ -118,12 +118,12 @@ var SongModel = mongoose.model('Song', {
  * @param {String} fileExt - Filename extension
  * @return {Metadata} Song metadata
  */
-var guessMetadataFromPath = function(filePath, fileExt) {
+var guessMetadataFromPath = (filePath, fileExt) => {
   var fileName = path.basename(filePath, fileExt);
 
   // split filename at dashes, trim extra whitespace, e.g:
   var splitName = fileName.split('-');
-  splitName = _.map(splitName, function(name) {
+  splitName = _.map(splitName, (name) => {
     return name.trim();
   });
 
@@ -153,10 +153,10 @@ function Local(callback) {
   mongoose.connect(config.mongo);
 
   var db = mongoose.connection;
-  db.on('error', function(err) {
+  db.on('error', (err) => {
     return callback(err, self);
   });
-  db.once('open', function() {
+  db.once('open', () => {
     return callback(null, self);
   });
 
@@ -164,7 +164,7 @@ function Local(callback) {
     followLinks: config.followSymlinks,
   };
 
-  var insertSong = function(probeData, done) {
+  var insertSong = (probeData, done) => {
     var guessMetadata = guessMetadataFromPath(probeData.file, probeData.fileext);
 
     var song = new SongModel({
@@ -183,7 +183,7 @@ function Local(callback) {
 
     SongModel.findOneAndUpdate({
       filename: probeData.file,
-    }, song, { upsert: true }, function(err) {
+    }, song, { upsert: true }, (err) => {
       if (err) {
         self.log.error('while inserting song: ' + probeData.file + ', ' + err);
       }
@@ -192,15 +192,15 @@ function Local(callback) {
   };
 
     // create async.js queue to limit concurrent probes
-  var q = async.queue(function(task, done) {
-    ffprobe(task.filename, function(err, probeData) {
+  var q = async.queue((task, done) => {
+    ffprobe(task.filename, (err, probeData) => {
       if (!probeData) {
         return done();
       }
 
       var validStreams = false;
 
-      if (_.contains(self.importFormats, probeData.format.format_name)) {
+      if (_.includes(self.importFormats, probeData.format.format_name)) {
         validStreams = true;
       }
 
@@ -221,7 +221,7 @@ function Local(callback) {
     var walker = walk.walk(config.importPath, options);
     var startTime = new Date();
     var scanned = 0;
-    walker.on('file', function(root, fileStats, next) {
+    walker.on('file', (root, fileStats, next) => {
       var filename = path.join(root, fileStats.name);
       self.log.verbose('Scanning: ' + filename);
       scanned++;
@@ -230,7 +230,7 @@ function Local(callback) {
       });
       next();
     });
-    walker.on('end', function() {
+    walker.on('end', () => {
       self.log.verbose('Scanned files: ' + scanned);
       self.log.verbose('Done in: ' +
                     Math.round((new Date() - startTime) / 1000) + ' seconds');
@@ -244,7 +244,7 @@ function Local(callback) {
     watch(config.importPath, {
         recursive: true,
         followSymlinks: config.followSymlinks
-    }, function(filename) {
+    }, (filename) => {
         if (fs.existsSync(filename)) {
             self.log.debug(filename + ' modified or created, queued for probing');
             q.unshift({
@@ -252,7 +252,7 @@ function Local(callback) {
             });
         } else {
             self.log.debug(filename + ' deleted');
-            db.collection('songs').remove({file: filename}, function(err, items) {
+            db.collection('songs').remove({file: filename}, (err, items) => {
                 self.log.debug(filename + ' deleted from db: ' + err + ', ' + items);
             });
         }
@@ -263,7 +263,7 @@ function Local(callback) {
 // must be called immediately after constructor
 util.inherits(Local, Backend);
 
-Local.prototype.isPrepared = function(song) {
+Local.prototype.isPrepared = (song) => {
   var filePath = path.join(this.songCachePath, 'local', song.songId + '.opus');
   return fs.existsSync(filePath);
 };
@@ -278,7 +278,7 @@ Local.prototype.getDuration = (song, callback) => {
   });
 };
 
-Local.prototype.prepare = function(song, callback) {
+Local.prototype.prepare = (song, callback) => {
   var self = this;
 
   // TODO: move most of this into common code inside core
@@ -297,7 +297,7 @@ Local.prototype.prepare = function(song, callback) {
     song.prepare = {
       data: new Buffer.allocUnsafe(1024 * 1024),
       dataPos: 0,
-      cancel: function() {
+      cancel: () => {
         canceled = true;
         if (cancelEncode) {
           cancelEncode();
@@ -307,13 +307,13 @@ Local.prototype.prepare = function(song, callback) {
 
     self.songsPreparing[song.songId] = song;
 
-    SongModel.findById(song.songId, function(err, item) {
+    SongModel.findById(song.songId, (err, item) => {
       if (canceled) {
         callback(new Error('song was canceled before encoding started'));
       } else if (item) {
         var readStream = fs.createReadStream(item.filename);
         cancelEncode = self.encodeSong(readStream, 0, song, callback);
-        readStream.on('error', function(err) {
+        readStream.on('error', (err) => {
           callback(err);
         });
       } else {
@@ -323,7 +323,7 @@ Local.prototype.prepare = function(song, callback) {
   }
 };
 
-Local.prototype.search = function(query, callback) {
+Local.prototype.search = (query, callback) => {
   var self = this;
 
   var q;
@@ -340,14 +340,14 @@ Local.prototype.search = function(query, callback) {
       $and: [],
     };
 
-    _.keys(query).forEach(function(key) {
+    _.keys(query).forEach((key) => {
       var criterion = {};
       criterion[key] = new RegExp(escapeStringRegexp(query[key]), 'i');
       q.$and.push(criterion);
     });
   }
 
-  SongModel.find(q).exec(function(err, items) {
+  SongModel.find(q).exec((err, items) => {
     if (err) {
       return callback(err);
     }
@@ -357,7 +357,7 @@ Local.prototype.search = function(query, callback) {
 
     var numItems = items.length;
     var cur = 0;
-    items.forEach(function(song) {
+    items.forEach((song) => {
       if (Object.keys(results.songs).length <= self.config.searchResultCnt) {
         song = song.toObject();
 
