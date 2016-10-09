@@ -396,7 +396,6 @@ export default class Player {
 
   // make a search query to backends
   searchBackends(query, done) {
-    console.log(this.backends);
     async.mapValues(this.backends, (backend, backendName, callback) => {
       backend.search(query, (err, results) => {
         if (err) {
@@ -406,11 +405,7 @@ export default class Player {
 
         callback(null, results);
       });
-    }, (err, allResults) => {
-      console.log(allResults);
-
-      done(null, allResults);
-    });
+    }, done);
   }
 
   // TODO: userID does not belong into core...?
