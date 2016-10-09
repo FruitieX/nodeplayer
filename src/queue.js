@@ -76,7 +76,7 @@ export default class Queue {
    * Insert songs into queue
    * @param {String | null} at - Insert songs after song with this UUID
    *                      (null = start of queue)
-   * @param {Object[]} songs - List of songs to insert
+   * @param {Song | Object[]} songs - Song or list of songs to insert
    * @return {Error} - in case of errors
    */
   insertSongs(at, songs) {
@@ -93,6 +93,10 @@ export default class Queue {
       }
 
       pos++; // insert after song
+    }
+
+    if (!_.isArray(songs)) {
+      songs = [songs];
     }
 
     // generate Song objects of each song
