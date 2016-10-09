@@ -395,42 +395,21 @@ export default class Player {
   }
 
   // make a search query to backends
-  searchBackends(query, callback) {
-    let resultCnt = 0;
-    const allResults = {};
-
-    _.each(this.backends, backend => {
-      backend.search(query, results => {
-        resultCnt++;
-
-        // make a temporary copy of songlist, clear songlist, check
-        // each song and add them again if they are ok
-        const tempSongs = _.clone(results.songs);
-        allResults[backend.name] = results;
-        allResults[backend.name].songs = {};
-
-        _.each(tempSongs, song => {
-          const err = this.callHooks('preAddSearchResult', [song]);
-          if (err) {
-            this.logger.error('preAddSearchResult hook error: ' + err);
-          } else {
-            allResults[backend.name].songs[song.songId] = song;
-          }
-        });
-
-        // got results from all services?
-        if (resultCnt >= Object.keys(this.backends).length) {
-          callback(allResults);
+  searchBackends(query, done) {
+    console.log(this.backends);
+    async.mapValues(this.backends, (backend, backendName, callback) => {
+      backend.search(query, (err, results) => {
+        if (err) {
+          this.logger.error('error while searching ' + backend.name + ': ' + err);
+          results.error = err;
         }
-      }, err => {
-        resultCnt++;
-        this.logger.error('error while searching ' + backend.name + ': ' + err);
 
-        // got results from all services?
-        if (resultCnt >= Object.keys(this.backends).length) {
-          callback(allResults);
-        }
+        callback(null, results);
       });
+    }, (err, allResults) => {
+      console.log(allResults);
+
+      done(null, allResults);
     });
   }
 

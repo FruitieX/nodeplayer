@@ -100,10 +100,10 @@ export default class Rest extends Plugin {
     });
 
     // search for songs, search terms in query params
-    player.app.get('/search', (req, res) => {
-      this.log.verbose('got search request: ' + JSON.stringify(req.body.query));
+    player.app.post('/search', (req, res) => {
+      this.log.verbose('got search request: ' + JSON.stringify(req.body));
 
-      player.searchBackends(req.body.query, results => {
+      player.searchBackends(req.body, (err, results) => {
         console.log(results);
         res.json(results);
       });
