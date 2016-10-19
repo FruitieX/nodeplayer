@@ -1,5 +1,40 @@
 'use strict';
 
+const Backend = require('../../').Backend;
+const path = require('path');
+const fs = require('fs');
+
+import knex from '../db';
+
+module.exports = class Local extends Backend {
+  constructor(callback) {
+    super();
+
+    callback(null, this);
+  }
+
+  isPrepared(song) {
+    const filePath = path.join(this.coreConfig.songCachePath, 'local', song.songId + '.opus');
+    return fs.existsSync(filePath);
+  }
+
+  getSongStream(song, callback) {
+    knex
+    .first('songs')
+    .where('songId', song.songId)
+    .then(song => {
+      // song id is file path
+      const filePath = song.songId;
+      let stream = fs.createReadStream(filePath);
+      callback(null, stream);
+    })
+    .catch(err => {
+      callback(err);
+    });
+  }
+};
+
+/*
 const path = require('path');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
@@ -11,6 +46,7 @@ const _ = require('lodash');
 const escapeStringRegexp = require('escape-string-regexp');
 
 import Backend from '../backend';
+*/
 
 /*
 var probeCallback = (err, probeData, next) => {
@@ -80,6 +116,7 @@ var probeCallback = (err, probeData, next) => {
 };
 */
 
+/*
 // database model
 const SongModel = mongoose.model('Song', {
   title:    String,
@@ -104,6 +141,7 @@ const SongModel = mongoose.model('Song', {
     dropDups: true,
   },
 });
+*/
 
 /**
  * Try to guess metadata from file path,
@@ -114,6 +152,8 @@ const SongModel = mongoose.model('Song', {
  * @param {String} fileExt - Filename extension
  * @return {Metadata} Song metadata
  */
+
+/*
 const guessMetadataFromPath = (filePath, fileExt) => {
   const fileName = path.basename(filePath, fileExt);
 
@@ -237,6 +277,7 @@ export default class Local extends Backend {
     // TODO: fs watch
     // set fs watcher on media directory
     // TODO: add a debounce so if the file keeps changing we don't probe it multiple times
+// */
     /*
     watch(config.importPath, {
         recursive: true,
@@ -255,6 +296,7 @@ export default class Local extends Backend {
         }
     });
     */
+  /*
   }
 
   isPrepared(song) {
@@ -373,3 +415,4 @@ export default class Local extends Backend {
     });
   }
 }
+*/

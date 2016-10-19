@@ -208,7 +208,6 @@ export default class Backend {
     return false;
   }
 
-
   /**
    * Get read stream for song
    * @param {Song} song - Song to prepare
