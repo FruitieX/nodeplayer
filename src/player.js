@@ -10,18 +10,18 @@ import { getConfig } from './config';
 
 export default class Player {
   constructor(options = {}) {
-    this.config          = getConfig();
-    this.logger          = labeledLogger('core');
-    this.queue           = new Queue(this);
-    this.nowPlaying      = null;
-    this.play            = false;
-    this.repeat          = false;
-    this.plugins         = {};
-    this.backends        = {};
+    this.config = getConfig();
+    this.logger = labeledLogger('core');
+    this.queue = new Queue(this);
+    this.nowPlaying = null;
+    this.play = false;
+    this.repeat = false;
+    this.plugins = {};
+    this.backends = {};
     this.prepareTimeouts = {};
-    this.volume          = 1;
-    this.songEndTimeout  = null;
-    this.pluginVars      = {};
+    this.volume = 1;
+    this.songEndTimeout = null;
+    this.pluginVars = {};
 
     this.init = this.init.bind(this);
   }

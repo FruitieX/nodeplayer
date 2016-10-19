@@ -104,7 +104,7 @@ export default class Rest extends Plugin {
       this.log.verbose('got search request: ' + JSON.stringify(req.body));
 
       player.searchBackends(req.body, (err, results) => {
-        console.log(results);
+        // console.log(results);
         res.json(results);
       });
     });

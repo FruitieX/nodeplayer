@@ -62,9 +62,10 @@ defaultConfig.rejectUnauthorized = true;
 
 // built-in local file backend
 defaultConfig.db = {
-  client: 'postgresql',
+  client:     'postgresql',
   connection: 'postgres;//postgres@127.0.0.1/nodeplayer',
-}
+};
+
 defaultConfig.mongo = 'mongodb://localhost:27017/nodeplayer-backend-file';
 defaultConfig.rescanAtStart = false;
 defaultConfig.importPath = path.join(getHomeDir(), 'music');

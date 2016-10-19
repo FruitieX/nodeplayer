@@ -64,7 +64,7 @@ exports.loadBackends = (player, backends, forceUpdate, done) => {
     moduleName = 'nodeplayer-backend-' + moduleName;
 
     const Backend = require(moduleName);
-    const backend = new Backend((err, backend) => {
+    const backend = new Backend(err => {
       if (err) {
         backend.log.error('while initializing: ' + err);
         return callback();

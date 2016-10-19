@@ -1,6 +1,10 @@
 'use strict';
 
 const Backend = require('../../').Backend;
+const path = require('path');
+const fs = require('fs');
+
+import knex from '../db';
 
 module.exports = class Local extends Backend {
   constructor(callback) {
@@ -15,9 +19,18 @@ module.exports = class Local extends Backend {
   }
 
   getSongStream(song, callback) {
-    //const filePath =
-    //let stream = fs.createReadStream(path.join(this.coreConfig.songCachePath
-    //callback(null,
+    knex
+    .first('songs')
+    .where('songId', song.songId)
+    .then(song => {
+      // song id is file path
+      const filePath = song.songId;
+      let stream = fs.createReadStream(filePath);
+      callback(null, stream);
+    })
+    .catch(err => {
+      callback(err);
+    });
   }
 };
 
