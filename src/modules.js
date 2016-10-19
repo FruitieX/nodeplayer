@@ -57,22 +57,23 @@ var initModule = (moduleShortName, moduleType, callback) => {
 };
 */
 
-// TODO: this probably doesn't work
-// needs rewrite
 exports.loadBackends = (player, backends, forceUpdate, done) => {
   async.mapSeries(backends, (moduleName, callback) => {
     moduleName = 'nodeplayer-backend-' + moduleName;
 
     const Backend = require(moduleName);
     const backend = new Backend(err => {
-      if (err) {
-        backend.log.error('while initializing: ' + err);
-        return callback();
-      }
+      // defer execution in case callback was called synchronously
+      process.nextTick(err => {
+        if (err) {
+          backend.log.error('while initializing: ' + err);
+          return callback();
+        }
 
-      player.callHooks('onBackendInitialized', [backend.name]);
-      backend.log.verbose('backend initialized');
-      callback(null, { [backend.name]: backend });
+        player.callHooks('onBackendInitialized', [backend.name]);
+        backend.log.verbose('backend initialized');
+        callback(null, { [backend.name]: backend });
+      });
     });
   }, (err, results) => {
     done(Object.assign({}, ...results));
@@ -152,15 +153,18 @@ exports.loadPlugins = (player, plugins, forceUpdate, done) => {
 
 exports.loadBuiltinPlugins = (player, done) => {
   async.mapSeries(BuiltinPlugins, (Plugin, callback) => {
-    return new Plugin(player, (err, plugin) => {
-      if (err) {
-        plugin.log.error('while initializing: ' + err);
-        return callback();
-      }
+    const plugin = new Plugin(player, err => {
+      // defer execution in case callback was called synchronously
+      process.nextTick(err => {
+        if (err) {
+          plugin.log.error('while initializing: ' + err);
+          return callback();
+        }
 
-      plugin.log.verbose('plugin initialized');
-      player.callHooks('onPluginInitialized', [plugin.name]);
-      callback(null, { [plugin.name]: plugin });
+        plugin.log.verbose('plugin initialized');
+        player.callHooks('onPluginInitialized', [plugin.name]);
+        callback(null, { [plugin.name]: plugin });
+      });
     });
   }, (err, results) => {
     done(Object.assign({}, ...results));
@@ -169,15 +173,18 @@ exports.loadBuiltinPlugins = (player, done) => {
 
 exports.loadBuiltinBackends = (player, done) => {
   async.mapSeries(BuiltinBackends, (Backend, callback) => {
-    return new Backend((err, backend) => {
-      if (err) {
-        backend.log.error('while initializing: ' + err);
-        return callback();
-      }
+    const backend = new Backend(err => {
+      // defer execution in case callback was called synchronously
+      process.nextTick(err => {
+        if (err) {
+          backend.log.error('while initializing: ' + err);
+          return callback();
+        }
 
-      player.callHooks('onBackendInitialized', [backend.name]);
-      backend.log.verbose('backend initialized');
-      callback(null, { [backend.name]: backend });
+        player.callHooks('onBackendInitialized', [backend.name]);
+        backend.log.verbose('backend initialized');
+        callback(null, { [backend.name]: backend });
+      });
     });
   }, (err, results) => {
     done(Object.assign({}, ...results));

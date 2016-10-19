@@ -42,6 +42,6 @@ export default class Express extends Plugin {
     player.app.use(bodyParser.json({ limit: '100mb' }));
     player.app.use(bodyParser.urlencoded({ extended: true }));
 
-    callback(null, this);
+    callback(null);
   }
 }

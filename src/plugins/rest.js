@@ -263,6 +263,6 @@ export default class Rest extends Plugin {
       });
     });
 
-    callback(null, this);
+    callback(null);
   }
 }

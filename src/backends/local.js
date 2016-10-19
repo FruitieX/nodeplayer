@@ -10,7 +10,7 @@ module.exports = class Local extends Backend {
   constructor(callback) {
     super();
 
-    callback(null, this);
+    callback(null);
   }
 
   isPrepared(song) {
