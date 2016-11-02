@@ -1,8 +1,24 @@
-import Server from './server';
-import Rest from './rest';
+import config from '../config';
+import labeledLogger from '../logger';
 
-const Plugins = [];
-Plugins.push(Server);
-Plugins.push(Rest); // NOTE: must be initialized after Server
+const coreConfig = config.getConfig();
 
-module.exports = Plugins;
+/**
+ * Super constructor for plugins
+ */
+export default class Plugin {
+  constructor(defaultConfig) {
+    this.name = this.constructor.name.toLowerCase();
+    this.log = labeledLogger(this.name);
+    this.hooks = {};
+    this.coreConfig = coreConfig;
+
+    if (defaultConfig) {
+      this.config = config.getConfig(this, defaultConfig);
+    }
+  }
+
+  registerHook(hook, callback) {
+    this.hooks[hook] = callback;
+  }
+}

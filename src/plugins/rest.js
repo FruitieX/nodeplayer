@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const async = require('async');
 const path = require('path');
-import Plugin from '../plugin';
+import Plugin from '.';
 
 export default class Rest extends Plugin {
   constructor(player, callback) {

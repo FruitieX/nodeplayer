@@ -1,7 +1,7 @@
 const npm = require('npm');
 const async = require('async');
 const labeledLogger = require('./logger');
-const BuiltinPlugins = require('./plugins');
+import defaultPlugins from './plugins/defaults';
 const BuiltinBackends = require('./backends');
 
 const _ = require('lodash');
@@ -152,7 +152,7 @@ exports.loadPlugins = (player, plugins, forceUpdate, done) => {
 };
 
 exports.loadBuiltinPlugins = (player, done) => {
-  async.mapSeries(BuiltinPlugins, (Plugin, callback) => {
+  async.mapSeries(defaultPlugins, (Plugin, callback) => {
     const plugin = new Plugin(player, err => {
       // defer execution in case callback was called synchronously
       process.nextTick(() => {

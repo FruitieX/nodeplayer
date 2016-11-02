@@ -1,5 +1,7 @@
 'use strict';
 
+import Plugin from '.';
+
 const Hapi = require('hapi');
 //const bodyParser = require('body-parser');
 //const cookieParser = require('cookie-parser');
@@ -7,7 +9,6 @@ const Hapi = require('hapi');
 //const http = require('http');
 //const fs = require('fs');
 
-import Plugin from '../plugin';
 
 export default class Server extends Plugin {
   constructor(player, callback) {

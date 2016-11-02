@@ -30,7 +30,7 @@
     "async": "^2.0.0-rc.6",
     "babel-cli": "^6.11.4",
     "babel-core": "^6.11.4",
-    "babel-preset-node6": "^11.0.0",
+    "babel-preset-es2015-node": "^6.1.1",
     "bluebird": "^3.4.1",
     "escape-string-regexp": "^1.0.5",
     "fluent-ffmpeg": "^2.1.0",
