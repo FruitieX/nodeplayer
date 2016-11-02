@@ -2,7 +2,7 @@ const npm = require('npm');
 const async = require('async');
 const labeledLogger = require('./logger');
 import defaultPlugins from './plugins/defaults';
-const BuiltinBackends = require('./backends');
+import defaultBackends from './backends/defaults';
 
 const _ = require('lodash');
 const logger = labeledLogger('modules');
@@ -172,7 +172,7 @@ exports.loadBuiltinPlugins = (player, done) => {
 };
 
 exports.loadBuiltinBackends = (player, done) => {
-  async.mapSeries(BuiltinBackends, (Backend, callback) => {
+  async.mapSeries(defaultBackends, (Backend, callback) => {
     const backend = new Backend(err => {
       // defer execution in case callback was called synchronously
       process.nextTick(() => {
