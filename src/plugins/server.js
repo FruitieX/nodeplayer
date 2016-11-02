@@ -1,20 +1,34 @@
 'use strict';
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
+const Hapi = require('hapi');
+//const bodyParser = require('body-parser');
+//const cookieParser = require('cookie-parser');
+//const https = require('https');
+//const http = require('http');
+//const fs = require('fs');
 
 import Plugin from '../plugin';
 
-export default class Express extends Plugin {
+export default class Server extends Plugin {
   constructor(player, callback) {
     super();
 
+    const server = new Hapi.Server();
+    server.connection({ port: this.coreConfig.port });
+
+    server.start(err => {
+      if (err) {
+        return callback(err);
+      } else {
+        this.log.info(`listening on port ${this.coreConfig.port}`);
+        player.server = server;
+
+        callback();
+      }
+    });
+
+    /*
     // NOTE: no argument passed so we get the core's config
-    const config = require('../config').getConfig();
     player.app = express();
 
     let options = {};
@@ -36,12 +50,10 @@ export default class Express extends Plugin {
       player.httpServer = http.createServer(player.app)
                     .listen(port);
     }
-    this.log.info('listening on port ' + port);
 
     player.app.use(cookieParser());
     player.app.use(bodyParser.json({ limit: '100mb' }));
     player.app.use(bodyParser.urlencoded({ extended: true }));
-
-    callback(null);
+    */
   }
 }

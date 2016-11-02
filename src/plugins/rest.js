@@ -10,13 +10,21 @@ export default class Rest extends Plugin {
   constructor(player, callback) {
     super();
 
-    // NOTE: no argument passed so we get the core's config
-    const config = require('../config').getConfig();
-
-    if (!player.app) {
-      return callback('module must be initialized after express module!');
+    if (!player.server) {
+      return callback('module must be initialized after Server module!');
     }
 
+    player.server.route({
+      method: 'GET',
+      path: '/',
+      handler: (request, reply) => {
+        reply('Hello world!\n');
+      }
+    });
+
+    callback();
+
+      /*
     player.app.use((req, res, next) => {
       res.sendRes = (err, data) => {
         if (err) {
@@ -59,6 +67,7 @@ export default class Rest extends Plugin {
       res.sendRes(err);
     });
 
+    */
     /*
     player.app.post('/queue/move/:pos', (req, res) => {
         var err = player.moveInQueue(
@@ -70,6 +79,7 @@ export default class Rest extends Plugin {
     });
     */
 
+    /*
     player.app.delete('/queue/song/:at', (req, res) => {
       player.removeSongs(req.params.at, Number(req.query.cnt) || 1, res.sendRes);
     });
@@ -264,5 +274,6 @@ export default class Rest extends Plugin {
     });
 
     callback(null);
+    */
   }
 }

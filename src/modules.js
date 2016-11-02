@@ -64,7 +64,7 @@ exports.loadBackends = (player, backends, forceUpdate, done) => {
     const Backend = require(moduleName);
     const backend = new Backend(err => {
       // defer execution in case callback was called synchronously
-      process.nextTick(err => {
+      process.nextTick(() => {
         if (err) {
           backend.log.error('while initializing: ' + err);
           return callback();
@@ -155,7 +155,7 @@ exports.loadBuiltinPlugins = (player, done) => {
   async.mapSeries(BuiltinPlugins, (Plugin, callback) => {
     const plugin = new Plugin(player, err => {
       // defer execution in case callback was called synchronously
-      process.nextTick(err => {
+      process.nextTick(() => {
         if (err) {
           plugin.log.error('while initializing: ' + err);
           return callback();
@@ -175,7 +175,7 @@ exports.loadBuiltinBackends = (player, done) => {
   async.mapSeries(BuiltinBackends, (Backend, callback) => {
     const backend = new Backend(err => {
       // defer execution in case callback was called synchronously
-      process.nextTick(err => {
+      process.nextTick(() => {
         if (err) {
           backend.log.error('while initializing: ' + err);
           return callback();

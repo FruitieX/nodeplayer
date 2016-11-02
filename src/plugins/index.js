@@ -1,8 +1,8 @@
-import Express from './express';
+import Server from './server';
 import Rest from './rest';
 
 const Plugins = [];
-Plugins.push(Express);
-Plugins.push(Rest); // NOTE: must be initialized after express
+Plugins.push(Server);
+Plugins.push(Rest); // NOTE: must be initialized after Server
 
 module.exports = Plugins;
