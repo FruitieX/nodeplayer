@@ -26,6 +26,19 @@ export default class Player {
     this.init = this.init.bind(this);
   }
 
+  getQueue() {
+    return this.queue.serialize();
+  }
+
+  getState() {
+    return {
+      nowPlaying: this.nowPlaying,
+      play: this.play,
+      repeat: this.repeat,
+      volume: this.volume
+    };
+  }
+
   /**
    * Initializes player
    */

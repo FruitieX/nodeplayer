@@ -15,7 +15,12 @@ export default class Server extends Plugin {
     super();
 
     const server = new Hapi.Server();
-    server.connection({ port: this.coreConfig.port });
+    server.connection({
+      port: this.coreConfig.port,
+      routes: {
+        cors: true
+      }
+    });
 
     server.start(err => {
       if (err) {

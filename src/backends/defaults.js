@@ -1,6 +1,6 @@
 import Local from './local';
 
 const defaultBackends = [];
-defaultBackends.push(Local);
+//defaultBackends.push(Local);
 
 export default defaultBackends;
