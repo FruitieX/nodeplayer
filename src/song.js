@@ -8,7 +8,7 @@ const uuid = require('node-uuid');
  * @throws {Error} in case of errors
  */
 export default class Song {
-  constructor(song, backend) {
+  constructor(song, backend, forceUuid) {
     // make sure we have a reference to backend
     if (!backend || !_.isObject(backend)) {
       throw new Error('Song constructor called with invalid backend: ' + backend);
@@ -30,7 +30,11 @@ export default class Song {
       throw new Error('Song constructor called without format!');
     }
 
-    this.uuid = uuid.v4();
+    if (forceUuid) {
+      this.uuid = song.uuid;
+    } else {
+      this.uuid = uuid.v4();
+    }
 
     this.title = song.title;
     this.artist = song.artist;

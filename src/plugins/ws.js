@@ -23,12 +23,22 @@ export default class WebSockets extends Plugin {
     sockjs.on('connection', (conn) => {
       this.clients[conn.id] = conn;
 
+      const np = player.getNowPlaying();
+      let queue = player.queue.serialize();
+
+      if (np) {
+        const npPos = player.queue.findSongIndex(np.uuid);
+        if (npPos > 0) {
+          queue = queue.slice(npPos - 1);
+        }
+      }
+
       conn.write(JSON.stringify({
         jsonrpc: '2.0',
         method: 'sync',
         params: {
-          nowPlaying: player.getNowPlaying(),
-          queue: player.queue.serialize()
+          nowPlaying: np,
+          queue: queue
         }
       }));
 
@@ -40,6 +50,22 @@ export default class WebSockets extends Plugin {
     player.ws = sockjs;
 
     this.registerHook('onStartPlayback', (song) => {
+      const np = player.getNowPlaying();
+      let queue = player.queue.serialize();
+
+      if (np) {
+        const npPos = player.queue.findSongIndex(np.uuid);
+        if (npPos > 0) {
+          queue = queue.slice(npPos - 1);
+        }
+      }
+
+      this.broadcast({
+        jsonrpc: '2.0',
+        method: 'queue',
+        params: queue
+      });
+
       this.broadcast({
         jsonrpc: '2.0',
         method: 'play',
@@ -55,7 +81,17 @@ export default class WebSockets extends Plugin {
       });
     });
 
-    this.registerHook('onQueueModify', (queue) => {
+    this.registerHook('onQueueModify', () => {
+      const np = player.getNowPlaying();
+      let queue = player.queue.serialize();
+
+      if (np) {
+        const npPos = player.queue.findSongIndex(np.uuid);
+        if (npPos > 0) {
+          queue = queue.slice(npPos - 1);
+        }
+      }
+
       this.broadcast({
         jsonrpc: '2.0',
         method: 'queue',

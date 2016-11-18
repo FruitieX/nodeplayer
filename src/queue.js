@@ -79,7 +79,7 @@ export default class Queue {
    * @param {Song | Object[]} songs - Song or list of songs to insert
    * @return {Error} - in case of errors
    */
-  insertSongs(at, songs) {
+  insertSongs(at, songs, forceUuid) {
     let pos;
     if (at === null) {
       // insert at start of queue
@@ -108,7 +108,7 @@ export default class Queue {
         throw new Error('Song constructor called with invalid backend: ' + song.backendName);
       }
 
-      return new Song(song, backend);
+      return new Song(song, backend, forceUuid);
     }, this);
 
     // perform insertion

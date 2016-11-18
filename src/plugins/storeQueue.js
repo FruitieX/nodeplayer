@@ -35,11 +35,11 @@ export default class StoreQueue extends Plugin {
             data = JSON.parse(data);
 
             const queue = data.queue;
-            player.queue.insertSongs(null, queue);
+            player.queue.insertSongs(null, queue, true);
 
             let np = data.nowPlaying;
             if (np) {
-              np = new Song(np, backends[np.backendName]);
+              np = new Song(np, backends[np.backendName], true);
               player.nowPlaying = np;
               player.startPlayback(data.nowPlaying.playback.curPos);
             }

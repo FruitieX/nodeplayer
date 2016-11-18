@@ -270,12 +270,17 @@ export default class Player {
     /* progress callback
      * when this is called, new song data has been flushed to disk */
 
+    const np = this.getNowPlaying();
+
+    /*
+     * TODO!
     // start playback if it hasn't been started yet
     if (this.play && this.getNowPlaying() &&
-              this.getNowPlaying().uuid === song.uuid &&
-              !this.queue.playbackStart && bytesWritten) {
+        np.uuid === song.uuid &&
+        !np.playback.startTime && bytesWritten) {
       this.startPlayback();
     }
+    */
 
     // tell plugins that new data is available for this song, and
     // whether the song is now fully written to disk or not.
@@ -327,10 +332,12 @@ export default class Player {
     }
 
     if (song.isPrepared()) {
+      const np = this.getNowPlaying();
+
       // start playback if it hasn't been started yet
       if (this.play && this.getNowPlaying() &&
-                  this.getNowPlaying().uuid === song.uuid &&
-                  !this.queue.playbackStart) {
+          np.uuid === song.uuid &&
+          !np.playback.startTime) {
         this.startPlayback();
       }
 
