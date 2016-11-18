@@ -43,20 +43,19 @@ export default class StoreQueue extends Plugin {
               player.nowPlaying = np;
               player.startPlayback(data.nowPlaying.playback.curPos);
             }
-
-            process.once('SIGINT', () => {
-              console.log('SIGINT received, saving queue');
-              this.storeQueue(true);
-            });
-            process.once('SIGUSR2', () => {
-              console.log('SIGUSR2 received, saving queue');
-              this.storeQueue(true);
-            });
-
-            this.initialized = true;
           }
+
+          this.initialized = true;
         });
       }
+      process.once('SIGINT', () => {
+        console.log('SIGINT received, saving queue');
+        this.storeQueue(true);
+      });
+      process.once('SIGUSR2', () => {
+        console.log('SIGUSR2 received, saving queue');
+        this.storeQueue(true);
+      });
     });
 
     callback();
