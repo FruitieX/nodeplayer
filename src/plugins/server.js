@@ -2,13 +2,12 @@
 
 import Plugin from '.';
 
-const Hapi = require('hapi');
+import Hapi from 'hapi';
 //const bodyParser = require('body-parser');
 //const cookieParser = require('cookie-parser');
 //const https = require('https');
 //const http = require('http');
 //const fs = require('fs');
-
 
 export default class Server extends Plugin {
   constructor(player, callback) {

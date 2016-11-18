@@ -14,7 +14,7 @@ export default class Player {
     this.logger = labeledLogger('core');
     this.queue = new Queue(this);
     this.nowPlaying = null;
-    this.play = false;
+    this.play = false; // TODO: integrate with Song?
     this.repeat = false;
     this.plugins = {};
     this.backends = {};
@@ -70,7 +70,7 @@ export default class Player {
       }, callback => {
         modules.loadBackends(player, config.backends, forceUpdate, results => {
           player.backends = _.extend(player.backends, results);
-          player.callHooks('onBackendsInitialized');
+          player.callHooks('onBackendsInitialized', [player.backends]);
           callback();
         });
       },
@@ -121,7 +121,7 @@ export default class Player {
    * @return {Song|null} - Song object, null if no now playing song
    */
   getNowPlaying() {
-    return this.nowPlaying;
+    return this.nowPlaying ? this.nowPlaying.serialize() : null;
   }
 
   // TODO: handling of pause in a good way?
@@ -136,13 +136,21 @@ export default class Player {
     this.play = false;
 
     const np = this.nowPlaying;
-    const pos = np.playback.startPos + (new Date().getTime() - np.playback.startTime);
     if (np) {
+      const pos = np.playback.startPos + (new Date().getTime() - np.playback.startTime);
+
       np.playback = {
         startTime: 0,
         startPos:  pause ? pos : 0,
       };
+      console.log(np.playback);
     }
+
+    if (!pause) {
+      this.nowPlaying = null;
+    }
+
+    this.callHooks('onStopPlayback', [np ? np.serialize() : null]);
   }
 
   /**
@@ -151,8 +159,8 @@ export default class Player {
    * @throws {Error} if an error occurred
    */
   startPlayback(position) {
-    position = position || 0;
-    const player = this;
+    console.log('pos', position);
+    clearTimeout(this.songEndTimeout);
 
     if (!this.nowPlaying) {
       // find first song in queue
@@ -163,15 +171,22 @@ export default class Player {
       }
     }
 
+    position = _.isNumber(position) ? position : this.nowPlaying.playback.startPos;
+
     this.nowPlaying.prepare(err => {
       if (err) {
         throw new Error('error while preparing now playing: ' + err);
       }
 
-      player.nowPlaying.playbackStarted(position || player.nowPlaying.playback.startPos);
+      console.log(position);
+      console.log(this.nowPlaying.playback.startPos);
+      this.nowPlaying.playbackStarted(position);
 
-      player.logger.info('playback started.');
-      player.play = true;
+      this.callHooks('onStartPlayback', [this.nowPlaying.serialize()]);
+
+      this.logger.info('playback started.');
+      this.play = true;
+      this.songEndTimeout = setTimeout(this.songEnd.bind(this), this.nowPlaying.duration - position);
     });
   }
 
@@ -181,18 +196,26 @@ export default class Player {
    *                        playing is removed, playback stopped
    */
   changeSong(uuid) {
-    this.logger.verbose('changing song to: ' + uuid);
-    clearTimeout(this.songEndTimeout);
-
     this.nowPlaying = this.queue.findSong(uuid);
 
     if (!this.nowPlaying) {
       this.logger.info('song not found: ' + uuid);
-      this.stopPlayback();
+      throw new Error('song not found', uuid);
     }
 
-    this.startPlayback();
-    this.logger.info('changed song to: ' + uuid);
+    this.logger.info('changing song to: ' + uuid);
+    this.startPlayback(0);
+  }
+
+  endOfQueue() {
+    this.logger.info('hit end of queue.');
+
+    if (this.repeat) {
+      this.logger.info('repeat is on, restarting playback from start of queue.');
+      this.changeSong(this.queue.uuidAtIndex(0));
+    } else {
+      this.stopPlayback();
+    }
   }
 
   songEnd() {
@@ -200,18 +223,13 @@ export default class Player {
     const npIndex = np ? this.queue.findSongIndex(np.uuid) : -1;
 
     this.logger.info('end of song ' + np.uuid);
-    this.callHooks('onSongEnd', [np]);
+    this.callHooks('onSongEnd', [this.queue.findSong(np.uuid)]);
 
     const nextSong = this.queue.songs[npIndex + 1];
     if (nextSong) {
       this.changeSong(nextSong.uuid);
     } else {
-      this.logger.info('hit end of queue.');
-
-      if (this.repeat) {
-        this.logger.info('repeat is on, restarting playback from start of queue.');
-        this.changeSong(this.queue.uuidAtIndex(0));
-      }
+      this.endOfQueue();
     }
 
     this.prepareSongs();
@@ -351,7 +369,10 @@ export default class Player {
     async.series([
       callback => {
         // prepare now-playing song
-        currentSong = player.getNowPlaying();
+        if (player.getNowPlaying()) {
+          currentSong = player.queue.findSong(player.getNowPlaying().uuid);
+        }
+
         if (currentSong) {
           player.prepareSong(currentSong, callback);
         } else if (player.queue.getLength()) {

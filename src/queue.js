@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import _ from 'lodash';
 import Song from './song';
 
 /**
@@ -115,6 +115,16 @@ export default class Queue {
     const args = [pos, 0].concat(songs);
     Array.prototype.splice.apply(this.songs, args);
 
+    this.player.logger.verbose('Inserted songs:', songs.map((song) => {
+      return _.pick(song.serialize(), [
+        'backendName',
+        'title',
+        'artist',
+        'album',
+        'uuid'
+      ]);
+    }));
+    this.player.callHooks('onQueueModify', [this.serialize()]);
     this.player.prepareSongs();
   }
 
@@ -154,6 +164,7 @@ export default class Queue {
       this.player.prepareSongs();
     }
 
+    this.player.callHooks('onQueueModify', [this.serialize()]);
     return removed;
   }
 
@@ -177,6 +188,7 @@ export default class Queue {
       this.songs = _.shuffle(this.songs);
     }
 
+    this.player.callHooks('onQueueModify', [this.serialize()]);
     this.player.prepareSongs();
   }
 }

@@ -66,10 +66,15 @@ export default class Song {
    * @param {Number} [pos] - position to start playing at
    */
   playbackStarted(pos) {
+    console.log(pos);
     this.playback = {
       startTime: new Date(),
       startPos:  pos || null,
     };
+  }
+
+  isPlaying() {
+    return !!this.playback.startTime;
   }
 
   /**
@@ -89,7 +94,12 @@ export default class Song {
       format:      this.format,
       backendName: this.backend.name,
       playlist:    this.playlist,
-      playback:    this.playback,
+      playback:    {
+        startTime: this.playback.startTime,
+        startPos:  this.playback.startPos,
+        curPos:    this.playback.startPos + (this.playback.startTime ?
+          new Date().getTime() - this.playback.startTime.getTime() : null)
+      }
     };
   }
 

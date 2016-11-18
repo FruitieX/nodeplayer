@@ -48,11 +48,8 @@ export default class Rest extends Plugin {
       method: 'POST',
       path: '/api/v1/search',
       handler: (request, reply) => {
-        this.log.verbose('got search request: ' + JSON.stringify(request.payload));
-
         player.searchBackends(request.payload, (err, results) => {
-          // console.log(results);
-          reply(results);
+          reply(err ? Boom.badImplementation(err) : results);
         });
       }
     });
@@ -61,10 +58,79 @@ export default class Rest extends Plugin {
       method: 'POST',
       path: '/api/v1/queue/song',
       handler: (request, reply) => {
-        this.log.verbose('got search request: ' + JSON.stringify(request.payload));
-
-        const err = player.queue.insertSongs(null, request.payload);
+        const at = player.queue.uuidAtIndex(player.queue.getLength() - 1) || null;
+        const err = player.queue.insertSongs(at, request.payload);
         reply(err ? Boom.badImplementation(err) : { success: true });
+      }
+    });
+
+    player.server.route({
+      method: 'POST',
+      path: '/api/v1/play',
+      handler: (request, reply) => {
+        const err = player.startPlayback();
+        reply(err ? Boom.badImplementation(err) : { success: true });
+      }
+    });
+
+    player.server.route({
+      method: 'POST',
+      path: '/api/v1/stop',
+      handler: (request, reply) => {
+        const err = player.stopPlayback();
+        reply(err ? Boom.badImplementation(err) : { success: true });
+      }
+    });
+
+    player.server.route({
+      method: 'POST',
+      path: '/api/v1/pause',
+      handler: (request, reply) => {
+        const err = player.stopPlayback(true);
+        reply(err ? Boom.badImplementation(err) : { success: true });
+      }
+    });
+
+    player.server.route({
+      method: 'POST',
+      path: '/api/v1/seek',
+      handler: (request, reply) => {
+        const err = player.startPlayback(request.payload.position);
+        reply(err ? Boom.badImplementation(err) : { success: true });
+      }
+    });
+
+    player.server.route({
+      method: 'POST',
+      path: '/api/v1/changeSong',
+      handler: (request, reply) => {
+        player.changeSong(request.payload.uuid);
+      }
+    })
+    player.server.route({
+      method: 'POST',
+      path: '/api/v1/skip',
+      handler: (request, reply) => {
+        let nowPlayingIndex = -1;
+        let cnt = 1;
+
+        if (request.payload && _.isNumber(request.payload.cnt)) {
+          cnt = request.payload.cnt;
+        }
+
+        const nowPlaying = player.getNowPlaying();
+        if (nowPlaying) {
+          nowPlayingIndex = player.queue.findSongIndex(nowPlaying.uuid);
+        }
+
+        const nextSongUuid = player.queue.uuidAtIndex(nowPlayingIndex + cnt);
+        if (nextSongUuid) {
+          player.changeSong(nextSongUuid);
+        } else {
+          player.endOfQueue();
+        }
+
+        reply({ success: true });
       }
     });
 
@@ -104,6 +170,7 @@ export default class Rest extends Plugin {
     this.registerHook('onBackendInitialized', backendName => {
       this.pendingRequests[backendName] = {};
 
+      console.log('installing backend route');
       // provide API path for music data, might block while song is preparing
       player.server.route({
         method: 'GET',

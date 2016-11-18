@@ -82,6 +82,8 @@ defaultConfig.maxScore = 10; // FIXME: ATM the search algo can return VERY irrel
 // hostname of the server, may be used as a default value by other plugins
 defaultConfig.hostname = os.hostname();
 
+defaultConfig.queueStorePath = path.join(getBaseDir(), 'stored-queue.json');
+
 exports.getDefaultConfig = () => {
   return defaultConfig;
 };
