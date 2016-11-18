@@ -173,7 +173,7 @@ export default class Player {
 
     position = _.isNumber(position) ? position : this.nowPlaying.playback.startPos;
 
-    this.nowPlaying.prepare(err => {
+    this.prepareSong(this.nowPlaying, (err) => {
       if (err) {
         throw new Error('error while preparing now playing: ' + err);
       }
