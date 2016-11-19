@@ -335,11 +335,13 @@ export default class Player {
       const np = this.getNowPlaying();
 
       // start playback if it hasn't been started yet
+      /*
       if (this.play && this.getNowPlaying() &&
           np.uuid === song.uuid &&
           !np.playback.startTime) {
         this.startPlayback();
       }
+      */
 
       // song is already prepared, ok to prepare more songs
       callback();
