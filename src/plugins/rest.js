@@ -55,6 +55,15 @@ export default class Rest extends Plugin {
     });
 
     player.server.route({
+      method: 'DELETE',
+      path: '/api/v1/queue/delete',
+      handler: (request, reply) => {
+        const err = player.queue.removeSongs(request.payload.at, Number(request.payload.cnt) || 1);
+        reply(err ? Boom.badImplementation(err) : { success: true });
+      }
+    });
+
+    player.server.route({
       method: 'POST',
       path: '/api/v1/queue/song',
       handler: (request, reply) => {
