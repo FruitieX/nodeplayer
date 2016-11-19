@@ -8,3 +8,9 @@ notifications:
 language: node_js
 node_js:
     - "node"
+cache:
+    directories:
+        - node_modules
+after_script:
+    - "npm run-script coverage"
+    - "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
